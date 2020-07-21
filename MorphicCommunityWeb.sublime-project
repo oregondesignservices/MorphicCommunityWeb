@@ -1,0 +1,53 @@
+{
+  "folders": [
+    {
+      "path": ".",
+      "folder_exclude_patterns": [
+        "builds",
+        "node_modules"
+      ]
+    }
+  ],
+  "settings": {
+    "SublimeLinter.linters.jshint.disable": true,
+    "SublimeLinter.linters.jshint-jskit.enable": true
+  },
+  "build_systems": [
+    {
+      "name": "MorphicCommunityWeb",
+      "cmd": [
+        "npx",
+        "jskit",
+        "make",
+        "--debug",
+        "MorphicCommunityWeb"
+      ],
+      "working_dir": "${project_path}",
+      "variants": [
+        {
+          "name": "Owen",
+          "cmd": [
+            "npx",
+            "jskit",
+            "make",
+            "--debug",
+            "MorphicCommunityWeb",
+            "--http-port",
+            "8086",
+            "--no-docker"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "MorphicCommunityWeb Tests",
+      "cmd": [
+        "npx",
+        "jskit",
+        "test",
+        "MorphicCommunityWebTests"
+      ],
+      "working_dir": "${project_path}"
+    }
+  ]
+}

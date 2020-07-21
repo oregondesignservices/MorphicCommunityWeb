@@ -1,0 +1,18 @@
+en:
+  window.title: Create a Morphic Community
+  communityNameLabel.text: Community Name
+  firstNameLabel.text: Your First Name
+  lastNameLabel.text: Your Last Name
+  emailLabel.text: Email Address
+  passwordLabel.text: Choose a Password
+  confirmPasswordLabel.text: Confirm Password
+  submitButton.title: Create Community
+  errors:
+    server:
+      title: Registration Failed
+      message: Sorry, we couldn't complete your registration.  Please try again.
+      dismiss.title: Try Again
+    emailExists.message: This email address is already registered
+    emailMailformed.message: Please enter a valid email address
+    badPassword.message: This password is too easily guessed
+    shortPassword.message: Your password must be at least %d characters

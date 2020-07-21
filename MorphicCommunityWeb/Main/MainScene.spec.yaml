@@ -1,0 +1,66 @@
+File's Owner: /MainScene
+
+MainScene:
+  class: MainScene
+  windowStack:
+    - /MainWindow
+  sidebarViewController: /SidebarViewController
+
+MainWindow:
+  class: UIRootWindow
+  contentViewController: /MainViewController
+
+MainViewController:
+  class: UISplitViewController
+  leadingViewController: /SidebarViewController
+  mainViewController: /DetailsViewController
+  trailingViewController: /LibraryViewController
+  view:
+    leadingSize: 250
+    minimumLeadingSize: 150
+    maximumLeadingSize: 400
+    trailingSize: 300
+    minimumTrailingSize: 150
+    maximumTrailingSize: 500
+    minimumMainSize: 500
+    trailingDividerColor:
+      rgba: 200,200,200
+    leadingDividerColor: white
+
+
+
+# Sidebar
+
+SidebarViewController:
+  class: SidebarViewController
+  outlets:
+    errorView: /SidebarErrorView
+    emptyView: /SidebarEmptyView
+
+SidebarErrorView:
+  class: UIStackView
+  viewSpacing: 5
+  hidden: true
+  subviews:
+    -
+      class: UILabel
+      lines: 0
+      text: .sidebar.errorView.label.text
+      textColor:
+        rgba: 0,0,0,0.5
+      textAlign: center
+
+SidebarEmptyView:
+  class: UILabel
+  hidden: true
+  lines: 0
+  text: .sidebar.emptyView.label.text
+  textColor:
+    rgba: 0,0,0,0.5
+  textAlign: center
+
+LibraryViewController:
+  class: UIViewController
+  view:
+    backgroundColor:
+      rgba: 236,236,236

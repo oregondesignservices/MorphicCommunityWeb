@@ -1,0 +1,141 @@
+File's Owner: /RegisterScene
+
+RegisterScene:
+  class: RegisterScene
+  windowStack:
+    - /BackgroundWindow
+    - /RegisterWindow
+  outlets:
+    backgroundWindow: /BackgroundWindow
+    registerWindow: /RegisterWindow
+    registerViewController: /RegisterViewController
+
+BackgroundWindow:
+  class: UIRootWindow
+
+RegisterWindow:
+  class: UIWindow
+  frame: 0,0,380,0
+  title: .window.title
+  backgroundColor: white
+  heightTracksContent: true
+  isUserMovable: false
+  firstResponder: /CommunityNameField
+  contentViewController: /RegisterViewController
+
+RegisterViewController:
+  class: RegisterViewController
+  view:
+    subviews:
+      - /LogoImageView
+      - /RegisterForm
+  outlets:
+    logoImageView: /LogoImageView
+    form: /RegisterForm
+    communityNameField: /CommunityNameField
+    firstNameField: /FirstNameField
+    lastNameField: /LastNameField
+    emailField: /EmailField
+    passwordField: /PasswordField
+    confirmPasswordField: /ConfirmPasswordField
+    submitButton: /SubmitButton
+
+RegisterForm:
+  class: FormView
+  fields:
+    -
+      label: /CommunityNameLabel
+      view: /CommunityNameField
+    -
+      label: /FirstNameLabel
+      view: /FirstNameField
+    -
+      label: /LastNameLabel
+      view: /LastNameField
+    -
+      label: /EmailLabel
+      view: /EmailField
+    -
+      label: /PasswordLabel
+      view: /PasswordField
+    -
+      label: /ConfirmPasswordLabel
+      view: /ConfirmPasswordField
+    -
+      view: /SubmitButton
+      extraSpacing:
+        top: 13
+
+LogoImageView:
+  class: UIImageView
+  image: Logo
+  frame: 0,0,54,54
+
+CommunityNameLabel:
+  class: UILabel
+  text: .communityNameLabel.text
+
+CommunityNameField:
+  class: UITextField
+  delegate: /RegisterViewController
+  nextKeyView: /FirstNameField
+
+FirstNameLabel:
+  class: UILabel
+  text: .firstNameLabel.text
+
+FirstNameField:
+  class: UITextField
+  delegate: /RegisterViewController
+  nextKeyView: /LastNameField
+
+LastNameLabel:
+  class: UILabel
+  text: .lastNameLabel.text
+
+LastNameField:
+  class: UITextField
+  delegate: /RegisterViewController
+  nextKeyView: /EmailField
+
+EmailLabel:
+  class: UILabel
+  text: .emailLabel.text
+
+EmailField:
+  class: UITextField
+  delegate: /RegisterViewController
+  nextKeyView: /PasswordField
+
+PasswordLabel:
+  class: UILabel
+  text: .passwordLabel.text
+
+PasswordField:
+  class: UITextField
+  secureEntry: true
+  delegate: /RegisterViewController
+  nextKeyView: /ConfirmPasswordField
+
+ConfirmPasswordLabel:
+  class: UILabel
+  text: .confirmPasswordLabel.text
+
+ConfirmPasswordField:
+  class: UITextField
+  secureEntry: true
+  delegate: /RegisterViewController
+  nextKeyView: /CommunityNameField
+
+SubmitButton:
+  class: UIButton
+  title: .submitButton.title
+  styler:
+    class: UIButtonCustomStyler
+    normalBackgroundColor:
+      rgba: 0,129,69
+    normalTitleColor: white
+    titleInsets: 3,10
+    cornerRadius: 2
+  target: /RegisterViewController
+  action: register

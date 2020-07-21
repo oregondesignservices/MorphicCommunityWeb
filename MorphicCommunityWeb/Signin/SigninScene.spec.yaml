@@ -1,0 +1,100 @@
+File's Owner: /SigninScene
+
+SigninScene:
+  class: SigninScene
+  windowStack:
+    - /BackgroundWindow
+    - /SigninWindow
+  outlets:
+    backgroundWindow: /BackgroundWindow
+    signinWindow: /SigninWindow
+    signinViewController: /SigninViewController
+
+BackgroundWindow:
+  class: UIRootWindow
+
+SigninWindow:
+  class: UIWindow
+  frame: 0,0,380,0
+  title: .window.title
+  backgroundColor: white
+  heightTracksContent: true
+  isUserMovable: false
+  firstResponder: /UsernameField
+  contentViewController: /SigninViewController
+
+SigninViewController:
+  class: SigninViewController
+  view:
+    subviews:
+      - /LogoImageView
+      - /SigninForm
+  outlets:
+    logoImageView: /LogoImageView
+    form: /SigninForm
+    usernameField: /UsernameField
+    passwordField: /PasswordField
+    signinButton: /SigninButton
+    forgotPasswordButton: /ForgotPasswordButton
+
+SigninForm:
+  class: FormView
+  fields:
+    -
+      label: /UsernameLabel
+      view: /UsernameField
+    -
+      label: /PasswordLabel
+      view: /PasswordField
+    -
+      view: /SigninButton
+      extraSpacing:
+        top: 13
+    -
+      view: /ForgotPasswordButton
+
+LogoImageView:
+  class: UIImageView
+  image: Logo
+  frame: 0,0,54,54
+
+UsernameLabel:
+  class: UILabel
+  text: .usernameLabel.text
+
+UsernameField:
+  class: UITextField
+  delegate: /SigninViewController
+  nextKeyView: /PasswordField
+
+PasswordLabel:
+  class: UILabel
+  text: .passwordLabel.text
+
+PasswordField:
+  class: UITextField
+  secureEntry: true
+  delegate: /SigninViewController
+  nextKeyView: /UsernameField
+
+SigninButton:
+  class: UIButton
+  title: .signinButton.title
+  styler:
+    class: UIButtonCustomStyler
+    normalBackgroundColor:
+      rgba: 0,129,69
+    normalTitleColor: white
+    titleInsets: 3,10
+    cornerRadius: 2
+  target: /SigninViewController
+  action: signin
+
+ForgotPasswordButton:
+  class: UIButton
+  title: .forgotPasswordButton.title
+  styler: custom
+  font:
+    size: detail
+  target: /SigninViewController
+  action: forgotPassword

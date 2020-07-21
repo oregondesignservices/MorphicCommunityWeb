@@ -1,0 +1,15 @@
+{
+  "name": "morphiccommunityweb",
+  "private": true,
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Raising the Floor",
+  "license": "SEE LICENSE IN LICENSE.txt",
+  "devDependencies": {
+    "@breakside/jskit": "^2020.28.1",
+    "jshint": "^2.11.1"
+  }
+}

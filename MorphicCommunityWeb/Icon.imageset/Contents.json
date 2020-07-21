@@ -1,0 +1,16 @@
+{
+    "images": [
+        {
+            "filename": "Icon.png",
+            "scale": 1
+        },
+        {
+            "filename": "Icon32.png",
+            "scale": 2
+        },
+        {
+            "filename": "Icon64.png",
+            "scale": 3
+        }
+    ]
+}

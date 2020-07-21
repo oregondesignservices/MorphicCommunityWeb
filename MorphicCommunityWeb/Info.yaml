@@ -1,0 +1,13 @@
+JSBundleType:               html
+JSBundleIdentifier:         org.raisingthefloor.MorphicCommunityWeb
+JSBundleVersion:            1.0.0
+UIApplicationDelegate:      ApplicationDelegate
+UIApplicationTitle:         .applicationTitle
+UIApplicationIcon:          Icon
+UIApplicationLaunchOptions:
+  uistate: {kind: positional, default: null}
+  others: {kind: unknown}
+UIApplicationSystemFont:    FiraSans-Light
+JSDevelopmentLanguage:      en
+UIApplicationEnvironment:
+  - MORPHIC_SERVER_URL

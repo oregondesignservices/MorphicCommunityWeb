@@ -1,0 +1,11 @@
+en:
+  window.title: Signin to Morphic Community
+  usernameLabel.text: Email Address
+  passwordLabel.text: Password
+  signinButton.title: Signin
+  forgotPasswordButton.title: Forgot Password?
+  errors:
+    authFailed:
+      title: Unrecognized Login
+      message: Sorry, we did not recognize your username and password.  Please try again.
+      dismiss.title: Try Again
