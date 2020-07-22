@@ -5,6 +5,12 @@
 // #import "Service+Extensions.js"
 'use strict';
 
+JSSpec.definePropertiesFromExtensions({
+    arrayForKey: function(key){
+        return this.valueForKey(key);
+    }
+});
+
 (function(){
 
 var logger = JSLog("morphic", "appdelegate");
@@ -16,8 +22,8 @@ JSClass("ApplicationDelegate", JSObject, {
     applicationDidFinishLaunching: function(application, launchOptions){
         this.registerDefaults();
         this.service = Service.initWithBaseURL(JSURL.initWithString(application.getenv('MORPHIC_SERVER_URL')));
-        JSNotificationCenter.shared.addObserver(Service.Notification.userDidSignin, this.userDidSignin, this);
-        this.service.authToken = this.getSessionValue("authToken");
+        JSNotificationCenter.shared.addObserver(Service.Notification.userDidSignin, this.service, this.userDidSignin, this);
+        this.recallUser();
         if (launchOptions.uistate === "/register"){
             this.showRegister();
         }else if (this.service.authToken){
@@ -32,7 +38,20 @@ JSClass("ApplicationDelegate", JSObject, {
     service: null,
 
     userDidSignin: function(){
+        this.rememberUser();
+    },
+
+    recallUser: function(){
+        this.service.authToken = this.getSessionValue("authToken");
+        var userJSON = this.getSessionValue("user");
+        if (userJSON !== null){
+            this.service.user = JSON.parse(userJSON);
+        }
+    },
+
+    rememberUser: function(){
         this.setSessionValue("authToken", this.service.authToken);
+        this.setSessionValue("user", JSON.stringify(this.service.user));
     },
 
     // MARK: - Scene Selection
@@ -45,7 +64,7 @@ JSClass("ApplicationDelegate", JSObject, {
     },
 
     registerSceneDidComplete: function(registerScene, community){
-        JSUserDefaults.shared.setValueForKey(community.id, "selectedCommunityId");
+        this.defaults.setValueForKey(community.id, "selectedCommunityId");
         registerScene.close();
         this.showMain();
     },
@@ -66,13 +85,17 @@ JSClass("ApplicationDelegate", JSObject, {
     showMain: function(){
         var mainScene = MainScene.initWithSpecName("MainScene");
         mainScene.service = this.service;
+        mainScene.defaults = this.defaults;
         mainScene.show();
     },
 
     // MARK: - UserDefaults
 
+    defaults: null,
+
     registerDefaults: function(){
-        JSUserDefaults.shared.registerDefaults({
+        this.defaults = JSUserDefaults.shared;
+        this.defaults.registerDefaults({
             selectedCommunityId: null,
         });
     },

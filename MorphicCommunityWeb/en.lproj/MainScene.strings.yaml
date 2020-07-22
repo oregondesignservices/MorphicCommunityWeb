@@ -1,6 +1,8 @@
 en:
   sidebar:
-    errorView:
-      label.text: Unable to load Community
-    emptyView:
-      label.text: No Communities
+    communities:
+      errorView:
+        label.text: Unable to load communities
+      emptyView:
+        label.text: No communities
+      navigation.title: Communities

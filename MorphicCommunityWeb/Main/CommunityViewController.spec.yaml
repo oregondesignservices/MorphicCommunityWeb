@@ -1,0 +1,58 @@
+File's Owner: /CommunityViewController
+
+CommunityViewController:
+  class: CommunityViewController
+  view:
+    subviews:
+      - /ListView
+      - /ActivityIndicator
+      - /ErrorView
+  outlets:
+    listView: /ListView
+    activityIndicator: /ActivityIndicator
+    errorView: /ErrorView
+
+ListView:
+  class: UIListView
+  delegate: /CommunityViewController
+  dataSource: /CommunityViewController
+  reusableCellClasses:
+    bar: UIListViewCell
+    member: UIListViewCell
+  reusableHeaderFooterClasses:
+    header: UIListViewHeaderFooterView
+  rowHeight: 31
+  headerHeight: 29
+  styler:
+    class: UIListViewDefaultStyler
+    cellFont:
+      size: 17
+    cellTextColor: white
+    selectedCellBackgroundColor:
+      rgba: 0,0,0,0.3
+    headerFont:
+      size: 14
+      weight: medium
+    headerTextColor:
+      rgba: "#00522B"
+    showsSeparators: false
+
+ActivityIndicator:
+  class: UIActivityIndicatorView
+  style: light
+  frame: 0,0,20,20
+  hidden: true
+  hidesWhenStopped: true
+
+ErrorView:
+  class: UIStackView
+  viewSpacing: 5
+  hidden: true
+  subviews:
+    -
+      class: UILabel
+      lines: 0
+      text: .errorView.label.text
+      textColor:
+        rgba: 0,0,0,0.5
+      textAlign: center

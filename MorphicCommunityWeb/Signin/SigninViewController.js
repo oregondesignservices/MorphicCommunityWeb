@@ -1,5 +1,5 @@
 // #import UIKit
-// #import "Service.js"
+// #import "Service+Extensions.js"
 'use strict';
 
 JSProtocol("SigninViewControllerDelegate", JSProtocol, {
@@ -9,6 +9,13 @@ JSProtocol("SigninViewControllerDelegate", JSProtocol, {
 });
 
 JSClass("SigninViewController", UIViewController, {
+
+    initWithSpec: function(spec){
+        SigninViewController.$super.initWithSpec.call(this, spec);
+        if (spec.containsKey("delegate")){
+            this.delegate = spec.valueForKey("delegate");
+        }
+    },
 
     service: null,
 

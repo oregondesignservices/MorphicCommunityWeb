@@ -21,4 +21,25 @@ Service.definePropertiesFromExtensions({
         return this.sendRequest(request, completion, target);
     },
 
+    loadCommunity: function(communityId, completion, target){
+        var url = this.baseURL.appendingPathComponents(["v1", "communities", communityId]);
+        var request = JSURLRequest.initWithURL(url);
+        request.addBearerAuthorization(this.authToken);
+        return this.sendRequest(request, completion, target);
+    },
+
+    loadCommunityMembers: function(communityId, completion, target){
+        var url = this.baseURL.appendingPathComponents(["v1", "communities", communityId, "members"]);
+        var request = JSURLRequest.initWithURL(url);
+        request.addBearerAuthorization(this.authToken);
+        return this.sendRequest(request, completion, target);
+    },
+
+    loadCommunityBars: function(communityId, completion, target){
+        var url = this.baseURL.appendingPathComponents(["v1", "communities", communityId, "bars"]);
+        var request = JSURLRequest.initWithURL(url);
+        request.addBearerAuthorization(this.authToken);
+        return this.sendRequest(request, completion, target);
+    }
+
 });

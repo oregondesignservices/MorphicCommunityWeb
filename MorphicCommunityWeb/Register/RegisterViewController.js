@@ -1,5 +1,5 @@
 // #import UIKit
-// #import "Service.js"
+// #import "Service+Extensions.js"
 'use strict';
 
 JSProtocol("RegisterViewControllerDelegate", JSProtocol, {
@@ -10,9 +10,16 @@ JSProtocol("RegisterViewControllerDelegate", JSProtocol, {
 
 JSClass("RegisterViewController", UIViewController, {
 
+    initWithSpec: function(spec){
+        RegisterViewController.$super.initWithSpec.call(this, spec);
+        if (spec.containsKey("delegate")){
+            this.delegate = spec.valueForKey("delegate");
+        }
+    },
+
     service: null,
 
-    delegat: null,
+    delegate: null,
 
     // MARK: - View Lifecycle
 

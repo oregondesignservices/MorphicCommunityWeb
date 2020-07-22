@@ -1,83 +1,95 @@
 // #import UIKit
+// #import "Service+Extensions.js"
 'use strict';
 
 JSClass("SidebarViewController", UIViewController, {
 
-    service: null,
+    service: JSDynamicProperty('_service', null),
+
+    setService: function(service){
+        this._service = service;
+        this.communitiesViewController.service = service;
+    },
+
+    defaults: JSDynamicProperty('_defaults', null),
+
+    setDefaults: function(defaults){
+        this._defaults = defaults;
+        this.communitiesViewController.defaults = defaults;
+    },
+
+    communitiesViewController: JSOutlet(),
+    navigationController: JSOutlet(),
+    watermarkView: JSOutlet(),
 
     // MARK: - View Lifecycle
 
     viewDidLoad: function(){
         SidebarViewController.$super.viewDidLoad.call(this);
-        var gradient = JSGradient.initWithStops(
-            0.00, JSColor.initWithRGBA(0x00/255.0, 0x81/255.0, 0x45/255.0),
-            0.19, JSColor.initWithRGBA(0x00/255.0, 0x92/255.0, 0x4C/255.0),
-            0.43, JSColor.initWithRGBA(0x3F/255.0, 0xA5/255.0, 0x54/255.0),
-            0.65, JSColor.initWithRGBA(0x66/255.0, 0xB5/255.0, 0x5A/255.0),
-            0.85, JSColor.initWithRGBA(0x7C/255.0, 0xC0/255.0, 0x5F/255.0),
-            1.00, JSColor.initWithRGBA(0x84/255.0, 0xC6/255.0, 0x61/255.0)
-        );
-        gradient.start = JSPoint(0, 1);
-        gradient.end = JSPoint(0, 0);
-        this.view.backgroundGradient = gradient;
-        this.loadCommunities();
+        this.addChildViewController(this.navigationController);
+        this.navigationController.navigationBar.hidden = true;
+        this.view.addSubview(this.navigationController.view);
+        this.view.setNeedsLayout();
     },
 
     viewWillAppear: function(animated){
         SidebarViewController.$super.viewWillAppear.call(this, animated);
+        this.navigationController.viewWillAppear(animated);
     },
 
     viewDidAppear: function(animated){
         SidebarViewController.$super.viewDidAppear.call(this, animated);
+        this.navigationController.viewDidAppear(animated);
     },
 
     viewWillDisappear: function(animated){
         SidebarViewController.$super.viewWillDisappear.call(this, animated);
+        this.navigationController.viewWillDisappear(animated);
     },
 
     viewDidDisappear: function(animated){
         SidebarViewController.$super.viewDidDisappear.call(this, animated);
+        this.navigationController.viewDidDisappear(animated);
     },
-
-    // MARK: - Data Loading
-
-    errorView: JSOutlet(),
-    emptyView: JSOutlet(),
-
-    communities: null,
-    bars: null,
-    memebers: null,
-
-    loadCommunities: function(){
-        // TODO: loading indicator
-        this.errorView.hidden = true;
-        this.emptyView.hidden = true;
-        this.service.loadCommunities(function(page){
-            if (page === null){
-                this.errorView.hidden = false;
-                return;
-            }
-            this.communities = [];
-            for (var i = 0, l = page.communities.length; i < l; ++i){
-                if (page.communities[i].role == "manager"){
-                    this.communities.push(page.communities);
-                }
-            }
-            if (this.communities.length === 0){
-                this.emptyView.hidden = false;
-                return;
-            }
-            // TODO: load bars and members for first community
-        }, this);
-    },
-
-    // MARK: - Table View Data Source & Delegate
 
     // MARK: - Layout
 
     viewDidLayoutSubviews: function(){
-        this.errorView.sizeToFitSize(this.view.bounds.rectWithInsets(20));
-        this.errorView.position = this.view.bounds.center;
+        var bounds = this.view.bounds;
+        this.navigationController.view.frame = bounds;
+        this.watermarkView.bounds = JSRect(0, 0, bounds.size.width, bounds.size.width);
+        this.watermarkView.position = JSPoint(bounds.center.x, bounds.size.height - 125 + bounds.size.width / 2.0); 
     }
+
+});
+
+JSClass("SidebarNavigationBarStyler", UINavigationBarDefaultStyler, {
+
+    initWithSpec: function(spec){
+        SidebarNavigationBarStyler.$super.initWithSpec.call(this, spec);
+        if (spec.containsKey("height")){
+            this.height = spec.valueForKey("height");
+        }
+    },
+
+    layoutBar: function(navigationBar){
+        SidebarNavigationBarStyler.$super.layoutBar.call(this, navigationBar);
+        // IMPORTANT: assuming no left bar items
+        var size = navigationBar.bounds.size;
+        var props = navigationBar.stylerProperties;
+        var xLeft = this.itemInsets.left;
+        var xRight = size.width - this.itemInsets.right;
+        var itemHeight = size.height - this.itemInsets.height;
+        var y = this.itemInsets.top;
+        if (props.backBarItemView !== null){
+            props.backBarItemView.position = JSPoint(16 + props.backBarItemView.bounds.size.width / 2.0, props.backBarItemView.position.y);
+        }
+        if (props.rightBarItemViews.length > 0){
+            xRight = props.rightBarItemViews[0].frame.origin.x;
+        }
+        if (!props.titleLabel.hidden){
+            props.titleLabel.position = JSPoint(xLeft + props.titleLabel.bounds.size.width / 2.0, props.titleLabel.position.y);
+        }
+    },
 
 });

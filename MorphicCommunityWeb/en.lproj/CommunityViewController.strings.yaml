@@ -1,0 +1,6 @@
+en:
+  errorView:
+    label.text: Unable to load community
+  header:
+    bars: Bars
+    members: Members

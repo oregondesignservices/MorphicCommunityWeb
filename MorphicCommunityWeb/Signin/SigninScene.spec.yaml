@@ -12,6 +12,10 @@ SigninScene:
 
 BackgroundWindow:
   class: UIRootWindow
+  backgroundGradient:
+    start: 0,1
+    end: 0,0
+    stops: [0%, {rgba: "#008145"}, 19%, {rgba: "#00924C"}, 43%, {rgba: "#3FA554"}, 65%, {rgba: "#66B55A"}, 85%, {rgba: "#7CC05F"}, 100%, {rgba: "#84C661"}]
 
 SigninWindow:
   class: UIWindow
@@ -20,11 +24,13 @@ SigninWindow:
   backgroundColor: white
   heightTracksContent: true
   isUserMovable: false
+  allowsClose: false
   firstResponder: /UsernameField
   contentViewController: /SigninViewController
 
 SigninViewController:
   class: SigninViewController
+  delegate: /SigninScene
   view:
     subviews:
       - /LogoImageView

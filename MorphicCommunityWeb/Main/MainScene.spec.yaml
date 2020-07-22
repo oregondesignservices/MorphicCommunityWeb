@@ -4,7 +4,8 @@ MainScene:
   class: MainScene
   windowStack:
     - /MainWindow
-  sidebarViewController: /SidebarViewController
+  outlets:
+    sidebarViewController: /SidebarViewController
 
 MainWindow:
   class: UIRootWindow
@@ -33,11 +34,92 @@ MainViewController:
 
 SidebarViewController:
   class: SidebarViewController
+  view:
+    backgroundGradient:
+      start: 0,1
+      end: 0,0
+      stops: [0%, {rgba: "#008145"}, 19%, {rgba: "#00924C"}, 43%, {rgba: "#3FA554"}, 65%, {rgba: "#66B55A"}, 85%, {rgba: "#7CC05F"}, 100%, {rgba: "#84C661"}]
+    subviews:
+      - /SidebarWatermarkView
   outlets:
-    errorView: /SidebarErrorView
-    emptyView: /SidebarEmptyView
+    communitiesViewController: /CommunitiesViewController
+    navigationController: /SidebarNavigationController
+    watermarkView: /SidebarWatermarkView
 
-SidebarErrorView:
+SidebarNavigationController:
+  class: UINavigationController
+  root: /CommunitiesViewController
+  navigationBar:
+    class: UINavigationBar
+    styler:
+      class: UINavigationBarDefaultStyler
+      itemInsets: 16,34,16,7
+      height: 58
+      # backBarImage:
+      #   name: NavigationBack
+      #   renderMode: template
+      backgroundColor:
+        rgba: "#84C661"
+      titleColor: white
+      titleFont:
+        size: 21
+        weight: light
+      contentSeparatorSize: 0
+
+SidebarWatermarkView:
+  class: UIImageView
+  frame: 0,0,250,250
+  image:
+    name: Mark
+    renderMode: template
+  templateColor:
+    rgba: 255,255,255,0.1
+
+CommunitiesViewController:
+  class: CommunitiesViewController
+  view:
+    subviews:
+      - /CommunitiesListView
+      - /CommunitiesListActivityIndicator
+      - /CommunitiesListErrorView
+      - /CommunitiesListEmptyView
+  outlets:
+    listView: /CommunitiesListView
+    activityIndicator: /CommunitiesListActivityIndicator
+    errorView: /CommunitiesListErrorView
+    emptyView: /CommunitiesListEmptyView
+  navigationItem:
+    tile: .sidebar.communities.navigation.title
+
+CommunitiesListView:
+  class: UIListView
+  delegate: /CommunitiesViewController
+  dataSource: /CommunitiesViewController
+  rowHeight: 31
+  reusableCellClasses:
+    community: UIListViewCell
+  styler:
+    class: UIListViewDefaultStyler
+    cellFont:
+      size: 17
+    cellTextColor: white
+    selectedCellBackgroundColor:
+      rgba: 0,0,0,0.3
+    headerFont:
+      size: 14
+      weight: medium
+    headerTextColor:
+      rgba: "#00522B"
+    showsSeparators: false
+
+CommunitiesListActivityIndicator:
+  class: UIActivityIndicatorView
+  style: light
+  frame: 0,0,20,20
+  hidden: true
+  hidesWhenStopped: true
+
+CommunitiesListErrorView:
   class: UIStackView
   viewSpacing: 5
   hidden: true
@@ -45,16 +127,16 @@ SidebarErrorView:
     -
       class: UILabel
       lines: 0
-      text: .sidebar.errorView.label.text
+      text: .sidebar.communities.errorView.label.text
       textColor:
         rgba: 0,0,0,0.5
       textAlign: center
 
-SidebarEmptyView:
+CommunitiesListEmptyView:
   class: UILabel
   hidden: true
   lines: 0
-  text: .sidebar.emptyView.label.text
+  text: .sidebar.communities.emptyView.label.text
   textColor:
     rgba: 0,0,0,0.5
   textAlign: center
