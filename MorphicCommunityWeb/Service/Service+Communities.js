@@ -4,7 +4,7 @@
 Service.definePropertiesFromExtensions({
 
     createCommunity: function(community, completion, target){
-        var url = this.baseURL.appendingPathComponents(["v1", "communities"]);
+        var url = this.baseURL.appendingPathComponents([this.version, "communities"]);
         var request = JSURLRequest.initWithURL(url);
         request.method = JSURLRequest.Method.post;
         request.object = {
@@ -15,28 +15,28 @@ Service.definePropertiesFromExtensions({
     },
 
     loadCommunities: function(completion, target){
-        var url = this.baseURL.appendingPathComponents(["v1", "users", this.user.id, "communities"]);
+        var url = this.baseURL.appendingPathComponents([this.version, "users", this.user.id, "communities"]);
         var request = JSURLRequest.initWithURL(url);
         request.addBearerAuthorization(this.authToken);
         return this.sendRequest(request, completion, target);
     },
 
     loadCommunity: function(communityId, completion, target){
-        var url = this.baseURL.appendingPathComponents(["v1", "communities", communityId]);
+        var url = this.baseURL.appendingPathComponents([this.version, "communities", communityId]);
         var request = JSURLRequest.initWithURL(url);
         request.addBearerAuthorization(this.authToken);
         return this.sendRequest(request, completion, target);
     },
 
     loadCommunityMembers: function(communityId, completion, target){
-        var url = this.baseURL.appendingPathComponents(["v1", "communities", communityId, "members"]);
+        var url = this.baseURL.appendingPathComponents([this.version, "communities", communityId, "members"]);
         var request = JSURLRequest.initWithURL(url);
         request.addBearerAuthorization(this.authToken);
         return this.sendRequest(request, completion, target);
     },
 
     loadCommunityBars: function(communityId, completion, target){
-        var url = this.baseURL.appendingPathComponents(["v1", "communities", communityId, "bars"]);
+        var url = this.baseURL.appendingPathComponents([this.version, "communities", communityId, "bars"]);
         var request = JSURLRequest.initWithURL(url);
         request.addBearerAuthorization(this.authToken);
         return this.sendRequest(request, completion, target);

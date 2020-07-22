@@ -52,12 +52,12 @@ SidebarNavigationController:
   navigationBar:
     class: UINavigationBar
     styler:
-      class: UINavigationBarDefaultStyler
-      itemInsets: 16,34,16,7
+      class: SidebarNavigationBarStyler
+      itemInsets: 9,34,10,7
       height: 58
-      # backBarImage:
-      #   name: NavigationBack
-      #   renderMode: template
+      backButtonImage:
+        name: NavigationBack
+        renderMode: template
       backgroundColor:
         rgba: "#84C661"
       titleColor: white
@@ -78,7 +78,12 @@ SidebarWatermarkView:
 CommunitiesViewController:
   class: CommunitiesViewController
   view:
+    backgroundGradient:
+      start: 0,1
+      end: 0,0
+      stops: [0%, {rgba: "#008145"}, 19%, {rgba: "#00924C"}, 43%, {rgba: "#3FA554"}, 65%, {rgba: "#66B55A"}, 85%, {rgba: "#7CC05F"}, 100%, {rgba: "#84C661"}]
     subviews:
+      - /CommunitiesWatermarkView
       - /CommunitiesListView
       - /CommunitiesListActivityIndicator
       - /CommunitiesListErrorView
@@ -88,8 +93,21 @@ CommunitiesViewController:
     activityIndicator: /CommunitiesListActivityIndicator
     errorView: /CommunitiesListErrorView
     emptyView: /CommunitiesListEmptyView
+    watermarkView: /CommunitiesWatermarkView
   navigationItem:
-    tile: .sidebar.communities.navigation.title
+    title: .sidebar.communities.navigation.title
+    backBarButtonItem:
+      class: UINavigationItem
+      # title: null
+
+CommunitiesWatermarkView:
+  class: UIImageView
+  frame: 0,0,250,250
+  image:
+    name: Mark
+    renderMode: template
+  templateColor:
+    rgba: 255,255,255,0.1
 
 CommunitiesListView:
   class: UIListView
@@ -104,6 +122,8 @@ CommunitiesListView:
       size: 17
     cellTextColor: white
     selectedCellBackgroundColor:
+      rgba: 0,0,0,0.3
+    mutedSelectedCellBackgroundColor:
       rgba: 0,0,0,0.3
     headerFont:
       size: 14
@@ -129,8 +149,8 @@ CommunitiesListErrorView:
       lines: 0
       text: .sidebar.communities.errorView.label.text
       textColor:
-        rgba: 0,0,0,0.5
-      textAlign: center
+        rgba: 255,255,255,0.5
+      textAlignment: center
 
 CommunitiesListEmptyView:
   class: UILabel
@@ -138,8 +158,8 @@ CommunitiesListEmptyView:
   lines: 0
   text: .sidebar.communities.emptyView.label.text
   textColor:
-    rgba: 0,0,0,0.5
-  textAlign: center
+    rgba: 255,255,255,0.5
+  textAlignment: center
 
 LibraryViewController:
   class: UIViewController

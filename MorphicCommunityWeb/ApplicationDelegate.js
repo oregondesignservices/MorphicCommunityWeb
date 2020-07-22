@@ -5,12 +5,6 @@
 // #import "Service+Extensions.js"
 'use strict';
 
-JSSpec.definePropertiesFromExtensions({
-    arrayForKey: function(key){
-        return this.valueForKey(key);
-    }
-});
-
 (function(){
 
 var logger = JSLog("morphic", "appdelegate");
@@ -23,14 +17,9 @@ JSClass("ApplicationDelegate", JSObject, {
         this.registerDefaults();
         this.service = Service.initWithBaseURL(JSURL.initWithString(application.getenv('MORPHIC_SERVER_URL')));
         JSNotificationCenter.shared.addObserver(Service.Notification.userDidSignin, this.service, this.userDidSignin, this);
+        JSNotificationCenter.shared.addObserver(Service.Notification.userDidSignout, this.service, this.userDidSignout, this);
         this.recallUser();
-        if (launchOptions.uistate === "/register"){
-            this.showRegister();
-        }else if (this.service.authToken){
-            this.showMain();
-        }else{
-            this.showSignin();
-        }
+        this.showLoading(launchOptions);
     },
 
     // MARK: - Service
@@ -39,6 +28,10 @@ JSClass("ApplicationDelegate", JSObject, {
 
     userDidSignin: function(){
         this.rememberUser();
+    },
+
+    userDidSignout: function(){
+        this.forgetUser();
     },
 
     recallUser: function(){
@@ -52,6 +45,11 @@ JSClass("ApplicationDelegate", JSObject, {
     rememberUser: function(){
         this.setSessionValue("authToken", this.service.authToken);
         this.setSessionValue("user", JSON.stringify(this.service.user));
+    },
+
+    forgetUser: function(){
+        this.deleteSessionValue("authToken");
+        this.deleteSessionValue("user");
     },
 
     // MARK: - Scene Selection
@@ -80,6 +78,28 @@ JSClass("ApplicationDelegate", JSObject, {
         this.service.signin(auth);
         signinScene.close();
         this.showMain();
+    },
+
+    showLoading: function(launchOptions){
+        // If we have sessions credentials, we need to check if they're still
+        // valid.  So while we're checking, show a scene that mimics the
+        // bootstrap splash screen.
+        var loadingScene = UIScene.initWithSpecName("LoadingScene");
+        loadingScene.show();
+        this.service.loadUser(this.service.user.id, function(result){
+            loadingScene.close();
+            var needsSignin = result !== Service.Result.success;
+            if (needsSignin){
+                this.service.signout();
+            }
+            if (launchOptions.uistate === "/register"){
+                this.showRegister();
+            }else if (needsSignin){
+                this.showSignin();
+            }else{
+                this.showMain();
+            }
+        }, this);
     },
 
     showMain: function(){
@@ -121,6 +141,17 @@ JSClass("ApplicationDelegate", JSObject, {
             return window.sessionStorage.getItem(name);
         }catch (e){
             logger.info("Cannot read from sessionStorage: %{error}", e);
+        }
+    },
+
+    deleteSessionValue: function(name){
+        if (!window.sessionStorage){
+            return;
+        }
+        try{
+            return window.sessionStorage.removeItem(name);
+        }catch (e){
+            logger.info("Cannot delete from sessionStorage: %{error}", e);
         }
     }
 

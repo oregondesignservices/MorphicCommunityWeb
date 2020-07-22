@@ -54,8 +54,17 @@ JSClass("CommunityViewController", UIListViewController, {
             }
             this.community = community;
 
-            // The simultaneously load the bars and members
+            // Then simultaneously load the bars and members
             var remaining = 2;
+            var loaded = function(){
+                --remaining;
+                if (remaining === 0){
+                    this.navigationController.navigationBar.hidden = false;
+                    this.hideActivityIndicator();
+                    this.listView.reloadData();
+                    this.listView.selectedIndexPath = JSIndexPath(0, 0);
+                }
+            };
             this.service.loadCommunityBars(this.community.id, function(result, page){
                 if (result !== Service.Result.success){
                     this.hideActivityIndicator();
@@ -84,13 +93,7 @@ JSClass("CommunityViewController", UIListViewController, {
                         return a.name.localeCompare(b.name);
                     });
                 }
-                --remaining;
-                // Only reload if all simultaneous requests are now complete
-                if (remaining === 0){
-                    this.navigationController.navigationBar.hidden = false;
-                    this.hideActivityIndicator();
-                    this.listView.reloadData();
-                }
+                loaded.call(this);
             }, this);
             this.service.loadCommunityMembers(this.community.id, function(result, page){
                 if (result !== Service.Result.success){
@@ -122,13 +125,7 @@ JSClass("CommunityViewController", UIListViewController, {
                         return a.full_name.localeCompare(b.full_name);
                     });
                 }
-                --remaining;
-                // Only reload if all simultaneous requests are now complete
-                if (remaining === 0){
-                    this.navigationController.navigationBar.hidden = false;
-                    this.hideActivityIndicator();
-                    this.listView.reloadData();
-                }
+                loaded.call(this);
             }, this);
         }, this);
     },
@@ -180,10 +177,13 @@ JSClass("CommunityViewController", UIListViewController, {
         var header = listView.dequeueReusableHeaderWithIdentifier("header", sectionIndex);
         if (sectionIndex === 0){
             header.titleLabel.text = JSBundle.mainBundle.localizedString("header.bars", "CommunityViewController");
+            header.actionButton = this.addBarButton;
         }else{
             header.titleLabel.text = JSBundle.mainBundle.localizedString("header.members", "CommunityViewController");
+            header.actionButton = this.addMemberButton;
         }
         header.titleInsets.left = 34;
+        header.titleInsets.right = 31;
         return header;
     },
 
@@ -203,17 +203,78 @@ JSClass("CommunityViewController", UIListViewController, {
         return cell;
     },
 
+    listViewDidSelectCellAtIndexPath: function(listView, indexPath){
+    },
+
+    // MARK: - Actions
+
+    addBarButton: JSOutlet(),
+    addMemberButton: JSOutlet(),
+
+    addBar: function(){
+        var bar = {
+            id: null,
+            name: "New Bar"
+        };
+        var indexPath = JSIndexPath(0, this.bars.length);
+        this.bars.push(bar);
+        this.listView.insertRowAtIndexPath(indexPath, UIListView.RowAnimation.left);
+        this.listView.layoutIfNeeded();
+        this.listView.selectedIndexPath = indexPath;
+    },
+
+    addMember: function(){
+        var member = {
+            id: null,
+            first_name: null,
+            last_name: null,
+            role: "member",
+            state: "uninvited",
+            full_name: "New Member"
+        };
+        var indexPath = JSIndexPath(1, this.members.length);
+        this.members.push(member);
+        this.listView.insertRowAtIndexPath(indexPath, UIListView.RowAnimation.left);
+        this.listView.layoutIfNeeded();
+        this.listView.selectedIndexPath = indexPath;
+    },
+
     // MARK: - Layout
 
     errorView: JSOutlet(),
+    watermarkView: JSOutlet(),
 
     viewDidLayoutSubviews: function(){
-        this.listView.frame = this.view.bounds;
-        var maxSize = this.view.bounds.rectWithInsets(JSInsets(20)).size;
+        var bounds =this.view.bounds;
+        this.listView.frame = bounds;
+        var maxSize = bounds.rectWithInsets(JSInsets(20)).size;
         this.errorView.sizeToFitSize(maxSize);
-        var center = this.view.bounds.center;
+        var center = bounds.center;
         this.activityIndicator.position = center;
         this.errorView.position = center;
+        this.watermarkView.bounds = JSRect(0, 0, bounds.size.width, bounds.size.width);
+        this.watermarkView.position = JSPoint(bounds.center.x, bounds.size.height - 125 + bounds.size.width / 2.0); 
+    }
+
+});
+
+JSClass("CommunityListHeaderView", UIListViewHeaderFooterView, {
+
+    actionButton: JSDynamicProperty('_actionButton', null),
+
+    setActionButton: function(actionButton){
+        this._actionButton = actionButton;
+        if (actionButton !== null && actionButton.superview !== this){
+            this.addSubview(actionButton);
+        }
+        this.setNeedsLayout();
+    },
+
+    layoutSubviews: function(){
+        CommunityListHeaderView.$super.layoutSubviews.call(this);
+        if (this._actionButton !== null){
+            this._actionButton.position = JSPoint(this.bounds.size.width - 7 - this._actionButton.bounds.size.width / 2, this.bounds.center.y);
+        }
     }
 
 });

@@ -20,6 +20,9 @@ JSClass("CommunitiesViewController", UIViewController, {
 
     viewWillAppear: function(animated){
         CommunitiesViewController.$super.viewWillAppear.call(this, animated);
+        if (this._didDisappear){
+            this.listView.reloadData();
+        }
     },
 
     _didDisappear: false,
@@ -86,7 +89,8 @@ JSClass("CommunitiesViewController", UIViewController, {
             }
             this.showCommunity(this.community, false);
             this.listView.reloadData();
-            // this.listView.selectedIndexPath = JSIndexPath(0, selectedCommunityIndex);
+            this._skipNextSelection = true;
+            this.listView.selectedIndexPath = JSIndexPath(0, selectedCommunityIndex);
             this.hideActivityIndicator();
             return;
         }, this);
@@ -135,10 +139,17 @@ JSClass("CommunitiesViewController", UIViewController, {
         var cell = listView.dequeueReusableCellWithIdentifier("community", indexPath);
         var community = this.communities[indexPath.row];
         cell.titleLabel.text = community.name;
+        cell.titleInsets.left = 34;
         return cell;
     },
 
+    _skipNextSelection: false,
+
     listViewDidSelectCellAtIndexPath: function(listView, indexPath){
+        if (this._skipNextSelection){
+            this._skipNextSelection = false;
+            return;
+        }
         var community = this.communities[indexPath.row];
         this.showCommunity(community, true);
     },
@@ -164,16 +175,20 @@ JSClass("CommunitiesViewController", UIViewController, {
 
     errorView: JSOutlet(),
     emptyView: JSOutlet(),
+    watermarkView: JSOutlet(),
 
     viewDidLayoutSubviews: function(){
-        this.listView.frame = this.view.bounds;
-        var maxSize = this.view.bounds.rectWithInsets(JSInsets(20)).size;
+        var bounds =this.view.bounds;
+        this.listView.frame = bounds;
+        var maxSize = bounds.rectWithInsets(JSInsets(20)).size;
         this.errorView.sizeToFitSize(maxSize);
         this.emptyView.sizeToFitSize(maxSize);
-        var center = this.view.bounds.center;
+        var center = bounds.center;
         this.activityIndicator.position = center;
         this.errorView.position = center;
         this.emptyView.position = center;
+        this.watermarkView.bounds = JSRect(0, 0, bounds.size.width, bounds.size.width);
+        this.watermarkView.position = JSPoint(bounds.center.x, bounds.size.height - 125 + bounds.size.width / 2.0); 
     }
 
 });

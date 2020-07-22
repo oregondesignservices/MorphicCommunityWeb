@@ -81,14 +81,14 @@ JSClass("SidebarNavigationBarStyler", UINavigationBarDefaultStyler, {
         var xRight = size.width - this.itemInsets.right;
         var itemHeight = size.height - this.itemInsets.height;
         var y = this.itemInsets.top;
-        if (props.backBarItemView !== null){
-            props.backBarItemView.position = JSPoint(16 + props.backBarItemView.bounds.size.width / 2.0, props.backBarItemView.position.y);
-        }
         if (props.rightBarItemViews.length > 0){
             xRight = props.rightBarItemViews[0].frame.origin.x;
         }
         if (!props.titleLabel.hidden){
             props.titleLabel.position = JSPoint(xLeft + props.titleLabel.bounds.size.width / 2.0, props.titleLabel.position.y);
+        }
+        if (props.backBarItemView !== null){
+            props.backBarItemView.position = JSPoint(xLeft - props.backBarItemView.bounds.size.width / 2.0, props.backBarItemView.position.y);
         }
     },
 

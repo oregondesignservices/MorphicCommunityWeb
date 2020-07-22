@@ -3,7 +3,12 @@ File's Owner: /CommunityViewController
 CommunityViewController:
   class: CommunityViewController
   view:
+    backgroundGradient:
+      start: 0,1
+      end: 0,0
+      stops: [0%, {rgba: "#008145"}, 19%, {rgba: "#00924C"}, 43%, {rgba: "#3FA554"}, 65%, {rgba: "#66B55A"}, 85%, {rgba: "#7CC05F"}, 100%, {rgba: "#84C661"}]
     subviews:
+      - /WatermarkView
       - /ListView
       - /ActivityIndicator
       - /ErrorView
@@ -11,6 +16,9 @@ CommunityViewController:
     listView: /ListView
     activityIndicator: /ActivityIndicator
     errorView: /ErrorView
+    watermarkView: /WatermarkView
+    addBarButton: /AddBarButton
+    addMemberButton: /AddMemberButton
 
 ListView:
   class: UIListView
@@ -20,7 +28,7 @@ ListView:
     bar: UIListViewCell
     member: UIListViewCell
   reusableHeaderFooterClasses:
-    header: UIListViewHeaderFooterView
+    header: CommunityListHeaderView
   rowHeight: 31
   headerHeight: 29
   styler:
@@ -30,12 +38,38 @@ ListView:
     cellTextColor: white
     selectedCellBackgroundColor:
       rgba: 0,0,0,0.3
+    mutedSelectedCellBackgroundColor:
+      rgba: 0,0,0,0.3
     headerFont:
       size: 14
       weight: medium
     headerTextColor:
       rgba: "#00522B"
     showsSeparators: false
+
+AddBarButton:
+  frame: 0,0,17,17
+  class: UIButton
+  tooltip: .addBarButton.tooltip
+  image: SidebarAddButton
+  styler:
+    class: UIButtonImageStyler
+    color:
+      rgba: 0,82,43,0.5
+  target: /CommunityViewController
+  action: addBar
+
+AddMemberButton:
+  frame: 0,0,17,17
+  class: UIButton
+  tooltip: .addMemberButton.tooltip
+  image: SidebarAddButton
+  styler:
+    class: UIButtonImageStyler
+    color:
+      rgba: 0,82,43,0.5
+  target: /CommunityViewController
+  action: addMember
 
 ActivityIndicator:
   class: UIActivityIndicatorView
@@ -54,5 +88,14 @@ ErrorView:
       lines: 0
       text: .errorView.label.text
       textColor:
-        rgba: 0,0,0,0.5
-      textAlign: center
+        rgba: 255,255,255,0.5
+      textAlignment: center
+
+WatermarkView:
+  class: UIImageView
+  frame: 0,0,250,250
+  image:
+    name: Mark
+    renderMode: template
+  templateColor:
+    rgba: 255,255,255,0.1

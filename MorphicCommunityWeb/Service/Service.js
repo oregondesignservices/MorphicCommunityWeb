@@ -24,6 +24,19 @@ JSClass("Service", JSObject, {
         JSNotificationCenter.shared.post(Service.Notification.userDidSignin, this);
     },
 
+    signout: function(){
+        this.authToken = null;
+        this.user = null;
+        JSNotificationCenter.shared.post(Service.Notification.userDidSignout, this);
+    },
+
+    loadUser: function(userId, completion, target){
+        var url = this.baseURL.appendingPathComponents([this.version, "users", userId]);
+        var request = JSURLRequest.initWithURL(url);
+        request.addBearerAuthorization(this.authToken);
+        return this.sendRequest(request, completion, target);
+    },
+
     authenticateWithUsername: function(username, password, completion, target){
         var url = this.baseURL.appendingPathComponents([this.version, "auth", "username"]);
         var request = JSURLRequest.initWithURL(url);
@@ -93,7 +106,8 @@ Service.Result = {
 };
 
 Service.Notification = {
-    userDidSignin: "org.raisingthefloor.MorphicCommunityWeb.ServiceUserDidSignin"
+    userDidSignin: "org.raisingthefloor.MorphicCommunityWeb.ServiceUserDidSignin",
+    userDidSignout: "org.raisingthefloor.MorphicCommunityWeb.ServiceUserDidSignout"
 };
 
 })();

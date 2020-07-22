@@ -4,3 +4,5 @@ en:
   header:
     bars: Bars
     members: Members
+  addBarButton.tooltip: Add a new Bar to this community
+  addMemberButton.tooltip: Add a new Member to this community
