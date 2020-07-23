@@ -39,7 +39,7 @@ ListView:
     selectedCellBackgroundColor:
       rgba: 0,0,0,0.3
     mutedSelectedCellBackgroundColor:
-      rgba: 0,0,0,0.3
+      rgba: 0,0,0,0.15
     headerFont:
       size: 14
       weight: medium

@@ -94,6 +94,7 @@ CommunitiesViewController:
     errorView: /CommunitiesListErrorView
     emptyView: /CommunitiesListEmptyView
     watermarkView: /CommunitiesWatermarkView
+    mainViewController: /MainViewController
   navigationItem:
     title: .sidebar.communities.navigation.title
     backBarButtonItem:
@@ -121,10 +122,12 @@ CommunitiesListView:
     cellFont:
       size: 17
     cellTextColor: white
+    cellBackgroundColor:
+      rgba: 0,0,0,0
     selectedCellBackgroundColor:
       rgba: 0,0,0,0.3
     mutedSelectedCellBackgroundColor:
-      rgba: 0,0,0,0.3
+      rgba: 0,0,0,0.15
     headerFont:
       size: 14
       weight: medium
@@ -162,7 +165,66 @@ CommunitiesListEmptyView:
   textAlignment: center
 
 LibraryViewController:
-  class: UIViewController
+  class: UINavigationController
+  root: /BarItemLibraryViewController
+  navigationBar:
+    styler:
+      class: SidebarNavigationBarStyler
+      contentSeparatorSize: 0
+      backgroundColor:
+        rgba: 236,236,236
+      itemInsets: 9,24,10,7
+      height: 58
+      backButtonImage:
+        name: NavigationBack
+        renderMode: template
+      titleColor:
+        rgba: 106,106,106
+      titleFont:
+        size: 21
+        weight: light
+
+BarItemLibraryViewController:
+  class: BarItemLibraryViewController
+  listView: /BarItemLibraryListView
   view:
+    subviews:
+      - /BarItemLibraryListView
     backgroundColor:
       rgba: 236,236,236
+  navigationItem:
+    title: .library.navigation.title
+  outlets:
+    listView: /BarItemLibraryListView
+
+BarItemLibraryListView:
+  class: UIListView
+  delegate: /BarItemLibraryViewController
+  dataSource: /BarItemLibraryViewController
+  rowHeight: 70
+  reusableCellClasses:
+    item: UIListViewCell
+  styler:
+    class: UIListViewDefaultStyler
+    cellFont:
+      weight: regular
+      size: 14
+    cellTextColor:
+      rgba: 58,58,58
+    selectedCellTextColor:
+      rgba: 58,58,58
+    cellDetailFont:
+      size: 12
+    cellDetailTextColor:
+      rgba: 106,106,106
+    selectedCellDetailTextColor:
+      rgba: 106,106,106
+    cellBackgroundColor:
+      rgba: 236,236,236
+    selectedCellBackgroundColor:
+      rgba: 204,204,204
+    mutedSelectedCellBackgroundColor:
+      rgba: 236,236,236
+    separatorInsets: 0,86
+    imageSize: 54,54
+    imageTitleSpacing: 8

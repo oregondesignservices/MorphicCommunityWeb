@@ -1,0 +1,7 @@
+en:
+  state:
+    uninvited.text: Not yet invited
+    invited.text: Invitation sent
+    active.text: Active
+  sendInvitationButton.title: Send Invitation
+  removeButton.title: Remove

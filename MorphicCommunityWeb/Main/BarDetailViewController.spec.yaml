@@ -1,0 +1,55 @@
+File's Owner: /BarDetailViewController
+
+BarDetailViewController:
+  class: BarDetailViewController
+  view:
+    subviews:
+      - /ActivityIndicator
+      - /ErrorView
+      - /DetailView
+  outlets:
+    detailView: /DetailView
+    nameField: /BarNameField
+    barEditor: /BarEditor
+    errorView: /ErrorView
+    activityIndicator: /ActivityIndicator
+
+ActivityIndicator:
+  frame: 0,0,20,20
+  class: UIActivityIndicatorView
+  style: dark
+  hidesWhenStopped: true
+
+ErrorView:
+  class: UIStackView
+  hidden: true
+  subviews:
+    -
+      class: UILabel
+      text: .errorView.label.text
+      textAlignment: center
+      textColor:
+        rgba: 0,0,0,0.4
+
+DetailView:
+  hidden: true
+  class: UIView
+  subviews:
+    - /BarNameField
+    - /BarEditor
+
+BarNameField:
+  class: UITextField
+  font:
+    size: 21
+  delegate: /BarDetailViewController
+  actions:
+    -
+      action: nameEditingEnded
+      event: editingDidEnd
+      target: /BarDetailViewController
+
+
+BarEditor:
+  class: BarEditor
+  delegate: /BarDetailViewController

@@ -1,0 +1,11 @@
+items:
+  -
+    kind: link
+    title: .items.genericLink.title
+    description: .items.genericLink.description
+    icon: BarItemIconLink
+  -
+    kind: link
+    title: .items.skypeMeetingLink.title
+    description: .items.skypeMeetingLink.description
+    icon: BarItemIconSkype

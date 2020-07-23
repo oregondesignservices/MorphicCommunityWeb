@@ -6,3 +6,5 @@ en:
       emptyView:
         label.text: No communities
       navigation.title: Communities
+  library:
+    navigation.title: Bar Customizations

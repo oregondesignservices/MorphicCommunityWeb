@@ -5,6 +5,8 @@
 
 JSClass("CommunitiesViewController", UIViewController, {
 
+    mainViewController: JSOutlet(),
+
     service: null,
     defaults: null,
 
@@ -162,6 +164,7 @@ JSClass("CommunitiesViewController", UIViewController, {
         communityViewController.service = this.service;
         communityViewController.defaults = this.defaults;
         communityViewController.navigationItem.title = community.name;
+        communityViewController.mainViewController = this.mainViewController;
         if (!animated){
             communityViewController.startingActivityAnimationPercentComplete = 1;
             if (this.activityFadeInAnimation !== null){

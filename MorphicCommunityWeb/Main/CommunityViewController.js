@@ -1,10 +1,14 @@
 // #import UIKit
 // #import "Service+Extensions.js"
+// #import "BarDetailViewController.js"
+// #import "MemberDetailViewController.js"
 'use strict';
 
 (function(){
 
 JSClass("CommunityViewController", UIListViewController, {
+
+    mainViewController: null,
 
     service: null,
     defaults: null,
@@ -203,7 +207,78 @@ JSClass("CommunityViewController", UIListViewController, {
         return cell;
     },
 
+    _skipNextSelection: false,
+
     listViewDidSelectCellAtIndexPath: function(listView, indexPath){
+        if (this._skipNextSelection){
+            this._skipNextSelection = false;
+            return;
+        }
+        var viewController;
+        if (indexPath.section === 0){
+            var bar = this.bars[indexPath.row];
+            viewController = BarDetailViewController.initWithSpecName("BarDetailViewController");
+            viewController.service = this.service;
+            viewController.community = this.community;
+            viewController.delegate = this;
+            if (bar.id === null){
+                viewController.bar = bar;
+            }else{
+                viewController.barId = bar.id;
+            }
+        }else{
+            var member = this.members[indexPath.row];
+            viewController = MemberDetailViewController.initWithSpecName("MemberDetailViewController");
+            viewController.service = this.service;
+            viewController.community = this.community;
+            viewController.memberId = member.id;
+        }
+        this.mainViewController.mainViewController = viewController;
+    },
+
+    barDetailViewControllerDidChangeBar: function(viewController, bar, replacingBar){
+        var index;
+        for (index = this.bars.length - 1; index >= 0; --index){
+            if (replacingBar !== null){
+                if (replacingBar === this.bars[index]){
+                    break;
+                }
+            }else{
+                if (bar.id === this.bars[index].id){
+                    break;
+                }
+            }
+        }
+        if (index < 0){
+            return;
+        }
+        var indexPath = JSIndexPath(0, index);
+        var barInList = this.bars[index];
+        this.bars.splice(index, 1);
+        barInList.id = bar.id;
+        barInList.name = bar.name;
+        var defaultBarId = this.community.default_bar_id;
+        var searcher = JSBinarySearcher(this.bars, function(a, b){
+            if (a.id === defaultBarId){
+                return -1;
+            }
+            if (b.id === defaultBarId){
+                return 1;
+            }
+            return a.name.localeCompare(b.name);
+        });
+        var newIndex = searcher.insertionIndexForValue(barInList);
+        this.bars.splice(newIndex, 0, barInList);
+        if (newIndex === index){
+            this.listView.reloadRowAtIndexPath(indexPath);
+        }else{
+            var newIndexPath = JSIndexPath(0, newIndex);
+            this.listView.deleteRowAtIndexPath(indexPath, UIListView.RowAnimation.left);
+            this.listView.insertRowAtIndexPath(newIndexPath, UIListView.RowAnimation.left);
+            this.listView.layoutIfNeeded();
+            this._skipNextSelection = true;
+            this.listView.selectedIndexPath = newIndexPath;
+        }
     },
 
     // MARK: - Actions
@@ -214,7 +289,9 @@ JSClass("CommunityViewController", UIListViewController, {
     addBar: function(){
         var bar = {
             id: null,
-            name: "New Bar"
+            name: "New Bar",
+            is_shared: true,
+            items: []
         };
         var indexPath = JSIndexPath(0, this.bars.length);
         this.bars.push(bar);

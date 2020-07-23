@@ -1,0 +1,8 @@
+en:
+  items:
+    genericLink:
+      title: Webpage Shortcut
+      description: A button that opens the specified website
+    skypeMeetingLink:
+      title: Skype Call
+      description: A button that will open Skype and join a preset conference link

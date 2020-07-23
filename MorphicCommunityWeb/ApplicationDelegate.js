@@ -86,9 +86,8 @@ JSClass("ApplicationDelegate", JSObject, {
         // bootstrap splash screen.
         var loadingScene = UIScene.initWithSpecName("LoadingScene");
         loadingScene.show();
-        this.service.loadUser(this.service.user.id, function(result){
+        var showNextScene = function(needsSignin){
             loadingScene.close();
-            var needsSignin = result !== Service.Result.success;
             if (needsSignin){
                 this.service.signout();
             }
@@ -99,7 +98,15 @@ JSClass("ApplicationDelegate", JSObject, {
             }else{
                 this.showMain();
             }
-        }, this);
+        };
+        var activeUser = this.service.user;
+        if (activeUser === null){
+            showNextScene.call(this, true);
+        }else{
+            this.service.loadUser(activeUser.id, function(result){
+                showNextScene.call(this, result !== Service.Result.success);
+            }, this);
+        }
     },
 
     showMain: function(){
