@@ -119,7 +119,7 @@ JSClass("CommunitiesViewController", UIViewController, {
         if (this.activityFadeInAnimation !== null){
             this.activityFadeInAnimation.stop();
         }
-        this.activityIndicator.startAnimating();
+        this.activityIndicator.stopAnimating();
     },
 
     // MARK: - List View Data Source

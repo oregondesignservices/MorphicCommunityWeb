@@ -1,3 +1,14 @@
 en:
+  name.placeholder:  Bar Name
   removeButton.title: Remove
   errorView.label.text: Sorry, we couldn't load the bar data
+  deleteConfirmation:
+    message: This bar will be permanently removed from your community
+    delete: Remove Bar
+    cancel: Cancel
+  deleteError:
+    inUse.title: Bar is in use
+    inUse.message: This bar can only be deleted once it is no longer associated with any member
+    general.title: Could not delete bar
+    general.message: Sorry, we could not delete this bar.  Please try again.
+    dismiss: OK

@@ -10,6 +10,7 @@ BarDetailViewController:
   outlets:
     detailView: /DetailView
     nameField: /BarNameField
+    removeButton: /RemoveButton
     barEditor: /BarEditor
     errorView: /ErrorView
     activityIndicator: /ActivityIndicator
@@ -36,19 +37,41 @@ DetailView:
   class: UIView
   subviews:
     - /BarNameField
+    - /RemoveButton
     - /BarEditor
 
 BarNameField:
   class: UITextField
+  placeholder: .name.placeholder
   font:
     size: 21
   delegate: /BarDetailViewController
+  styler:
+    class: DetailViewTextFieldStyler
+    textColor: black
   actions:
     -
       action: nameEditingEnded
       event: editingDidEnd
       target: /BarDetailViewController
+    -
+      action: nameChanged
+      event: valueChanged
+      target: /BarDetailViewController
 
+RemoveButton:
+  class: UIButton
+  title: .removeButton.title
+  image: RemoveIcon
+  target: /BarDetailViewController
+  action: confirmDelete
+  styler:
+    class: DetailViewButtonStyler
+    color:
+      rgba: 129,43,0
+    font:
+      size: 14
+      weight: regular
 
 BarEditor:
   class: BarEditor

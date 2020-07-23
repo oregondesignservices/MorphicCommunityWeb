@@ -75,28 +75,26 @@ JSClass("CommunityViewController", UIListViewController, {
                     this.errorView.hidden = false;
                     return;
                 }
-                if (result === Service.Result.success){
-                    this.bars = page.bars;
-                    // Remove any bars that aren't shared
-                    var bar;
-                    for (var i = this.bars.length - 1; i >= 0; --i){
-                        bar = this.bars[i];
-                        if (!bar.is_shared){
-                            this.bars.splice(i, 1);
-                        }
+                this.bars = page.bars;
+                // Remove any bars that aren't shared
+                var bar;
+                for (var i = this.bars.length - 1; i >= 0; --i){
+                    bar = this.bars[i];
+                    if (!bar.is_shared){
+                        this.bars.splice(i, 1);
                     }
-                    // Sort bars...default first, then by name
-                    var defaultBarId = this.community.default_bar_id;
-                    this.bars.sort(function(a, b){
-                        if (a.id === defaultBarId){
-                            return -1;
-                        }
-                        if (b.id === defaultBarId){
-                            return 1;
-                        }
-                        return a.name.localeCompare(b.name);
-                    });
                 }
+                // Sort bars...default first, then by name
+                var defaultBarId = this.community.default_bar_id;
+                this.bars.sort(function(a, b){
+                    if (a.id === defaultBarId){
+                        return -1;
+                    }
+                    if (b.id === defaultBarId){
+                        return 1;
+                    }
+                    return a.name.localeCompare(b.name);
+                });
                 loaded.call(this);
             }, this);
             this.service.loadCommunityMembers(this.community.id, function(result, page){
@@ -105,30 +103,28 @@ JSClass("CommunityViewController", UIListViewController, {
                     this.errorView.hidden = false;
                     return;
                 }
-                if (result === Service.Result.success){
-                    this.members = page.members;
-                    // Cache each member's full name and then sort by it
-                    var member;
-                    for (var i = 0, l = this.members.length; i < l; ++i){
-                        member = this.members[i];
-                        if (member.first_name === null || member.first_name === ""){
-                            if (member.last_name === null || member.last_name === ""){
-                                member.full_name = null;
-                            }else{
-                                member.full_name = member.last_name;
-                            }
+                this.members = page.members;
+                // Cache each member's full name and then sort by it
+                var member;
+                for (var i = 0, l = this.members.length; i < l; ++i){
+                    member = this.members[i];
+                    if (member.first_name === null || member.first_name === ""){
+                        if (member.last_name === null || member.last_name === ""){
+                            member.full_name = null;
                         }else{
-                            if (member.last_name === null || member.last_name === ""){
-                                member.full_name = member.first_name;
-                            }else{
-                                member.full_name = member.first_name + " " + member.last_name;
-                            }
+                            member.full_name = member.last_name;
+                        }
+                    }else{
+                        if (member.last_name === null || member.last_name === ""){
+                            member.full_name = member.first_name;
+                        }else{
+                            member.full_name = member.first_name + " " + member.last_name;
                         }
                     }
-                    this.members.sort(function(a, b){
-                        return a.full_name.localeCompare(b.full_name);
-                    });
                 }
+                this.members.sort(function(a, b){
+                    return a.full_name.localeCompare(b.full_name);
+                });
                 loaded.call(this);
             }, this);
         }, this);
@@ -156,7 +152,7 @@ JSClass("CommunityViewController", UIListViewController, {
         if (this.activityFadeInAnimation !== null){
             this.activityFadeInAnimation.stop();
         }
-        this.activityIndicator.startAnimating();
+        this.activityIndicator.stopAnimating();
     },
 
     // MARK: - List View Data Source
@@ -279,6 +275,29 @@ JSClass("CommunityViewController", UIListViewController, {
             this._skipNextSelection = true;
             this.listView.selectedIndexPath = newIndexPath;
         }
+    },
+
+    barDetailViewControllerDidDeleteBar: function(viewController, bar){
+        var index;
+        for (index = this.bars.length - 1; index >= 0; --index){
+            if (bar.id === null){
+                if (bar === this.bars[index]){
+                    break;
+                }
+            }else{
+                if (bar.id === this.bars[index].id){
+                    break;
+                }
+            }
+        }
+        if (index < 0){
+            return;
+        }
+        var indexPath = JSIndexPath(0, index);
+        this.bars.splice(index, 1);
+        this.listView.deleteRowAtIndexPath(indexPath, UIListView.RowAnimation.left);
+        this.listView.layoutIfNeeded();
+        this.listView.selectedIndexPath = JSIndexPath(0, index < this.bars.length ? index : index - 1);
     },
 
     // MARK: - Actions

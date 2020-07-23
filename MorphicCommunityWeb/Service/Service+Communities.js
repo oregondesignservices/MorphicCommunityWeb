@@ -71,7 +71,15 @@ Service.definePropertiesFromExtensions({
         request.method = JSURLRequest.Method.put;
         request.addBearerAuthorization(this.authToken);
         request.object = bar;
-        return this.sendRequest(request, completion, target);      
+        return this.sendRequest(request, completion, target);
+    },
+
+    deleteCommunityBar: function(communityId, barId, completion, target){
+        var url = this.baseURL.appendingPathComponents([this.version, "communities", communityId, "bars", barId]);
+        var request = JSURLRequest.initWithURL(url);
+        request.method = JSURLRequest.Method.delete;
+        request.addBearerAuthorization(this.authToken);
+        return this.sendRequest(request, completion, target);
     }
 
 });
