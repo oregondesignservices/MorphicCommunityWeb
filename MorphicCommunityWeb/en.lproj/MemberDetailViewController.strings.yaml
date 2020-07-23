@@ -1,7 +1,20 @@
 en:
+  firstNameField.placeholder: First Name
+  lastNameField.placeholder: Last Name
+  removeButton.title: Remove
+  sendInviteButton.title: Send Invitation
+  resendInviteButton.title: Re-send Invitation
   state:
     uninvited.text: Not yet invited
     invited.text: Invitation sent
     active.text: Active
-  sendInvitationButton.title: Send Invitation
-  removeButton.title: Remove
+  deleteConfirmation:
+    message: This member will be permanently removed from your community
+    delete: Remove Member
+    cancel: Cancel
+  deleteError:
+    self.title: This is your record
+    self.message: You cannot delete your own record
+    general.title: Could not delete member
+    general.message: Sorry, we could not delete this member.  Please try again.
+    dismiss: OK

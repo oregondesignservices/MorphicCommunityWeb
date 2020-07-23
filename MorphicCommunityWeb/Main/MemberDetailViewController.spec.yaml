@@ -9,7 +9,12 @@ MemberDetailViewController:
       - /DetailView
   outlets:
     detailView: /DetailView
-    nameField: /BarNameField
+    firstNameField: /FirstNameField
+    lastNameField: /LastNameField
+    removeButton: /RemoveButton
+    stateIndicator: /MemberStateIndicator
+    stateLabel: /MemberStateLabel
+    sendInvitationButton: /SendInvitationButton
     barEditor: /BarEditor
     errorView: /ErrorView
     activityIndicator: /ActivityIndicator
@@ -35,13 +40,87 @@ DetailView:
   hidden: true
   class: UIView
   subviews:
-    - /BarNameField
+    - /FirstNameField
+    - /LastNameField
+    - /RemoveButton
+    - /MemberStateIndicator
+    - /MemberStateLabel
+    - /SendInvitationButton
     - /BarEditor
 
-BarNameField:
+FirstNameField:
   class: UITextField
+  placeholder: .firstNameField.placeholder
+  nextKeyView: /LastNameField
+  styler:
+    class: DetailViewTextFieldStyler
+    textColor: black
+  delegate: /MemberDetailViewController
+  actions:
+    -
+      action: firstNameEditingEnded
+      event: editingDidEnd
+      target: /MemberDetailViewController
+    -
+      action: firstNameChanged
+      event: valueChanged
+      target: /MemberDetailViewController
   font:
     size: 21
+
+LastNameField:
+  class: UITextField
+  placeholder: .lastNameField.placeholder
+  nextKeyView: /FirstNameField
+  styler:
+    class: DetailViewTextFieldStyler
+    textColor: black
+  delegate: /MemberDetailViewController
+  actions:
+    -
+      action: lastNameChanged
+      event: valueChanged
+      target: /MemberDetailViewController
+  font:
+    size: 21
+
+RemoveButton:
+  class: UIButton
+  title: .removeButton.title
+  image: RemoveIcon
+  target: /MemberDetailViewController
+  action: confirmDelete
+  styler:
+    class: DetailViewButtonStyler
+    color:
+      rgba: 129,43,0
+    font:
+      size: 14
+      weight: regular
+
+MemberStateIndicator:
+  class: UIView
+  frame: 0,0,10,10
+  cornerRadius: 5
+
+MemberStateLabel:
+  class: UILabel
+  font:
+    size: 14
+
+SendInvitationButton:
+  class: UIButton
+  title: .sendInviteButton.title
+  image: SendInviteIcon
+  target: /MemberDetailViewController
+  action: sendInvitation
+  styler:
+    class: DetailViewButtonStyler
+    color:
+      rgba: 0,129,60
+    font:
+      size: 14
+      weight: regular
 
 BarEditor:
   class: BarEditor

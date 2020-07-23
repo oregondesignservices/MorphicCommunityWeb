@@ -12,9 +12,9 @@ JSProtocol("BarDetailViewControllerDelegate", JSProtocol, {
 JSClass("BarDetailViewController", UIViewController, {
 
     community: null,
-    barId: null,
     bar: null,
     service: null,
+    delegate: null,
 
     // MARK: - View Lifecycle
 
@@ -28,7 +28,7 @@ JSClass("BarDetailViewController", UIViewController, {
 
     viewDidAppear: function(animated){
         BarDetailViewController.$super.viewDidAppear.call(this, animated);
-        if (this.bar === null){
+        if (this.bar.id !== null){
             this.loadBar();
         }else{
             this.update();
@@ -55,7 +55,7 @@ JSClass("BarDetailViewController", UIViewController, {
     loadBar: function(){
         this.showActivityIndicator();
         this.errorView.hidden = true;
-        this.service.loadCommunityBar(this.community.id, this.barId, function(result, bar){
+        this.service.loadCommunityBar(this.community.id, this.bar.id, function(result, bar){
             this.hideActivityIndicator();
             if (result !== Service.Result.success){
                 this.errorView.hidden = false;
@@ -95,7 +95,6 @@ JSClass("BarDetailViewController", UIViewController, {
         this.nameField.text = this.bar.name;
         this.removeButton.hidden = this.bar.id === this.community.default_bar_id;
         this.view.setNeedsLayout();
-        // this.view.layoutIfNeeded();
     },
 
     errorView: JSOutlet(),
@@ -229,22 +228,6 @@ JSClass("BarDetailViewController", UIViewController, {
     },
 
     // MARK: - Layout
-
-    _viewDidLayoutSubviews: function(){
-        var bounds = this.view.bounds;
-        this.detailView.frame = bounds;
-        this.activityIndicator.position = bounds.center;
-        this.errorView.sizeToFitSize(JSSize(Math.min(bounds.size.width - 40, 300), Number.MAX_VALUE));
-        this.errorView.position = bounds.center;
-
-        bounds = this.detailView.bounds;
-        var baseline = 16 + this.nameField.font.displayAscender;
-        this.nameField.frame = JSRect(24 - this.nameField.textInsets.left, baseline - this.nameField.firstBaselineOffsetFromTop, 40, this.nameField.intrinsicSize.height);
-        var size = this.removeButton.intrinsicSize;
-        this.removeButton.frame = JSRect(bounds.size.width - 24 - size.width + this.removeButton.titleInsets.right, baseline - this.removeButton.firstBaselineOffsetFromTop, size.width, size.height);
-        var y = this.nameField.frame.origin.y + this.nameField.frame.size.height + 40;
-        this.barEditor.frame = JSRect(24, y, bounds.size.width - 48, bounds.size.height - y - 24);
-    },
 
     viewDidLayoutSubviews: function(){
         var bounds = this.view.bounds;

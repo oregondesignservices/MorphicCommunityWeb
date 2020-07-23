@@ -42,6 +42,32 @@ Service.definePropertiesFromExtensions({
         return this.sendRequest(request, completion, target);        
     },
 
+    createCommunityMember: function(communityId, member, completion, target){
+        var url = this.baseURL.appendingPathComponents([this.version, "communities", communityId, "members"]);
+        var request = JSURLRequest.initWithURL(url);
+        request.method = JSURLRequest.Method.post;
+        request.addBearerAuthorization(this.authToken);
+        request.object = member;
+        return this.sendRequest(request, completion, target);      
+    },
+
+    saveCommunityMember: function(communityId, member, completion, target){
+        var url = this.baseURL.appendingPathComponents([this.version, "communities", communityId, "members", member.id]);
+        var request = JSURLRequest.initWithURL(url);
+        request.method = JSURLRequest.Method.put;
+        request.addBearerAuthorization(this.authToken);
+        request.object = member;
+        return this.sendRequest(request, completion, target);
+    },
+
+    deleteCommunityMember: function(communityId, memberId, completion, target){
+        var url = this.baseURL.appendingPathComponents([this.version, "communities", communityId, "members", memberId]);
+        var request = JSURLRequest.initWithURL(url);
+        request.method = JSURLRequest.Method.delete;
+        request.addBearerAuthorization(this.authToken);
+        return this.sendRequest(request, completion, target);
+    },
+
     loadCommunityBars: function(communityId, completion, target){
         var url = this.baseURL.appendingPathComponents([this.version, "communities", communityId, "bars"]);
         var request = JSURLRequest.initWithURL(url);
