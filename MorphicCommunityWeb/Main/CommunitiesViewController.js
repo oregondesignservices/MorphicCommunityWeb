@@ -8,7 +8,6 @@ JSClass("CommunitiesViewController", UIViewController, {
     mainViewController: JSOutlet(),
 
     service: null,
-    defaults: null,
 
     communities: null,
 
@@ -75,7 +74,7 @@ JSClass("CommunitiesViewController", UIViewController, {
                         --selectedCommunityIndex;
                     }
                 }else{
-                    if (community.id == this.defaults.valueForKey("selectedCommunityId")){
+                    if (community.id == this.service.defaults.valueForKey("selectedCommunityId")){
                         selectedCommunityIndex = i;
                     }
                 }
@@ -162,7 +161,6 @@ JSClass("CommunitiesViewController", UIViewController, {
         var communityViewController = CommunityViewController.initWithSpecName("CommunityViewController");
         communityViewController.communityId = community.id;
         communityViewController.service = this.service;
-        communityViewController.defaults = this.defaults;
         communityViewController.navigationItem.title = community.name;
         communityViewController.mainViewController = this.mainViewController;
         if (!animated){

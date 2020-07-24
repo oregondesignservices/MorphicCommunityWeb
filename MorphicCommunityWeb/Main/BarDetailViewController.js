@@ -1,20 +1,14 @@
 // #import UIKit
 // #import "Service.js"
+// #import "Community.js"
+// #import "Bar.js"
 'use strict';
-
-JSProtocol("BarDetailViewControllerDelegate", JSProtocol, {
-
-    barDetailViewControllerDidChangeBar: function(viewController, bar, replacingBar){},
-    barDetailViewControllerDidDeleteBar: function(viewController, bar){}
-
-});
 
 JSClass("BarDetailViewController", UIViewController, {
 
+    service: null,
     community: null,
     bar: null,
-    service: null,
-    delegate: null,
 
     // MARK: - View Lifecycle
 
@@ -61,7 +55,7 @@ JSClass("BarDetailViewController", UIViewController, {
                 this.errorView.hidden = false;
                 return;
             }
-            this.bar = bar;
+            this.bar = Bar.initWithDictionary(bar);
             this.update();
         }, this);
     },
@@ -93,13 +87,19 @@ JSClass("BarDetailViewController", UIViewController, {
     update: function(){
         this.detailView.hidden = false;
         this.nameField.text = this.bar.name;
-        this.removeButton.hidden = this.bar.id === this.community.default_bar_id;
+        this.removeButton.hidden = this.bar.id === this.community.defaultBarId;
         this.view.setNeedsLayout();
     },
 
     errorView: JSOutlet(),
 
     // MARK: - Saving Data
+
+    mouseDown: function(){
+        if ((this.view.window.firstResponder === this.nameField)){
+            this.view.window.firstResponder = null;
+        }
+    },
 
     nameEditingEnded: function(){
         if (this.bar.id === null){
@@ -124,7 +124,6 @@ JSClass("BarDetailViewController", UIViewController, {
     textFieldDidChange: function(textField){
         if (textField === this.nameField){
             this.view.setNeedsLayout();
-            // this.view.layoutIfNeeded();
         }
     },
 
@@ -147,26 +146,24 @@ JSClass("BarDetailViewController", UIViewController, {
             }
         };
         if (this.bar.id === null){
-            this.saveTask = this.service.createCommunityBar(this.community.id, this.bar, function(result, response){
+            this.saveTask = this.service.createCommunityBar(this.community.id, this.bar.dictionaryRepresentation(), function(result, response){
                 if (result !== Service.Result.success){
                     // TODO: show error?
                 }else{
                     var replacedBar = this.bar;
-                    this.bar = response.bar;
-                    if (this.delegate && this.delegate.barDetailViewControllerDidChangeBar){
-                        this.delegate.barDetailViewControllerDidChangeBar(this, this.bar, replacedBar);
-                    }
+                    this.bar = Bar.initWithDictionary(response.bar);
+                    this.community.addBar(this.bar);
+                    this.service.notificationCenter.post(Community.Notification.barChanged, this.community, {bar: this.bar, replacedBar: replacedBar});
                 }
                 completeSave.call(this);
             }, this);
         }else{
-            this.saveTask = this.service.saveCommunityBar(this.community.id, this.bar, function(result){
+            this.saveTask = this.service.saveCommunityBar(this.community.id, this.bar.dictionaryRepresentation(), function(result){
                 if (result !== Service.Result.success){
                     // TODO: show error?
                 }else{
-                    if (this.delegate && this.delegate.barDetailViewControllerDidChangeBar){
-                        this.delegate.barDetailViewControllerDidChangeBar(this, this.bar, null);
-                    }
+                    this.community.updateBar(this.bar);
+                    this.service.notificationCenter.post(Community.Notification.barChanged, this.community, {bar: this.bar});
                 }
                 completeSave.call(this);
             }, this);
@@ -193,9 +190,7 @@ JSClass("BarDetailViewController", UIViewController, {
     deleteBar: function(){
         if (this.bar.id === null){
             this.deleted = true;
-            if (this.delegate && this.delegate.barDetailViewControllerDidDeleteBar){
-                this.delegate.barDetailViewControllerDidDeleteBar(this, this.bar);
-            }
+            this.service.notificationCenter.post(Community.Notification.barDeleted, this.community, {bar: this.bar});
             return;
         }
         this.detailView.hidden = true;
@@ -221,9 +216,8 @@ JSClass("BarDetailViewController", UIViewController, {
                 return;
             }
             this.deleted = true;
-            if (this.delegate && this.delegate.barDetailViewControllerDidDeleteBar){
-                this.delegate.barDetailViewControllerDidDeleteBar(this, this.bar);
-            }
+            this.community.removeBar(this.bar);
+            this.service.notificationCenter.post(Community.Notification.barDeleted, this.community, {bar: this.bar});
         }, this);
     },
 

@@ -1,20 +1,13 @@
 // #import UIKit
 // #import "Service.js"
+// #import "Community.js"
+// #import "Member.js"
 'use strict';
-
-JSProtocol("MemberDetailViewControllerDelegate", JSProtocol, {
-
-    memberDetailViewControllerDidChangeMember: function(viewController, member, replacingMember){},
-    memberDetailViewControllerDidDeleteMember: function(viewController, member){}
-
-});
-
 JSClass("MemberDetailViewController", UIViewController, {
 
+    service: null,
     community: null,
     member: null,
-    service: null,
-    delegate: null,
 
     // MARK: - View Lifecycle
 
@@ -65,7 +58,7 @@ JSClass("MemberDetailViewController", UIViewController, {
                 this.errorView.hidden = false;
                 return;
             }
-            this.member = member;
+            this.member = Member.initWithDictionary(member);
             this.update();
         }, this);
     },
@@ -96,21 +89,21 @@ JSClass("MemberDetailViewController", UIViewController, {
 
     update: function(){
         this.detailView.hidden = false;
-        this.firstNameField.text = this.member.first_name;
-        this.lastNameField.text = this.member.last_name;
+        this.firstNameField.text = this.member.firstName;
+        this.lastNameField.text = this.member.lastName;
         switch (this.member.state){
-            case "uninvited":
+            case Member.State.uninvited:
                 this.stateIndicator.backgroundColor = JSColor.initWithWhite(0.85);
                 this.stateLabel.text = JSBundle.mainBundle.localizedString("state.uninvited.text", "MemberDetailViewController");
                 this.sendInvitationButton.hidden = false;
                 break;
-            case "invited":
+            case Member.State.invited:
                 this.stateIndicator.backgroundColor = JSColor.initWithRGBA(1, 0.65, 0);
                 this.stateLabel.text = JSBundle.mainBundle.localizedString("state.invited.text", "MemberDetailViewController");
                 this.sendInvitationButton.hidden = false;
                 this.sendInvitationButton.titleLabel.text = JSBundle.localizedString("resendInviteButton.title", "MemberDetailViewController");
                 break;
-            case "active":
+            case Member.State.active:
                 this.stateIndicator.backgroundColor = JSColor.initWithRGBA(0, 129/255.0, 69/255.0);
                 this.stateLabel.text = JSBundle.mainBundle.localizedString("state.active.text", "MemberDetailViewController");
                 this.sendInvitationButton.hidden = true;
@@ -123,23 +116,29 @@ JSClass("MemberDetailViewController", UIViewController, {
 
     // MARK: - Saving Data
 
+    mouseDown: function(){
+        if ((this.view.window.firstResponder === this.firstNameField) || (this.view.window.firstResponder === this.lastNameField)){
+            this.view.window.firstResponder = null;
+        }
+    },
+
     firstNameEditingEnded: function(){
         if (this.member.id === null){
-            this.member.first_name = this.firstNameField.text;
+            this.member.firstName = this.firstNameField.text;
             this.saveMember();
         }
     },
 
     firstNameChanged: function(){
         if (this.member.id !== null){
-            this.member.first_name = this.firstNameField.text;
+            this.member.firstName = this.firstNameField.text;
             this.saveMember();
         }
     },
 
     lastNameChanged: function(){
         if (this.member.id !== null){
-            this.member.last_name = this.lastNameField.text;
+            this.member.lastName = this.lastNameField.text;
             this.saveMember();
         }
     },
@@ -175,26 +174,24 @@ JSClass("MemberDetailViewController", UIViewController, {
             }
         };
         if (this.member.id === null){
-            this.saveTask = this.service.createCommunityMember(this.community.id, this.member, function(result, response){
+            this.saveTask = this.service.createCommunityMember(this.community.id, this.member.dictionaryRepresentation(), function(result, response){
                 if (result !== Service.Result.success){
                     // TODO: show error?
                 }else{
                     var replacedMember = this.member;
-                    this.member = response.member;
-                    if (this.delegate && this.delegate.memberDetailViewControllerDidChangeMember){
-                        this.delegate.memberDetailViewControllerDidChangeMember(this, this.member, replacedMember);
-                    }
+                    this.member = Member.initWithDictionary(response.member);
+                    this.community.addMember(this.member);
+                    this.service.notificationCenter.post(Community.Notification.memberChanged, this.community, {member: this.member, replacedMember: replacedMember});
                 }
                 completeSave.call(this);
             }, this);
         }else{
-            this.saveTask = this.service.saveCommunityMember(this.community.id, this.member, function(result){
+            this.saveTask = this.service.saveCommunityMember(this.community.id, this.member.dictionaryRepresentation(), function(result){
                 if (result !== Service.Result.success){
                     // TODO: show error?
                 }else{
-                    if (this.delegate && this.delegate.memberDetailViewControllerDidChangeMember){
-                        this.delegate.memberDetailViewControllerDidChangeMember(this, this.member, null);
-                    }
+                    this.community.updateMember(this.member);
+                    this.service.notificationCenter.post(Community.Notification.memberChanged, this.community, {member: this.member});
                 }
                 completeSave.call(this);
             }, this);
@@ -221,9 +218,7 @@ JSClass("MemberDetailViewController", UIViewController, {
     deleteMember: function(){
         if (this.member.id === null){
             this.deleted = true;
-            if (this.delegate && this.delegate.memberDetailViewControllerDidDeleteMember){
-                this.delegate.memberDetailViewControllerDidDeleteMember(this, this.member);
-            }
+            this.service.notificationCenter.post(Community.Notification.memberDeleted, this.community, {member: this.member});
             return;
         }
         this.detailView.hidden = true;
@@ -249,9 +244,8 @@ JSClass("MemberDetailViewController", UIViewController, {
                 return;
             }
             this.deleted = true;
-            if (this.delegate && this.delegate.memberDetailViewControllerDidDeleteMember){
-                this.delegate.memberDetailViewControllerDidDeleteMember(this, this.member);
-            }
+            this.community.removeMember(this.member);
+            this.service.notificationCenter.post(Community.Notification.memberDeleted, this.community, {member: this.member});
         }, this);
     },
 

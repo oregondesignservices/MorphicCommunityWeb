@@ -2,6 +2,7 @@
 // #import "Service+Extensions.js"
 // #import "BarDetailViewController.js"
 // #import "MemberDetailViewController.js"
+// #import "Community.js"
 'use strict';
 
 (function(){
@@ -11,7 +12,6 @@ JSClass("CommunityViewController", UIListViewController, {
     mainViewController: null,
 
     service: null,
-    defaults: null,
 
     communityId: null,
     startingActivityAnimationPercentComplete: 0,
@@ -33,6 +33,7 @@ JSClass("CommunityViewController", UIListViewController, {
 
     viewWillDisappear: function(animated){
         CommunityViewController.$super.viewWillDisappear.call(this, animated);
+        this.stopListeningForCommunityNotifications();
     },
 
     viewDidDisappear: function(animated){
@@ -42,8 +43,8 @@ JSClass("CommunityViewController", UIListViewController, {
     // MARK: - Data Loading
 
     community: null,
-    members: null,
     bars: null,
+    members: null,
 
     loadDetails: function(){
         this.showActivityIndicator();
@@ -56,17 +57,22 @@ JSClass("CommunityViewController", UIListViewController, {
                 this.errorView.hidden = false;
                 return;
             }
-            this.community = community;
+            this.community = Community.initWithDictionary(community);
 
             // Then simultaneously load the bars and members
             var remaining = 2;
             var loaded = function(){
                 --remaining;
                 if (remaining === 0){
+                    this.startListeningForCommunityNotifications();
                     this.navigationController.navigationBar.hidden = false;
                     this.hideActivityIndicator();
                     this.listView.reloadData();
-                    this.listView.selectedIndexPath = JSIndexPath(0, 0);
+                    if (this.bars.length > 0){
+                        this.listView.selectedIndexPath = JSIndexPath(0, 0);
+                    }else if (this.members.length > 0){
+                        this.listView.selectedIndexPath = JSIndexPath(1, 0);
+                    }
                 }
             };
             this.service.loadCommunityBars(this.community.id, function(result, page){
@@ -75,26 +81,17 @@ JSClass("CommunityViewController", UIListViewController, {
                     this.errorView.hidden = false;
                     return;
                 }
-                this.bars = page.bars;
-                // Remove any bars that aren't shared
+                this.community.setBarDictionaries(page.bars);
+                // Only show shared bars in the sidebar list
+                this.bars = [];
                 var bar;
-                for (var i = this.bars.length - 1; i >= 0; --i){
-                    bar = this.bars[i];
-                    if (!bar.is_shared){
-                        this.bars.splice(i, 1);
+                for (var i = 0, l = this.community.bars.length; i < l; ++i){
+                    bar = this.community.bars[i];
+                    if (bar.shared){
+                        this.bars.push(bar);
                     }
                 }
-                // Sort bars...default first, then by name
-                var defaultBarId = this.community.default_bar_id;
-                this.bars.sort(function(a, b){
-                    if (a.id === defaultBarId){
-                        return -1;
-                    }
-                    if (b.id === defaultBarId){
-                        return 1;
-                    }
-                    return a.name.localeCompare(b.name);
-                });
+                this.bars.sort(this.community.barComparison());
                 loaded.call(this);
             }, this);
             this.service.loadCommunityMembers(this.community.id, function(result, page){
@@ -103,16 +100,9 @@ JSClass("CommunityViewController", UIListViewController, {
                     this.errorView.hidden = false;
                     return;
                 }
-                this.members = page.members;
-                // Cache each member's full name and then sort by it
-                var member;
-                for (var i = 0, l = this.members.length; i < l; ++i){
-                    member = this.members[i];
-                    member.full_name = fullNameFromParts(member.first_name, member.last_name);
-                }
-                this.members.sort(function(a, b){
-                    return a.full_name.localeCompare(b.full_name);
-                });
+                this.community.setMemberDictionaries(page.members);
+                this.members = JSCopy(this.community.members);
+                this.members.sort(Member.fullNameComparison);
                 loaded.call(this);
             }, this);
         }, this);
@@ -186,7 +176,7 @@ JSClass("CommunityViewController", UIListViewController, {
         }
         cell = listView.dequeueReusableCellWithIdentifier("member", indexPath);
         var member = this.members[indexPath.row];
-        cell.titleLabel.text = member.full_name;
+        cell.titleLabel.text = member.fullName;
         cell.titleInsets.left = 34;
         return cell;
     },
@@ -198,22 +188,28 @@ JSClass("CommunityViewController", UIListViewController, {
             this._skipNextSelection = false;
             return;
         }
-        var viewController;
         if (indexPath.section === 0){
             var bar = this.bars[indexPath.row];
-            viewController = BarDetailViewController.initWithSpecName("BarDetailViewController");
-            viewController.service = this.service;
-            viewController.community = this.community;
-            viewController.delegate = this;
-            viewController.bar = bar;
+            this.showBarDetail(bar);
         }else{
             var member = this.members[indexPath.row];
-            viewController = MemberDetailViewController.initWithSpecName("MemberDetailViewController");
-            viewController.service = this.service;
-            viewController.community = this.community;
-            viewController.delegate = this;
-            viewController.member = member;
+            this.showMemberDetail(member);
         }
+    },
+
+    showBarDetail: function(bar){
+        var viewController = BarDetailViewController.initWithSpecName("BarDetailViewController");
+        viewController.service = this.service;
+        viewController.community = this.community;
+        viewController.bar = bar;
+        this.mainViewController.mainViewController = viewController;
+    },
+
+    showMemberDetail: function(member){
+        var viewController = MemberDetailViewController.initWithSpecName("MemberDetailViewController");
+        viewController.service = this.service;
+        viewController.community = this.community;
+        viewController.member = member;
         this.mainViewController.mainViewController = viewController;
     },
 
@@ -253,10 +249,46 @@ JSClass("CommunityViewController", UIListViewController, {
         return null;
     },
 
-    barDetailViewControllerDidChangeBar: function(viewController, bar, replacingBar){
+    // MARK: - Notifications
+
+    barChangedNotificationId: null,
+    barDeletedNotificationId: null,
+    memberChangedNotificationId: null,
+    memberDeletedNotificationId: null,
+
+    startListeningForCommunityNotifications: function(){
+        this.stopListeningForCommunityNotifications();
+        this.barChangedNotificationId = this.service.notificationCenter.addObserver(Community.Notification.barChanged, this.community, this.handleBarChanged, this);
+        this.barDeletedNotificationId = this.service.notificationCenter.addObserver(Community.Notification.barDeleted, this.community, this.handleBarDeleted, this);
+        this.memberChangedNotificationId = this.service.notificationCenter.addObserver(Community.Notification.memberChanged, this.community, this.handleMemberChanged, this);
+        this.memberDeletedNotificationId = this.service.notificationCenter.addObserver(Community.Notification.memberDeleted, this.community, this.handleMemberDeleted, this);
+    },
+
+    stopListeningForCommunityNotifications: function(){
+        if (this.barChangedNotificationId !== null){
+            this.service.notificationCenter.removeObserver(Community.Notification.barChanged, this.barChangedNotificationId);
+            this.barChangedNotificationId = null;
+        }
+        if (this.barDeletedNotificationId !== null){
+            this.service.notificationCenter.removeObserver(Community.Notification.barDeleted, this.barDeletedNotificationId);
+            this.barDeletedNotificationId = null;
+        }
+        if (this.memberChangedNotificationId !== null){
+            this.service.notificationCenter.removeObserver(Community.Notification.memberChanged, this.memberChangedNotification);
+            this.memberChangedNotificationId = null;
+        }
+        if (this.memberDeletedNotificationId !== null){
+            this.service.notificationCenter.removeObserver(Community.Notification.memberDeleted, this.memberDeletedNotification);
+            this.memberDeletedNotificationId = null;
+        }
+    },
+
+    handleBarChanged: function(notification){
+        var bar = notification.userInfo.bar;
+        var replacedBar = notification.userInfo.replacedBar;
         var indexPath;
-        if (replacingBar){
-            indexPath = this.indexPathForBar(replacingBar);
+        if (replacedBar){
+            indexPath = this.indexPathForBar(replacedBar);
         }else{
             indexPath = this.indexPathForBar(bar);
         }
@@ -267,16 +299,7 @@ JSClass("CommunityViewController", UIListViewController, {
         this.bars.splice(indexPath.row, 1);
         barInList.id = bar.id;
         barInList.name = bar.name;
-        var defaultBarId = this.community.default_bar_id;
-        var searcher = JSBinarySearcher(this.bars, function(a, b){
-            if (a.id === defaultBarId){
-                return -1;
-            }
-            if (b.id === defaultBarId){
-                return 1;
-            }
-            return a.name.localeCompare(b.name);
-        });
+        var searcher = JSBinarySearcher(this.bars, this.community.barComparison());
         var newIndex = searcher.insertionIndexForValue(barInList);
         this.bars.splice(newIndex, 0, barInList);
         if (newIndex === indexPath.row){
@@ -291,7 +314,8 @@ JSClass("CommunityViewController", UIListViewController, {
         }
     },
 
-    barDetailViewControllerDidDeleteBar: function(viewController, bar){
+    handleBarDeleted: function(notification){
+        var bar = notification.userInfo.bar;
         var indexPath = this.indexPathForBar(bar);
         if (indexPath === null){
             return;
@@ -302,10 +326,12 @@ JSClass("CommunityViewController", UIListViewController, {
         this.listView.selectedIndexPath = JSIndexPath(0, indexPath.row < this.bars.length ? indexPath.row : indexPath.row - 1);
     },
 
-    memberDetailViewControllerDidChangeMember: function(viewController, member, replacingMember){
+    handleMemberChanged: function(notification){
+        var member = notification.userInfo.member;
+        var replacedMember = notification.userInfo.replacedMember;
         var indexPath;
-        if (replacingMember){
-            indexPath = this.indexPathForMember(replacingMember);
+        if (replacedMember){
+            indexPath = this.indexPathForMember(replacedMember);
         }else{
             indexPath = this.indexPathForMember(member);
         }
@@ -315,12 +341,9 @@ JSClass("CommunityViewController", UIListViewController, {
         var memberInList = this.members[indexPath.row];
         this.members.splice(indexPath.row, 1);
         memberInList.id = member.id;
-        memberInList.first_name = member.first_name;
-        memberInList.last_name = member.last_name;
-        memberInList.full_name = fullNameFromParts(member.first_name, member.last_name);
-        var searcher = JSBinarySearcher(this.members, function(a, b){
-            return a.full_name.localeCompare(b.full_name);
-        });
+        memberInList.firstName = member.firstName;
+        memberInList.lastName = member.lastName;
+        var searcher = JSBinarySearcher(this.members, Member.fullNameComparison);
         var newIndex = searcher.insertionIndexForValue(memberInList);
         this.members.splice(newIndex, 0, memberInList);
         if (newIndex === indexPath.row){
@@ -335,7 +358,8 @@ JSClass("CommunityViewController", UIListViewController, {
         }
     },
 
-    memberDetailViewControllerDidDeleteMember: function(viewController, member){
+    handleMemberDeleted: function(notification){
+        var member = notification.userInfo.member;
         var indexPath = this.indexPathForMember(member);
         if (indexPath === null){
             return;
@@ -352,12 +376,9 @@ JSClass("CommunityViewController", UIListViewController, {
     addMemberButton: JSOutlet(),
 
     addBar: function(){
-        var bar = {
-            id: null,
-            name: "New Bar",
-            is_shared: true,
-            items: []
-        };
+        var bar = Bar.init();
+        bar.name = "New Bar";
+        bar.shared = true;
         var indexPath = JSIndexPath(0, this.bars.length);
         this.bars.push(bar);
         this.listView.insertRowAtIndexPath(indexPath, UIListView.RowAnimation.left);
@@ -366,14 +387,10 @@ JSClass("CommunityViewController", UIListViewController, {
     },
 
     addMember: function(){
-        var member = {
-            id: null,
-            first_name: null,
-            last_name: null,
-            role: "member",
-            state: "uninvited",
-            full_name: "New Member"
-        };
+        var member = Member.init();
+        member.role = Member.Role.member;
+        member.state = Member.State.uninvited;
+        member.placeholderName = "New Member";
         var indexPath = JSIndexPath(1, this.members.length);
         this.members.push(member);
         this.listView.insertRowAtIndexPath(indexPath, UIListView.RowAnimation.left);
@@ -420,18 +437,5 @@ JSClass("CommunityListHeaderView", UIListViewHeaderFooterView, {
     }
 
 });
-
-var fullNameFromParts = function(first, last){
-    if (first === null || first === ""){
-        if (last === null || last === ""){
-            return "";
-        }
-        return last;
-    }
-    if (last === null || last === ""){
-        return first;
-    }
-    return first + " " + last;
-};
 
 })();

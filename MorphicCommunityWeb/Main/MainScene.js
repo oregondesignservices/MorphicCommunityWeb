@@ -10,12 +10,6 @@ JSClass("MainScene", UIScene, {
     setService: function(service){
         this._service = service;
         this.sidebarViewController.service = service;
-    },
+    }
 
-    defaults: JSDynamicProperty('_defaults', null),
-
-    setDefaults: function(defaults){
-        this._defaults = defaults;
-        this.sidebarViewController.defaults = defaults;
-    },
 });

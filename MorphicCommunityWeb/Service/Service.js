@@ -12,6 +12,9 @@ JSClass("Service", JSObject, {
         this.urlSession = urlSession || JSURLSession.shared;
     },
 
+    defaults: null,
+    notificationCenter: null,
+
     baseURL: null,
 
     authToken: null,
@@ -21,13 +24,13 @@ JSClass("Service", JSObject, {
     signin: function(auth){
         this.authToken = auth.token;
         this.user = auth.user;
-        JSNotificationCenter.shared.post(Service.Notification.userDidSignin, this);
+        this.notificationCenter.post(Service.Notification.userDidSignin, this);
     },
 
     signout: function(){
         this.authToken = null;
         this.user = null;
-        JSNotificationCenter.shared.post(Service.Notification.userDidSignout, this);
+        this.notificationCenter.post(Service.Notification.userDidSignout, this);
     },
 
     loadUser: function(userId, completion, target){

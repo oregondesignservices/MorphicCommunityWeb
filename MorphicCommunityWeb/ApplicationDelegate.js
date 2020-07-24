@@ -16,8 +16,10 @@ JSClass("ApplicationDelegate", JSObject, {
     applicationDidFinishLaunching: function(application, launchOptions){
         this.registerDefaults();
         this.service = Service.initWithBaseURL(JSURL.initWithString(application.getenv('MORPHIC_SERVER_URL')));
-        JSNotificationCenter.shared.addObserver(Service.Notification.userDidSignin, this.service, this.userDidSignin, this);
-        JSNotificationCenter.shared.addObserver(Service.Notification.userDidSignout, this.service, this.userDidSignout, this);
+        this.service.notificationCenter = JSNotificationCenter.shared;
+        this.service.defaults = this.defaults;
+        this.service.notificationCenter.addObserver(Service.Notification.userDidSignin, this.service, this.userDidSignin, this);
+        this.service.notificationCenter.addObserver(Service.Notification.userDidSignout, this.service, this.userDidSignout, this);
         this.recallUser();
         this.showLoading(launchOptions);
     },
@@ -112,7 +114,6 @@ JSClass("ApplicationDelegate", JSObject, {
     showMain: function(){
         var mainScene = MainScene.initWithSpecName("MainScene");
         mainScene.service = this.service;
-        mainScene.defaults = this.defaults;
         mainScene.show();
     },
 

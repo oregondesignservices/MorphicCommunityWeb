@@ -11,13 +11,6 @@ JSClass("SidebarViewController", UIViewController, {
         this.communitiesViewController.service = service;
     },
 
-    defaults: JSDynamicProperty('_defaults', null),
-
-    setDefaults: function(defaults){
-        this._defaults = defaults;
-        this.communitiesViewController.defaults = defaults;
-    },
-
     communitiesViewController: JSOutlet(),
     navigationController: JSOutlet(),
     watermarkView: JSOutlet(),
