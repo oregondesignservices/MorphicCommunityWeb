@@ -18,3 +18,6 @@ en:
     general.title: Could not delete member
     general.message: Sorry, we could not delete this member.  Please try again.
     dismiss: OK
+  errorView.label.text: Sorry, we couldn't load the member data
+  preview.caption: A preview of how %1$s's bar will look along the right edge of the Windows desktop
+  preview.unnamedCaption: A preview of how the bar will look along the right edge of the Windows desktop

@@ -58,6 +58,8 @@ BarNameField:
       action: nameChanged
       event: valueChanged
       target: /BarDetailViewController
+  bindings:
+    text: {to: /BarDetailViewController, value: bar.name}
 
 RemoveButton:
   class: UIButton

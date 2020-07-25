@@ -343,6 +343,7 @@ JSClass("CommunityViewController", UIListViewController, {
         memberInList.id = member.id;
         memberInList.firstName = member.firstName;
         memberInList.lastName = member.lastName;
+        memberInList.placeholderName = "";
         var searcher = JSBinarySearcher(this.members, Member.fullNameComparison);
         var newIndex = searcher.insertionIndexForValue(memberInList);
         this.members.splice(newIndex, 0, memberInList);

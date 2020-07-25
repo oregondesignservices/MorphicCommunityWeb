@@ -67,6 +67,8 @@ FirstNameField:
       target: /MemberDetailViewController
   font:
     size: 21
+  bindings:
+    text: {to: /MemberDetailViewController, value: member.firstName}
 
 LastNameField:
   class: UITextField
@@ -83,6 +85,8 @@ LastNameField:
       target: /MemberDetailViewController
   font:
     size: 21
+  bindings:
+    text: {to: /MemberDetailViewController, value: member.lastName}
 
 RemoveButton:
   class: UIButton
@@ -102,11 +106,15 @@ MemberStateIndicator:
   class: UIView
   frame: 0,0,10,10
   cornerRadius: 5
+  bindings:
+    backgroundColor: {to: /MemberDetailViewController, value: member.state, transformer: $MemberDetailViewController.stateColorTransformer}
 
 MemberStateLabel:
   class: UILabel
   font:
     size: 14
+  bindings:
+    text: {to: /MemberDetailViewController, value: member.state, transformer: $MemberDetailViewController.stateLabelTransformer}
 
 SendInvitationButton:
   class: UIButton

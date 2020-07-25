@@ -12,3 +12,4 @@ en:
     general.title: Could not delete bar
     general.message: Sorry, we could not delete this bar.  Please try again.
     dismiss: OK
+  preview.caption: A preview of how the %1$s bar will look along the right edge of the Windows desktop

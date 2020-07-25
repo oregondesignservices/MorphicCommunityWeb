@@ -54,6 +54,10 @@ JSClass("BarItemLibraryViewController", UIViewController, {
         return cell;
     },
 
+    listViewDidSelectCellAtIndexPath: function(listView, indexPath){
+        listView.selectedIndexPath = null;
+    },
+
     listViewDidOpenCellAtIndexPath: function(listView, indexPath){
         // TODO: add item, but where does message go?
     },
@@ -79,6 +83,7 @@ JSClass("BarItemLibraryViewController", UIViewController, {
         var image = this._dragImage;
         this._dragImage = null;
         session.setImage(image, JSPoint(image.size.width - 4, image.size.height - 4));
+        session.allowedOperations = UIDragOperation.copy;
     },
 
     // MARK: - Layout

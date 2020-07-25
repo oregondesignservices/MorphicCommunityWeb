@@ -10,6 +10,12 @@ JSClass("BarDetailViewController", UIViewController, {
     community: null,
     bar: null,
 
+    isBarDefault: JSReadOnlyProperty(),
+
+    getIsBarDefault: function(){
+        return this.bar !== null && this.bar.id === this.community.defaultBarId;
+    },
+
     // MARK: - View Lifecycle
 
     viewDidLoad: function(){
@@ -23,8 +29,11 @@ JSClass("BarDetailViewController", UIViewController, {
     viewDidAppear: function(animated){
         BarDetailViewController.$super.viewDidAppear.call(this, animated);
         if (this.bar.id !== null){
+            // Load the bar's full details
             this.loadBar();
         }else{
+            // ...or if this is a new unsaved bar, just show it and focus
+            // the name field for editing
             this.update();
             this.view.window.firstResponder = this.nameField;
             this.nameField.selectAll();
@@ -86,9 +95,13 @@ JSClass("BarDetailViewController", UIViewController, {
 
     update: function(){
         this.detailView.hidden = false;
-        this.nameField.text = this.bar.name;
         this.removeButton.hidden = this.bar.id === this.community.defaultBarId;
+        this.updateCaption();
         this.view.setNeedsLayout();
+    },
+
+    updateCaption: function(){
+        this.barEditor.captionLabel.text = String.initWithFormat(JSBundle.mainBundle.localizedString("preview.caption", "BarDetailViewController"), this.bar.name);
     },
 
     errorView: JSOutlet(),
@@ -103,16 +116,15 @@ JSClass("BarDetailViewController", UIViewController, {
 
     nameEditingEnded: function(){
         if (this.bar.id === null){
-            this.bar.name = this.nameField.text;
             this.saveBar();
         }
     },
 
     nameChanged: function(){
         if (this.bar.id !== null){
-            this.bar.name = this.nameField.text;
             this.saveBar();
         }
+        this.updateCaption();
     },
 
     textFieldDidReceiveEnter: function(textField){

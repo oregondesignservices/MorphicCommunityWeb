@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Start Button</title>
+    <g id="Page-2" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M0,1.97940624 L6.4,1.06666667 L6.4,7.46666667 L0,7.46666667 L0,1.97940624 Z M0,14.0091324 L6.4,14.9333333 L6.4,8.53333333 L0,8.53333333 L0,14.0091324 L0,14.0091324 Z M7.46666667,14.8108381 L16,16 L16,8.53333333 L7.46666667,8.53333333 L7.46666667,14.8108381 L7.46666667,14.8108381 Z M7.46666667,1.17692548 L7.46666667,7.46666667 L16,7.46666667 L16,0 L7.46666667,1.17692548 Z" id="Start-Button" fill="#000000" fill-rule="nonzero"></path>
+    </g>
+</svg>

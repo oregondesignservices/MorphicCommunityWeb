@@ -22,8 +22,11 @@ JSClass("MemberDetailViewController", UIViewController, {
     viewDidAppear: function(animated){
         MemberDetailViewController.$super.viewDidAppear.call(this, animated);
         if (this.member.id !== null){
+            // Load the full details for this member
             this.loadMember();
         }else{
+            // ... or if we have a new unsaved member, just show it and
+            // focus on the first name field
             this.update();
             this.view.window.firstResponder = this.firstNameField;
             this.firstNameField.selectAll();
@@ -89,27 +92,28 @@ JSClass("MemberDetailViewController", UIViewController, {
 
     update: function(){
         this.detailView.hidden = false;
-        this.firstNameField.text = this.member.firstName;
-        this.lastNameField.text = this.member.lastName;
         switch (this.member.state){
             case Member.State.uninvited:
-                this.stateIndicator.backgroundColor = JSColor.initWithWhite(0.85);
-                this.stateLabel.text = JSBundle.mainBundle.localizedString("state.uninvited.text", "MemberDetailViewController");
                 this.sendInvitationButton.hidden = false;
                 break;
             case Member.State.invited:
-                this.stateIndicator.backgroundColor = JSColor.initWithRGBA(1, 0.65, 0);
-                this.stateLabel.text = JSBundle.mainBundle.localizedString("state.invited.text", "MemberDetailViewController");
                 this.sendInvitationButton.hidden = false;
                 this.sendInvitationButton.titleLabel.text = JSBundle.localizedString("resendInviteButton.title", "MemberDetailViewController");
                 break;
             case Member.State.active:
-                this.stateIndicator.backgroundColor = JSColor.initWithRGBA(0, 129/255.0, 69/255.0);
-                this.stateLabel.text = JSBundle.mainBundle.localizedString("state.active.text", "MemberDetailViewController");
                 this.sendInvitationButton.hidden = true;
                 break;
         }
+        this.updateCaption();
         this.view.setNeedsLayout();
+    },
+
+    updateCaption: function(){
+        if (this.member.firstName){
+            this.barEditor.captionLabel.text = String.initWithFormat(JSBundle.mainBundle.localizedString("preview.caption", "MemberDetailViewController"), this.member.firstName);
+        }else{
+            this.barEditor.captionLabel.text = JSBundle.mainBundle.localizedString("preview.unnamedCaption", "MemberDetailViewController");
+        }
     },
 
     errorView: JSOutlet(),
@@ -124,21 +128,19 @@ JSClass("MemberDetailViewController", UIViewController, {
 
     firstNameEditingEnded: function(){
         if (this.member.id === null){
-            this.member.firstName = this.firstNameField.text;
             this.saveMember();
         }
     },
 
     firstNameChanged: function(){
         if (this.member.id !== null){
-            this.member.firstName = this.firstNameField.text;
             this.saveMember();
         }
+        this.updateCaption();
     },
 
     lastNameChanged: function(){
         if (this.member.id !== null){
-            this.member.lastName = this.lastNameField.text;
             this.saveMember();
         }
     },
@@ -295,3 +297,33 @@ JSClass("MemberDetailViewController", UIViewController, {
     }
 
 });
+
+MemberDetailViewController.stateColorTransformer = {
+
+    transformValue: function(state){
+        switch (state){
+            case Member.State.uninvited:
+                return JSColor.initWithWhite(0.85);
+            case Member.State.invited:
+                return JSColor.initWithRGBA(1, 0.65, 0);
+            case Member.State.active:
+                return JSColor.initWithRGBA(0, 129/255.0, 69/255.0);
+        }
+        return null;
+    }
+
+};
+
+MemberDetailViewController.stateLabelTransformer = {
+    transformValue: function(state){
+        switch (state){
+            case Member.State.uninvited:
+                return JSBundle.mainBundle.localizedString("state.uninvited.text", "MemberDetailViewController");
+            case Member.State.invited:
+                return JSBundle.mainBundle.localizedString("state.invited.text", "MemberDetailViewController");
+            case Member.State.active:
+                return JSBundle.mainBundle.localizedString("state.active.text", "MemberDetailViewController");
+        }
+        return null;
+    }
+};
