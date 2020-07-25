@@ -4,6 +4,10 @@ en:
   removeButton.title: Remove
   sendInviteButton.title: Send Invitation
   resendInviteButton.title: Re-send Invitation
+  barPopupButton:
+    defaultFormat: The Community Default (%1$s)
+    custom: Customized
+  barLabel.textFormat: "%1$s's bar:"
   state:
     uninvited.text: Not yet invited
     invited.text: Invitation sent

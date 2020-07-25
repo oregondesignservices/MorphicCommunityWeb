@@ -8,6 +8,7 @@ JSClass("MemberDetailViewController", UIViewController, {
     service: null,
     community: null,
     member: null,
+    bar: null,
 
     // MARK: - View Lifecycle
 
@@ -48,6 +49,8 @@ JSClass("MemberDetailViewController", UIViewController, {
     stateIndicator: JSOutlet(),
     stateLabel: JSOutlet(),
     sendInvitationButton: JSOutlet(),
+    barLabel: JSOutlet(),
+    barPopupButton: JSOutlet(),
     barEditor: JSOutlet(),
 
     // MARK: - Loading Data
@@ -63,6 +66,22 @@ JSClass("MemberDetailViewController", UIViewController, {
             }
             this.member = Member.initWithDictionary(member);
             this.update();
+            this.loadBar();
+        }, this);
+    },
+
+    loadBar: function(){
+        this.showBarLoading();
+        this.service.loadCommunityBar(this.community.id, this.member.barId || this.community.defaultBarId, function(result, bar){
+            this.hideBarLoading();
+            if (result !== Service.Result.success){
+                this.barEditor.hidden = true;
+                return;
+            }
+            if ((this.member.barId !== null && bar.id === this.member.barId) || (bar.id === this.community.defaultBarId)){
+                this.bar = Bar.initWithDictionary(bar);
+                // TODO: populate bar editor
+            }
         }, this);
     },
 
@@ -90,8 +109,85 @@ JSClass("MemberDetailViewController", UIViewController, {
         this.activityIndicator.stopAnimating();
     },
 
+    barLoadingView: JSOutlet(),
+    barLoadingActivityIndicator: JSOutlet(),
+    barLoadingFadeInAnimation: null,
+
+    showBarLoading: function(){
+        this.barLoadingView.hidden = false;
+        this.barLoadingView.alpha = 0;
+        this.barLoadingActivityIndicator.startAnimating();
+        this.barLoadingFadeInAnimation = UIViewPropertyAnimator.initWithDuration(0.5);
+        var vc = this;
+        this.barLoadingFadeInAnimation.addAnimations(function(){
+            vc.barLoadingView.alpha = 1;
+        });
+        this.barLoadingFadeInAnimation.addCompletion(function(){
+            vc.barLoadingFadeInAnimation = null;
+        });
+        this.barLoadingFadeInAnimation.start(1);
+    },
+
+    hideBarLoading: function(){
+        if (this.barLoadingFadeInAnimation !== null){
+            this.barLoadingFadeInAnimation.stop();
+        }
+        this.barLoadingActivityIndicator.stopAnimating();
+        this.barLoadingView.hidden = true;
+    },
+
     update: function(){
         this.detailView.hidden = false;
+        this.updateBarLabel();
+        this.updateBarMenu();
+        this.updateInviteButton();
+        this.updateCaption();
+        this.view.setNeedsLayout();
+    },
+
+    updateBarLabel: function(){
+        var format = JSBundle.mainBundle.localizedString("barLabel.textFormat", "MemberDetailViewController");
+        this.barLabel.text = String.initWithFormat(format, this.member.firstName || this.member.lastName || this.member.placeholderName);
+    },
+
+    updateBarMenu: function(){
+        var defaultBar;
+        var bars = [];
+        var bar;
+        var i, l;
+        var selectedTag = null;
+        var memberBarId = this.member.barId || this.community.defaultBarId;
+        var tag;
+        for (i = 0, l = this.community.bars.length; i < l; ++i){
+            bar = this.community.bars[i];
+            if (bar.id === this.community.defaultBarId){
+                tag = "__default__";
+                defaultBar = bar;
+            }else if (!bar.shared){
+                tag = "__custom__";
+            }else{
+                tag = bar.id;
+                bars.push(bar);
+            }
+            if (bar.id === memberBarId){
+                selectedTag = tag;
+            }
+        }
+        bars.sort(function(a, b){
+            return a.name.localeCompare(b.name);
+        });
+        this.barPopupButton.removeAllItems();
+        var defaultFormat = JSBundle.mainBundle.localizedString("barPopupButton.defaultFormat", "MemberDetailViewController");
+        this.barPopupButton.addItemWithTitle(String.initWithFormat(defaultFormat, defaultBar.name), "__default__");
+        for (i = 0, l = bars.length; i < l; ++i){
+            bar = bars[i];
+            this.barPopupButton.addItemWithTitle(bar.name, bar.id);
+        }
+        this.barPopupButton.addItemWithTitle(JSBundle.mainBundle.localizedString("barPopupButton.custom", "MemberDetailViewController"), "__custom__");
+        this.barPopupButton.selectedTag = selectedTag;
+    },
+
+    updateInviteButton: function(){
         switch (this.member.state){
             case Member.State.uninvited:
                 this.sendInvitationButton.hidden = false;
@@ -104,8 +200,6 @@ JSClass("MemberDetailViewController", UIViewController, {
                 this.sendInvitationButton.hidden = true;
                 break;
         }
-        this.updateCaption();
-        this.view.setNeedsLayout();
     },
 
     updateCaption: function(){
@@ -160,7 +254,7 @@ JSClass("MemberDetailViewController", UIViewController, {
     saveTask: null,
     saveQueued: false,
 
-    saveMember: function(){
+    saveMember: function(completion, target){
         if (this.deleted){
             return;
         }
@@ -168,11 +262,16 @@ JSClass("MemberDetailViewController", UIViewController, {
             this.saveQueued = true;
             return;
         }
+        var success = false;
         var completeSave = function(){
             this.saveTask = null;
             if (this.saveQueued){
                 this.saveQueued = false;
-                this.saveMember();
+                this.saveMember(completion, target);
+            }else{
+                if (completion){
+                    completion.call(target, success);
+                }
             }
         };
         if (this.member.id === null){
@@ -180,6 +279,7 @@ JSClass("MemberDetailViewController", UIViewController, {
                 if (result !== Service.Result.success){
                     // TODO: show error?
                 }else{
+                    success = true;
                     var replacedMember = this.member;
                     this.member = Member.initWithDictionary(response.member);
                     this.community.addMember(this.member);
@@ -192,6 +292,7 @@ JSClass("MemberDetailViewController", UIViewController, {
                 if (result !== Service.Result.success){
                     // TODO: show error?
                 }else{
+                    success = true;
                     this.community.updateMember(this.member);
                     this.service.notificationCenter.post(Community.Notification.memberChanged, this.community, {member: this.member});
                 }
@@ -205,6 +306,10 @@ JSClass("MemberDetailViewController", UIViewController, {
     confirmDelete: function(sender){
         var message = JSBundle.mainBundle.localizedString("deleteConfirmation.message", "MemberDetailViewController");
         var alert = UIAlertController.initWithTitle(null, message);
+        alert.destructiveButtonStyler = UIButtonDefaultStyler.init();
+        alert.destructiveButtonStyler.font = alert.destructiveButtonStyler.font.fontWithPointSize(JSFont.Size.detail).fontWithWeight(JSFont.Weight.bold);
+        alert.destructiveButtonStyler.normalTitleColor = JSColor.initWithRGBA(129/255.0, 43/255.0, 0);
+        alert.destructiveButtonStyler.activeTitleColor = alert.destructiveButtonStyler.normalTitleColor.colorDarkenedByPercentage(0.2);
         alert.addActionWithTitle(JSBundle.mainBundle.localizedString("deleteConfirmation.delete", "MemberDetailViewController"), UIAlertAction.Style.destructive, function(){
             this.deleteMember();
         }, this);
@@ -251,6 +356,55 @@ JSClass("MemberDetailViewController", UIViewController, {
         }, this);
     },
 
+    changeBar: function(){
+        var selectedTag = this.barPopupButton.selectedTag;
+        if (selectedTag === "__custom__"){
+            this.bar.id = null;
+            this.bar.name = "%s's Bar".sprintf(this.member.fullName);
+            this.bar.shared = false;
+            this.service.createCommunityBar(this.community.id, this.bar.dictionaryRepresentation(), function(result, post){
+                if (result !== Service.Result.success){
+                    // TODO:
+                    return;
+                }
+                var bar = Bar.initWithDictionary(post.bar);
+                this.community.addBar(bar);
+                this.member.barId = bar.id;
+                this.bar = bar;
+                this.saveMember();
+            }, this);
+        }else{
+            if (selectedTag === "__default__"){
+                this.member.barId = null;
+            }else{
+                this.member.barId = selectedTag;
+            }
+            var deletingBar = null;
+            if (!this.bar.shared){
+                deletingBar = this.bar;
+            }
+            this.saveMember(function(success){
+                if (success){
+                    if (deletingBar !== null){
+                        this.service.deleteCommunityBar(this.community.id, deletingBar.id, function(result){
+                            if (result !== Service.Result.success){
+                                // TODO:
+                                return;
+                            }
+                            this.community.removeBar(deletingBar);
+                        }, this);
+                    }
+                }
+            }, this);
+            this.bar = null;
+            this.loadBar();
+        }
+    },
+
+    customizeBar: function(){
+        this.bar.id = null;
+    },
+
     // MARK: - Invitations
 
     sendInvitation: function(){
@@ -267,7 +421,7 @@ JSClass("MemberDetailViewController", UIViewController, {
         this.errorView.position = bounds.center;
 
         bounds = this.detailView.bounds;
-        var baseline = 16 + this.firstNameField.font.displayAscender;
+        var baseline = 16 + this.firstNameField.firstBaselineOffsetFromTop;
         var removeButtonSize = this.removeButton.intrinsicSize;
         this.removeButton.frame = JSRect(bounds.size.width - 24 - removeButtonSize.width + this.removeButton.titleInsets.right, baseline - this.removeButton.firstBaselineOffsetFromTop, removeButtonSize.width, removeButtonSize.height);
         var x = 24 - this.firstNameField.textInsets.left;
@@ -280,7 +434,7 @@ JSClass("MemberDetailViewController", UIViewController, {
         this.lastNameField.position = JSPoint(x + this.lastNameField.bounds.size.width / 2, this.firstNameField.position.y);
 
         var y = this.firstNameField.frame.origin.y + this.firstNameField.frame.size.height + 10;
-        baseline = y + this.stateLabel.font.displayAscender;
+        baseline = y + this.stateLabel.firstBaselineOffsetFromTop;
         this.stateLabel.sizeToFit();
         x = 24;
         this.stateIndicator.position = JSPoint(x + this.stateIndicator.bounds.size.width / 2, y + (this.stateLabel.bounds.size.height) / 2);
@@ -292,8 +446,20 @@ JSClass("MemberDetailViewController", UIViewController, {
         this.sendInvitationButton.frame = JSRect(x, baseline - this.sendInvitationButton.firstBaselineOffsetFromTop, inviteButtonSize.width, inviteButtonSize.height);
         y += this.stateLabel.frame.size.height;
 
-        y += 30;
+        x = 24;
+        y += 20;
+        baseline = y + this.barLabel.firstBaselineOffsetFromTop;
+        this.barLabel.sizeToFit();
+        this.barLabel.frame = JSRect(x, y, this.barLabel.bounds.size.width, this.barLabel.bounds.size.height);
+        x += this.barLabel.bounds.size.width;
+        x += 7;
+        var popupButtonSize = this.barPopupButton.intrinsicSize;
+        this.barPopupButton.frame = JSRect(x, baseline - this.barPopupButton.firstBaselineOffsetFromTop, popupButtonSize.width, popupButtonSize.height);
+        y = baseline + this.barPopupButton.lastBaselineOffsetFromBottom;
+
+        y += 7;
         this.barEditor.frame = JSRect(24, y, bounds.size.width - 48, bounds.size.height - y - 24);
+        this.barLoadingView.frame = this.barEditor.frame;
     }
 
 });

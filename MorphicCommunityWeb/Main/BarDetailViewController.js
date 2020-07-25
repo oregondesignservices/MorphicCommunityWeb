@@ -167,6 +167,7 @@ JSClass("BarDetailViewController", UIViewController, {
                 }else{
                     var replacedBar = this.bar;
                     this.bar = Bar.initWithDictionary(response.bar);
+                    this.update();
                     this.community.addBar(this.bar);
                     this.service.notificationCenter.post(Community.Notification.barChanged, this.community, {bar: this.bar, replacedBar: replacedBar});
                 }

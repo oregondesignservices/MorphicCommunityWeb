@@ -15,7 +15,11 @@ MemberDetailViewController:
     stateIndicator: /MemberStateIndicator
     stateLabel: /MemberStateLabel
     sendInvitationButton: /SendInvitationButton
+    barLabel: /BarLabel
+    barPopupButton: /BarPopupButton
     barEditor: /BarEditor
+    barLoadingView: /BarLoadingView
+    barLoadingActivityIndicator: /BarLoadingActivityIndicator
     errorView: /ErrorView
     activityIndicator: /ActivityIndicator
 
@@ -46,6 +50,8 @@ DetailView:
     - /MemberStateIndicator
     - /MemberStateLabel
     - /SendInvitationButton
+    - /BarLabel
+    - /BarPopupButton
     - /BarEditor
 
 FirstNameField:
@@ -130,6 +136,28 @@ SendInvitationButton:
       size: 14
       weight: regular
 
+BarLabel:
+  class: UILabel
+
+BarPopupButton:
+  class: UIPopupButton
+  target: /MemberDetailViewController
+  action: changeBar
+  bindings:
+    enabled: {to: /MemberDetailViewController, value: "bar != null"}
+
 BarEditor:
   class: BarEditor
   delegate: /MemberDetailViewController
+
+BarLoadingView:
+  class: UIView
+  backgroundColor:
+    rgba: 0,0,0,0.6
+  subviews:
+    - /BarLoadingActivityIndicator
+
+BarLoadingActivityIndicator:
+  frame: 0,0,20,20
+  class: UIActivityIndicatorView
+  style: light
