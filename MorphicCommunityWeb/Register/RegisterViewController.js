@@ -64,6 +64,10 @@ JSClass("RegisterViewController", UIViewController, {
         if (!this.submitButton.enabled){
             return;
         }
+        if (this.passwordField.text !== this.confirmPasswordField.text){
+            this.showErrorMessageForField(JSBundle.mainBundle.localizedString("errors.passwordMismatch.message", "RegisterScene"), this.confirmPasswordField);
+            return;
+        }
         this.setFieldsEnabled(false);
         if (this.service.authToken !== null){
             this.createCommunity();
@@ -116,7 +120,47 @@ JSClass("RegisterViewController", UIViewController, {
     },
 
     showFieldError: function(badRequest){
-        // TODO: show alert for specific field
+        var field = null;
+        var message = null;
+        if (badRequest.error === "existing_username" || badRequest.error === "existing_email"){
+            field = this.emailField;
+            message = JSBundle.mainBundle.localizedString("errors.emailExists.message", "RegisterScene");
+        }else if (badRequest.error === "malformed_email"){
+            message = JSBundle.mainBundle.localizedString("errors.emailMalformed.message", "RegisterScene");
+            field = this.emailField;
+        }else if (badRequest.error === "bad_password"){
+            message = JSBundle.mainBundle.localizedString("errors.badPassword.message", "RegisterScene");
+            field = this.passwordField;
+        }else if (badRequest.error === "short_password"){
+            message = String.initWithFormat(JSBundle.mainBundle.localizedString("errors.shortPassword.message", "RegisterScene"), badRequest.details.minimum_length);
+            field = this.passwordField;
+        }
+        if (field != null){
+            this.showErrorMessageForField(message, field);
+        }
+    },
+
+    errorField: null,
+    errorPopupWindow: null,
+
+    showErrorMessageForField: function(message, field){
+        this.clearFieldErrorMessage();
+        this.errorField = field;
+        var label = UILabel.init();
+        label.text = message;
+        this.errorPopupWindow = UIPopupWindow.init();
+        this.errorPopupWindow.canBecomeKey = false;
+        this.errorPopupWindow.contentView = label;
+        this.errorPopupWindow.openAdjacentToView(this.errorField, UIPopupWindow.Placement.right);
+        this.errorField.window.firstResponder = this.errorField;
+    },
+
+    clearFieldErrorMessage: function(){
+        if (this.errorPopupWindow !== null){
+            this.errorPopupWindow.close();
+            this.errorPopupWindow = null;
+            this.errorField = null;
+        }
     },
 
     // MARK: - Validation
@@ -124,17 +168,21 @@ JSClass("RegisterViewController", UIViewController, {
     visibleAlertController: null,
 
     textFieldDidChange: function(textField){
+        if (this.errorPopupWindow && (textField === this.errorField) || (this.errorField === this.confirmPasswordField && textField === this.passwordField)){
+            this.clearFieldErrorMessage();
+        }
         this.updateValidation();
     },
 
     textFieldDidReceiveEnter: function(textField){
         if (textField === this.confirmPasswordField){
+            this.confirmPasswordField.window.firstResponder = null;
             this.register();
         }
     },
 
     updateValidation: function(){
-        this.submitButton.enabled = this.communityNameField.text !== "" && this.firstNameField.text !== "" && this.lastNameField.text !== "" && this.emailField.text !== "" && this.passwordField.text !== "" && this.passwordField.text === this.confirmPasswordField.text;
+        this.submitButton.enabled = this.communityNameField.text !== "" && this.firstNameField.text !== "" && this.lastNameField.text !== "" && this.emailField.text !== "" && this.passwordField.text !== "" && this.confirmPasswordField.text !== "";
     },
 
     setFieldsEnabled: function(enabled){

@@ -13,6 +13,7 @@ en:
       message: Sorry, we couldn't complete your registration.  Please try again.
       dismiss.title: Try Again
     emailExists.message: This email address is already registered
-    emailMailformed.message: Please enter a valid email address
+    emailMalformed.message: Please enter a valid email address
     badPassword.message: This password is too easily guessed
     shortPassword.message: Your password must be at least %d characters
+    passwordMismatch.message: Your passwords do not match
