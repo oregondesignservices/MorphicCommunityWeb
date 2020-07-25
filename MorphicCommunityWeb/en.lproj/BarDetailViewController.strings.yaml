@@ -1,6 +1,15 @@
 en:
   name.placeholder:  Bar Name
   removeButton.title: Remove
+  defaultButton.title: Make Default
+  defaultConfirmation:
+    message: This bar will be seen by any member who doesn't have a custom bar
+    delete: Make Default
+    cancel: Cancel
+  defaultError:
+    general.title: Could not save
+    general.message: Sorry, we could make this the default bar.  Please try again.
+    dismiss: OK
   errorView.label.text: Sorry, we couldn't load the bar data
   deleteConfirmation:
     message: This bar will be permanently removed from your community

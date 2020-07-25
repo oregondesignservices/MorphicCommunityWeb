@@ -138,6 +138,7 @@ JSClass("Community", JSObject, {
 });
 
 Community.Notification = {
+    defaultBarChanged: "org.raisingthefloor.CommunityDefaultBarChangedNotification",
     barChanged: "org.raisingthefloor.CommunityBarChangedNotification",
     barDeleted: "org.raisingthefloor.CommunityBarDeletedNotification",
     memberChanged: "org.raisingthefloor.CommunityMemberChangedNotification",

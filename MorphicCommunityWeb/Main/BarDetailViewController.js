@@ -51,6 +51,7 @@ JSClass("BarDetailViewController", UIViewController, {
     detailView: JSOutlet(),
     nameField: JSOutlet(),
     barEditor: JSOutlet(),
+    defaultButton: JSOutlet(),
     removeButton: JSOutlet(),
 
     // MARK: - Loading Data
@@ -94,8 +95,10 @@ JSClass("BarDetailViewController", UIViewController, {
     },
 
     update: function(){
+        var isDefault = this.bar.id === this.community.defaultBarId;
         this.detailView.hidden = false;
-        this.removeButton.hidden = this.bar.id === this.community.defaultBarId;
+        this.removeButton.hidden = isDefault;
+        this.defaultButton.hidden = isDefault || this.bar.id === null;
         this.updateCaption();
         this.view.setNeedsLayout();
     },
@@ -187,6 +190,10 @@ JSClass("BarDetailViewController", UIViewController, {
     confirmDelete: function(sender){
         var message = JSBundle.mainBundle.localizedString("deleteConfirmation.message", "BarDetailViewController");
         var alert = UIAlertController.initWithTitle(null, message);
+        alert.destructiveButtonStyler = UIButtonDefaultStyler.init();
+        alert.destructiveButtonStyler.font = alert.destructiveButtonStyler.font.fontWithPointSize(JSFont.Size.detail).fontWithWeight(JSFont.Weight.bold);
+        alert.destructiveButtonStyler.normalTitleColor = JSColor.initWithRGBA(129/255.0, 43/255.0, 0);
+        alert.destructiveButtonStyler.activeTitleColor = alert.destructiveButtonStyler.normalTitleColor.colorDarkenedByPercentage(0.2);
         alert.addActionWithTitle(JSBundle.mainBundle.localizedString("deleteConfirmation.delete", "BarDetailViewController"), UIAlertAction.Style.destructive, function(){
             this.deleteBar();
         }, this);
@@ -233,6 +240,42 @@ JSClass("BarDetailViewController", UIViewController, {
         }, this);
     },
 
+    confirmMakeDefault: function(sender){
+        var message = JSBundle.mainBundle.localizedString("defaultConfirmation.message", "BarDetailViewController");
+        var alert = UIAlertController.initWithTitle(null, message);
+        alert.addActionWithTitle(JSBundle.mainBundle.localizedString("defaultConfirmation.delete", "BarDetailViewController"), UIAlertAction.Style.default, function(){
+            this.makeDefault();
+        }, this);
+        alert.addActionWithTitle(JSBundle.mainBundle.localizedString("defaultConfirmation.cancel", "BarDetailViewController"), UIAlertAction.Style.cancel);
+        alert.defaultButtonStyler = UIButtonDefaultStyler.init();
+        alert.defaultButtonStyler.font = alert.defaultButtonStyler.font.fontWithPointSize(JSFont.Size.detail).fontWithWeight(JSFont.Weight.bold);
+        alert.defaultButtonStyler.normalTitleColor = JSColor.initWithRGBA(0, 41/255.0, 87/255.0);
+        alert.defaultButtonStyler.activeTitleColor = alert.defaultButtonStyler.normalTitleColor.colorDarkenedByPercentage(0.2);
+        if (sender instanceof UIView){
+            alert.popupAdjacentToView(sender, UIPopupWindow.Placement.below, true);
+        }else{
+            alert.popupCenteredInView(this.view, true);
+        }
+    },
+
+    makeDefault: function(){
+        var community = this.community.dictionaryRepresentation();
+        community.default_bar_id = this.bar.id;
+        this.service.saveCommunity(community, function(result, response){
+            if (result !== Service.Result.success){
+                var title = JSBundle.mainBundle.localizedString("defaultError.general.title", "BarDetailViewController");
+                var message = JSBundle.mainBundle.localizedString("defaultError.general.message", "BarDetailViewController");
+                var alert = UIAlertController.initWithTitle(title, message);
+                alert.addActionWithTitle(JSBundle.mainBundle.localizedString("defaultError.dismiss", "BarDetailViewController"), UIAlertAction.Style.cancel);
+                alert.popupCenteredInView(this.view, true);
+                return;
+            }
+            this.community.defaultBarId = this.bar.id;
+            this.service.notificationCenter.post(Community.Notification.defaultBarChanged, this.community);
+            this.update();
+        }, this);
+    },
+
     // MARK: - Layout
 
     viewDidLayoutSubviews: function(){
@@ -244,10 +287,14 @@ JSClass("BarDetailViewController", UIViewController, {
 
         bounds = this.detailView.bounds;
         var baseline = 16 + this.nameField.font.displayAscender;
-        var removeButtonSize = this.removeButton.intrinsicSize;
-        this.removeButton.frame = JSRect(bounds.size.width - 24 - removeButtonSize.width + this.removeButton.titleInsets.right, baseline - this.removeButton.firstBaselineOffsetFromTop, removeButtonSize.width, removeButtonSize.height);
+        var buttonSize = this.removeButton.intrinsicSize;
+        this.removeButton.frame = JSRect(bounds.size.width - 24 - buttonSize.width + this.removeButton.titleInsets.right, baseline - this.removeButton.firstBaselineOffsetFromTop, buttonSize.width, buttonSize.height);
+
+        buttonSize = this.defaultButton.intrinsicSize;
+        this.defaultButton.frame = JSRect(this.removeButton.frame.origin.x - 24 - buttonSize.width + this.defaultButton.titleInsets.right, baseline - this.defaultButton.firstBaselineOffsetFromTop, buttonSize.width, buttonSize.height);
+
         var x = 24 - this.nameField.textInsets.left;
-        var maxNameSize = JSSize(this.removeButton.frame.origin.x - x - 10, Number.MAX_VALUE);
+        var maxNameSize = JSSize(this.defaultButton.frame.origin.x - x - 10, Number.MAX_VALUE);
         this.nameField.sizeToFitText(maxNameSize);
         this.nameField.position = JSPoint(x + this.nameField.bounds.size.width / 2, baseline - this.nameField.firstBaselineOffsetFromTop + this.nameField.bounds.size.height / 2);
         var y = this.nameField.frame.origin.y + this.nameField.frame.size.height + 40;

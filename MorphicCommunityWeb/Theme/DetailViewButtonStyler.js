@@ -46,6 +46,9 @@ JSClass("DetailViewButtonStyler", UIButtonStyler, {
 
     updateControl: function(button){
         DetailViewButtonStyler.$super.updateControl.call(this, button);
+        if (button._imageView !== null){
+            button._imageView.automaticRenderMode = JSImage.RenderMode.template;
+        }
         if (!button.enabled){
             button.layer.backgroundColor = null;
             if (button._titleLabel !== null){

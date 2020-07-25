@@ -255,6 +255,7 @@ JSClass("CommunityViewController", UIListViewController, {
     barDeletedNotificationId: null,
     memberChangedNotificationId: null,
     memberDeletedNotificationId: null,
+    defaultBarChangedNotificationId: null,
 
     startListeningForCommunityNotifications: function(){
         this.stopListeningForCommunityNotifications();
@@ -262,6 +263,7 @@ JSClass("CommunityViewController", UIListViewController, {
         this.barDeletedNotificationId = this.service.notificationCenter.addObserver(Community.Notification.barDeleted, this.community, this.handleBarDeleted, this);
         this.memberChangedNotificationId = this.service.notificationCenter.addObserver(Community.Notification.memberChanged, this.community, this.handleMemberChanged, this);
         this.memberDeletedNotificationId = this.service.notificationCenter.addObserver(Community.Notification.memberDeleted, this.community, this.handleMemberDeleted, this);
+        this.defaultBarChangedNotificationId = this.service.notificationCenter.addObserver(Community.Notification.defaultBarChanged, this.community, this.handleDefaultBarChanged, this);
     },
 
     stopListeningForCommunityNotifications: function(){
@@ -281,6 +283,33 @@ JSClass("CommunityViewController", UIListViewController, {
             this.service.notificationCenter.removeObserver(Community.Notification.memberDeleted, this.memberDeletedNotification);
             this.memberDeletedNotificationId = null;
         }
+        if (this.defaultBarChangedNotificationId !== null){
+            this.service.notificationCenter.removeObserver(Community.Notification.handleDefaultBarChanged, this.defaultBarChangedNotificationId);
+            this.defaultBarChangedNotificationId = null;
+        }
+    },
+
+    handleDefaultBarChanged: function(){
+        var removingIndexPath1 = JSIndexPath(0, 0);
+        var removingIndexPath2 = JSIndexPath(this.listView.selectedIndexPath);
+        var insertingIndexPath1 = JSIndexPath(0, 0);
+
+        var oldDefaultBar = this.bars[removingIndexPath1.row];
+        var newDefaultBar = this.bars[removingIndexPath2.row];
+
+        this.bars.splice(removingIndexPath2.row, 1);
+        this.bars.splice(removingIndexPath1.row, 1, newDefaultBar);
+
+        var searcher = JSBinarySearcher(this.bars, this.community.barComparison());
+        var newIndex = searcher.insertionIndexForValue(oldDefaultBar);
+        var insertingIndexPath2 = JSIndexPath(0, newIndex);
+        this.bars.splice(newIndex, 0, oldDefaultBar);
+
+        this.listView.deleteRowsAtIndexPaths([removingIndexPath1, removingIndexPath2]);
+        this.listView.insertRowsAtIndexPaths([insertingIndexPath1, insertingIndexPath2]);
+        this.listView.layoutIfNeeded();
+        this._skipNextSelection = true;
+        this.listView.selectedIndexPath = insertingIndexPath1;
     },
 
     handleBarChanged: function(notification){

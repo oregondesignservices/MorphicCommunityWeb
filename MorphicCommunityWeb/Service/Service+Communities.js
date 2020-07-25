@@ -28,6 +28,15 @@ Service.definePropertiesFromExtensions({
         return this.sendRequest(request, completion, target);
     },
 
+    saveCommunity: function(community, completion, target){
+        var url = this.baseURL.appendingPathComponents([this.version, "communities", community.id]);
+        var request = JSURLRequest.initWithURL(url);
+        request.method = JSURLRequest.Method.put;
+        request.object = community;
+        request.addBearerAuthorization(this.authToken);
+        return this.sendRequest(request, completion, target);
+    },
+
     loadCommunityMembers: function(communityId, completion, target){
         var url = this.baseURL.appendingPathComponents([this.version, "communities", communityId, "members"]);
         var request = JSURLRequest.initWithURL(url);

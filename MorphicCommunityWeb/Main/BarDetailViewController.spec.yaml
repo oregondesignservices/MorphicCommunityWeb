@@ -10,6 +10,7 @@ BarDetailViewController:
   outlets:
     detailView: /DetailView
     nameField: /BarNameField
+    defaultButton: /DefaultButton
     removeButton: /RemoveButton
     barEditor: /BarEditor
     errorView: /ErrorView
@@ -37,6 +38,7 @@ DetailView:
   class: UIView
   subviews:
     - /BarNameField
+    - /DefaultButton
     - /RemoveButton
     - /BarEditor
 
@@ -71,6 +73,20 @@ RemoveButton:
     class: DetailViewButtonStyler
     color:
       rgba: 129,43,0
+    font:
+      size: 14
+      weight: regular
+
+DefaultButton:
+  class: UIButton
+  title: .defaultButton.title
+  image: MakeDefaultIcon
+  target: /BarDetailViewController
+  action: confirmMakeDefault
+  styler:
+    class: DetailViewButtonStyler
+    color:
+      rgba: 0,41,87
     font:
       size: 14
       weight: regular
