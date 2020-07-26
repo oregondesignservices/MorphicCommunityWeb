@@ -48,6 +48,8 @@ RegisterViewController:
 
 RegisterForm:
   class: FormView
+  labelSpacing: 7
+  fieldSpacing: 7
   fields:
     -
       label: /CommunityNameLabel

@@ -165,8 +165,6 @@ JSClass("RegisterViewController", UIViewController, {
 
     // MARK: - Validation
 
-    visibleAlertController: null,
-
     textFieldDidChange: function(textField){
         if (this.errorPopupWindow && (textField === this.errorField) || (this.errorField === this.confirmPasswordField && textField === this.passwordField)){
             this.clearFieldErrorMessage();

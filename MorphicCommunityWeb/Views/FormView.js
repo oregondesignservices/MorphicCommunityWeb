@@ -4,8 +4,9 @@
 JSClass("FormView", UIView, {
 
     fields: null,
-    fieldSpacing: 7,
-    labelSpacing: 7,
+    fieldSpacing: 0,
+    labelSpacing: 0,
+    separatorColor: null,
     maximumLabelSize: Number.MAX_VALUE,
 
     initWithFrame: function(frame){
@@ -16,6 +17,9 @@ JSClass("FormView", UIView, {
     initWithSpec: function(spec){
         FormView.$super.initWithSpec.call(this, spec);
         this.fields = [];
+        if (spec.containsKey("separatorColor")){
+            this.separatorColor = spec.valueForKey("separatorColor", JSColor);
+        }
         if (spec.containsKey("fields")){
             var fields = spec.valueForKey("fields");
             var fieldSpec;
@@ -34,6 +38,12 @@ JSClass("FormView", UIView, {
                 this.addField(label, view, extraSpacing);
             }
         }
+        if (spec.containsKey("fieldSpacing")){
+            this.fieldSpacing = spec.valueForKey("fieldSpacing");
+        }
+        if (spec.containsKey("labelSpacing")){
+            this.labelSpacing = spec.valueForKey("labelSpacing");
+        }
     },
 
     addField: function(label, view, extraSpacing){
@@ -41,11 +51,20 @@ JSClass("FormView", UIView, {
             this.addSubview(label);
         }
         this.addSubview(view);
-        this.fields.push({label: label, view: view, extraSpacing: extraSpacing});
+        var separator = null;
+        if (this.separatorColor !== null){
+            separator = UIView.init();
+            separator.backgroundColor = this.separatorColor;
+            this.addSubview(separator);
+        }
+        this.fields.push({label: label, view: view, extraSpacing: extraSpacing, separatorView: separator});
     },
 
     getIntrinsicSize: function(){
-        var size = JSSize(UIView.noIntrinsicSize, (this.fields.length - 1) * this.fieldSpacing);
+        var size = JSSize(UIView.noIntrinsicSize, (this.fields.length - 1) * this.labelSpacing);
+        if (this.separatorColor !== null){
+            size.height += this.fields.length;
+        }
         var field;
         for (var i = 0, l = this.fields.length; i < l; ++i){
             field = this.fields[i];
@@ -80,10 +99,14 @@ JSClass("FormView", UIView, {
             y += field.extraSpacing.top;
             field.view.frame = JSRect(fieldX, y, field.view.intrinsicSize.width == UIView.noIntrinsicSize ? fieldWidth : field.view.intrinsicSize.width, field.view.intrinsicSize.height);
             if (field.label !== null){
-                field.label.frame = JSRect(JSPoint(labelX, y + field.view.firstBaselineOffsetFromTop - field.label.firstBaselineOffsetFromTop), field.label.bounds.size);
+                field.label.frame = JSRect(labelX, y + field.view.firstBaselineOffsetFromTop - field.label.firstBaselineOffsetFromTop, labelWidth, field.label.bounds.size.height);
             }
             y += field.view.bounds.size.height + this.fieldSpacing;
             y += field.extraSpacing.bottom;
+            if (field.separatorView !== null){
+                field.separatorView.frame = JSRect(0, y, this.bounds.size.width, 1);
+                y += 1;
+            }
         }
     }
 

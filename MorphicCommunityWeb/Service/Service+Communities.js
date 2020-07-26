@@ -115,6 +115,16 @@ Service.definePropertiesFromExtensions({
         request.method = JSURLRequest.Method.delete;
         request.addBearerAuthorization(this.authToken);
         return this.sendRequest(request, completion, target);
+    },
+
+    sendCommunityInvitation: function(communityId, invite, completion, target){
+        var url = this.baseURL.appendingPathComponents([this.version, "communities", communityId, "invitations"]);
+        var request = JSURLRequest.initWithURL(url);
+        request.method = JSURLRequest.Method.post;
+        request.object = invite;
+        request.addBearerAuthorization(this.authToken);
+        return this.sendRequest(request, completion, target);
+
     }
 
 });

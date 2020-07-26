@@ -3,6 +3,7 @@
 // #import "RegisterScene.js"
 // #import "MainScene.js"
 // #import "Service+Extensions.js"
+// #import "Theme.js"
 'use strict';
 
 (function(){

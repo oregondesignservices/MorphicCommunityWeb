@@ -1,0 +1,68 @@
+File's Owner: /InviteWindowController
+
+InviteWindowController:
+  class: InviteWindowController
+  window:
+    frame: 0,0,600,0
+    title: .window.title
+    heightTracksContent: true
+    toolbar:
+      styler: $Theme.default.toolbarStyler
+      items:
+        -
+          title: .sendButton.title
+          tooltip: .sendButton.tooltip
+          view:
+            class: UIButton
+            styler: $Theme.default.toolbarButtonStyler
+            image: SendInviteIcon
+          target: /InviteWindowController
+          action: send
+    contentView:
+      backgroundColor: white
+      subviews:
+        - /FormView
+        - /MessageField
+  outlets:
+    toField: /ToField
+    formView: /FormView
+    messageField: /MessageField
+
+FormView:
+  class: FormView
+  separatorColor:
+    rgba: 235,235,235
+  fields:
+    -
+      label: /ToLabel
+      view: /ToField
+
+ToLabel:
+  class: UILabel
+  text: .to.label.text
+  textAlignment: right
+  textInsets: /FormLabelInsets
+  textColor:
+    rgba: 102,102,102
+
+ToField:
+  class: UITextField
+  placeholder: .to.field.placeholder
+  styler: custom
+  delegate: /InviteWindowController
+  nextKeyView: /MessageField
+  textInsets: 4,0
+  bindings:
+    text: {to: /InviteWindowController, value: invitation.toEmail}
+
+FormLabelInsets: 3,7
+
+MessageField:
+  class: UITextField
+  multiline: true
+  placeholder: .message.placeholder
+  textInsets: 4,7
+  styler: custom
+  nextKeyView: /ToField
+  bindings:
+    text: {to: /InviteWindowController, value: invitation.message}

@@ -2,6 +2,7 @@
 // #import "Service.js"
 // #import "Community.js"
 // #import "Member.js"
+// #import "InviteWindowController.js"
 'use strict';
 JSClass("MemberDetailViewController", UIViewController, {
 
@@ -31,11 +32,13 @@ JSClass("MemberDetailViewController", UIViewController, {
             this.update();
             this.view.window.firstResponder = this.firstNameField;
             this.firstNameField.selectAll();
+            this.loadBar();
         }
     },
 
     viewWillDisappear: function(animated){
         MemberDetailViewController.$super.viewWillDisappear.call(this, animated);
+        this.closeWindows();
     },
 
     viewDidDisappear: function(animated){
@@ -194,7 +197,7 @@ JSClass("MemberDetailViewController", UIViewController, {
                 break;
             case Member.State.invited:
                 this.sendInvitationButton.hidden = false;
-                this.sendInvitationButton.titleLabel.text = JSBundle.localizedString("resendInviteButton.title", "MemberDetailViewController");
+                this.sendInvitationButton.titleLabel.text = JSBundle.mainBundle.localizedString("resendInviteButton.title", "MemberDetailViewController");
                 break;
             case Member.State.active:
                 this.sendInvitationButton.hidden = true;
@@ -230,6 +233,8 @@ JSClass("MemberDetailViewController", UIViewController, {
         if (this.member.id !== null){
             this.saveMember();
         }
+        this.updateBarLabel();
+        this.view.setNeedsLayout();
         this.updateCaption();
     },
 
@@ -237,6 +242,8 @@ JSClass("MemberDetailViewController", UIViewController, {
         if (this.member.id !== null){
             this.saveMember();
         }
+        this.updateBarLabel();
+        this.view.setNeedsLayout();
     },
 
     textFieldDidReceiveEnter: function(textField){
@@ -408,7 +415,31 @@ JSClass("MemberDetailViewController", UIViewController, {
     // MARK: - Invitations
 
     sendInvitation: function(){
-        // TODO:
+        if (this.inviteWindowController === null){
+            this.inviteWindowController = InviteWindowController.initWithSpecName("InviteWindowController");
+            this.inviteWindowController.delegate = this;
+            this.inviteWindowController.service = this.service;
+            this.inviteWindowController.community = this.community;
+            this.inviteWindowController.member = this.member;
+        }
+        this.inviteWindowController.makeKeyAndOrderFront();
+    },
+
+    // MARK: - Window Management
+
+    inviteWindowController: null,
+
+    windowControllerDidClose: function(windowController){
+        if (windowController === this.inviteWindowController){
+            this.inviteWindowController = null;
+            this.update();
+        }
+    },
+
+    closeWindows: function(){
+        if (this.inviteWindowController !== null){
+            this.inviteWindowController.close();
+        }
     },
 
     // MARK: - Layout
@@ -421,33 +452,42 @@ JSClass("MemberDetailViewController", UIViewController, {
         this.errorView.position = bounds.center;
 
         bounds = this.detailView.bounds;
+        var x = bounds.size.width - 24;
         var baseline = 16 + this.firstNameField.firstBaselineOffsetFromTop;
-        var removeButtonSize = this.removeButton.intrinsicSize;
-        this.removeButton.frame = JSRect(bounds.size.width - 24 - removeButtonSize.width + this.removeButton.titleInsets.right, baseline - this.removeButton.firstBaselineOffsetFromTop, removeButtonSize.width, removeButtonSize.height);
-        var x = 24 - this.firstNameField.textInsets.left;
-        var maxNameSize = JSSize((this.removeButton.frame.origin.x - x - 12) / 2, Number.MAX_VALUE);
+        var buttonSize;
+        if (!this.removeButton.hidden){
+            buttonSize = this.removeButton.intrinsicSize;
+            this.removeButton.frame = JSRect(x - buttonSize.width + this.removeButton.titleInsets.right, baseline - this.removeButton.firstBaselineOffsetFromTop, buttonSize.width, buttonSize.height);
+            x -= buttonSize.width;
+            x -= 24;
+        }
+        if (!this.sendInvitationButton.hidden){
+            buttonSize = this.sendInvitationButton.intrinsicSize;
+            this.sendInvitationButton.frame = JSRect(x - buttonSize.width, baseline - this.sendInvitationButton.firstBaselineOffsetFromTop, buttonSize.width, buttonSize.height);
+            x -= buttonSize.width;
+            x -= 24;
+        }
+        this.stateLabel.sizeToFit();
+        this.stateLabel.frame = JSRect(x - this.stateLabel.bounds.size.width, baseline - this.stateLabel.firstBaselineOffsetFromTop, this.stateLabel.bounds.size.width, this.stateLabel.bounds.size.height);
+        x -= this.stateLabel.bounds.size.width;
+        x -= 7;
+        this.stateIndicator.position = JSPoint(x - this.stateIndicator.bounds.size.width / 2, this.stateLabel.position.y);
+        x -= this.stateIndicator.bounds.size.width;
+        x -= 12;
+        var maxX = x;
+
+        x = 24 - this.firstNameField.textInsets.left;
+        var maxNameSize = JSSize((maxX - x) / 2, Number.MAX_VALUE);
         this.firstNameField.sizeToFitText(maxNameSize);
         this.lastNameField.sizeToFitText(maxNameSize);
         this.firstNameField.position = JSPoint(x + this.firstNameField.bounds.size.width / 2, baseline - this.firstNameField.firstBaselineOffsetFromTop + this.firstNameField.bounds.size.height / 2);
         x += this.firstNameField.bounds.size.width;
         x += 2;
         this.lastNameField.position = JSPoint(x + this.lastNameField.bounds.size.width / 2, this.firstNameField.position.y);
-
-        var y = this.firstNameField.frame.origin.y + this.firstNameField.frame.size.height + 10;
-        baseline = y + this.stateLabel.firstBaselineOffsetFromTop;
-        this.stateLabel.sizeToFit();
-        x = 24;
-        this.stateIndicator.position = JSPoint(x + this.stateIndicator.bounds.size.width / 2, y + (this.stateLabel.bounds.size.height) / 2);
-        x += this.stateIndicator.bounds.size.width + 7;
-        this.stateLabel.position = JSPoint(x + this.stateLabel.bounds.size.width / 2, y + this.stateLabel.bounds.size.height / 2);
-        x += this.stateLabel.bounds.size.width;
-        x += 24;
-        var inviteButtonSize = this.sendInvitationButton.intrinsicSize;
-        this.sendInvitationButton.frame = JSRect(x, baseline - this.sendInvitationButton.firstBaselineOffsetFromTop, inviteButtonSize.width, inviteButtonSize.height);
-        y += this.stateLabel.frame.size.height;
-
-        x = 24;
+        var y = baseline + this.firstNameField.lastBaselineOffsetFromBottom;
         y += 20;
+
+        x = 24;
         baseline = y + this.barLabel.firstBaselineOffsetFromTop;
         this.barLabel.sizeToFit();
         this.barLabel.frame = JSRect(x, y, this.barLabel.bounds.size.width, this.barLabel.bounds.size.height);

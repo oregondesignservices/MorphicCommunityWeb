@@ -1,0 +1,14 @@
+en:
+  window.title: Invite to Community
+  to:
+    label.text: "To:"
+    field.placeholder: email@example.com
+  message.placeholder: Add a personalized message
+  sendButton:
+    title: Send Invitation
+    tooltip: Send the invitation
+  errors:
+    invalidEmail.message: This email address is not valid
+    general.title: Unable to Send Invite
+    general.message: Sorry, we were unable to send the invite.  Please try again.
+    general.dismiss: OK
