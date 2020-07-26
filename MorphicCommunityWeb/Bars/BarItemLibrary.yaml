@@ -3,9 +3,35 @@ items:
     kind: link
     title: .items.genericLink.title
     description: .items.genericLink.description
-    icon: BarItemIconLink
+    icon: BarItemLibraryIconLink
+    suggestedLabel: .items.genericLink.suggestedLabel
+    suggestedImage: link-solid
+    configuration:
+      url: "https://"
   -
     kind: link
     title: .items.skypeMeetingLink.title
     description: .items.skypeMeetingLink.description
-    icon: BarItemIconSkype
+    icon: BarItemLibraryIconSkype
+    suggestedLabel: .items.skypeMeetingLink.suggestedLabel
+    suggestedImage: video-solid
+    configuration:
+      url: "https://join.skype.com/"
+  -
+    kind: application
+    title: .items.nativeEmail.title
+    description: .items.nativeEmail.description
+    icon: BarItemLibraryIconEmail
+    suggestedLabel: .items.nativeEmail.suggestedLabel
+    suggestedImage: envelope-solid
+    configuration:
+      default: email
+  -
+    kind: link
+    title: .items.gmail.title
+    description: .items.gmail.description
+    icon: BarItemLibraryIconGmail
+    suggestedLabel: .items.gmail.suggestedLabel
+    suggestedImage: google-brands
+    configuration:
+      url: https://mail.google.com

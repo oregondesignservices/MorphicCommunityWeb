@@ -70,8 +70,10 @@ JSClass("CommunityViewController", UIListViewController, {
                     this.listView.reloadData();
                     if (this.bars.length > 0){
                         this.listView.selectedIndexPath = JSIndexPath(0, 0);
+                        this.showBarDetail(this.bars[0]);
                     }else if (this.members.length > 0){
                         this.listView.selectedIndexPath = JSIndexPath(1, 0);
+                        this.showMemberDetail(this.members[0]);
                     }
                 }
             };
@@ -181,13 +183,7 @@ JSClass("CommunityViewController", UIListViewController, {
         return cell;
     },
 
-    _skipNextSelection: false,
-
     listViewDidSelectCellAtIndexPath: function(listView, indexPath){
-        if (this._skipNextSelection){
-            this._skipNextSelection = false;
-            return;
-        }
         if (indexPath.section === 0){
             var bar = this.bars[indexPath.row];
             this.showBarDetail(bar);
@@ -305,10 +301,9 @@ JSClass("CommunityViewController", UIListViewController, {
         var insertingIndexPath2 = JSIndexPath(0, newIndex);
         this.bars.splice(newIndex, 0, oldDefaultBar);
 
-        this.listView.deleteRowsAtIndexPaths([removingIndexPath1, removingIndexPath2]);
-        this.listView.insertRowsAtIndexPaths([insertingIndexPath1, insertingIndexPath2]);
+        this.listView.deleteRowsAtIndexPaths([removingIndexPath1, removingIndexPath2], UIListView.RowAnimation.left);
+        this.listView.insertRowsAtIndexPaths([insertingIndexPath1, insertingIndexPath2], UIListView.RowAnimation.left);
         this.listView.layoutIfNeeded();
-        this._skipNextSelection = true;
         this.listView.selectedIndexPath = insertingIndexPath1;
     },
 
@@ -338,7 +333,6 @@ JSClass("CommunityViewController", UIListViewController, {
             this.listView.deleteRowAtIndexPath(indexPath, UIListView.RowAnimation.left);
             this.listView.insertRowAtIndexPath(newIndexPath, UIListView.RowAnimation.left);
             this.listView.layoutIfNeeded();
-            this._skipNextSelection = true;
             this.listView.selectedIndexPath = newIndexPath;
         }
     },
@@ -353,6 +347,7 @@ JSClass("CommunityViewController", UIListViewController, {
         this.listView.deleteRowAtIndexPath(indexPath, UIListView.RowAnimation.left);
         this.listView.layoutIfNeeded();
         this.listView.selectedIndexPath = JSIndexPath(0, indexPath.row < this.bars.length ? indexPath.row : indexPath.row - 1);
+        this.showBarDetail(this.bars[this.listView.selectedIndexPath.row]);
     },
 
     handleMemberChanged: function(notification){
@@ -383,7 +378,6 @@ JSClass("CommunityViewController", UIListViewController, {
             this.listView.deleteRowAtIndexPath(indexPath, UIListView.RowAnimation.left);
             this.listView.insertRowAtIndexPath(newIndexPath, UIListView.RowAnimation.left);
             this.listView.layoutIfNeeded();
-            this._skipNextSelection = true;
             this.listView.selectedIndexPath = newIndexPath;
         }
     },
@@ -398,6 +392,7 @@ JSClass("CommunityViewController", UIListViewController, {
         this.listView.deleteRowAtIndexPath(indexPath, UIListView.RowAnimation.left);
         this.listView.layoutIfNeeded();
         this.listView.selectedIndexPath = JSIndexPath(1, indexPath.row < this.members.length ? indexPath.row : indexPath.row - 1);
+        this.showMemberDetail(this.members[this.listView.selectedIndexPath.row]);
     },
 
     // MARK: - Actions
@@ -414,6 +409,7 @@ JSClass("CommunityViewController", UIListViewController, {
         this.listView.insertRowAtIndexPath(indexPath, UIListView.RowAnimation.left);
         this.listView.layoutIfNeeded();
         this.listView.selectedIndexPath = indexPath;
+        this.showBarDetail(bar);
     },
 
     addMember: function(){
@@ -426,6 +422,7 @@ JSClass("CommunityViewController", UIListViewController, {
         this.listView.insertRowAtIndexPath(indexPath, UIListView.RowAnimation.left);
         this.listView.layoutIfNeeded();
         this.listView.selectedIndexPath = indexPath;
+        this.showMemberDetail(member);
     },
 
     // MARK: - Layout

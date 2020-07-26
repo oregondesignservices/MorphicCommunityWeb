@@ -99,6 +99,7 @@ JSClass("BarDetailViewController", UIViewController, {
         this.detailView.hidden = false;
         this.removeButton.hidden = isDefault;
         this.defaultButton.hidden = isDefault || this.bar.id === null;
+        this.barEditor.bar = this.bar;
         this.updateCaption();
         this.view.setNeedsLayout();
     },

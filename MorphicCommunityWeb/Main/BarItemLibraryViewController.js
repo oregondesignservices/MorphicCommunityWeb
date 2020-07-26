@@ -1,5 +1,6 @@
 // #import UIKit
 // #import "BarItemLibrary.js"
+// #import "Bar.js"
 'use strict';
 
 JSClass("BarItemLibraryViewController", UIViewController, {
@@ -70,12 +71,17 @@ JSClass("BarItemLibraryViewController", UIViewController, {
 
     pasteboardItemsForListViewAtIndexPath: function(listView, indexPath){
         var libraryItem = this.items[indexPath.row];
-        var barItem = {
-            kind: libraryItem.kind
-        };
+        var item = BarItem.initWithKind(libraryItem.kind);
+        item.configuration = JSDeepCopy(libraryItem.configuration);
+        if (libraryItem.suggestedLabel){
+            item.label = libraryItem.suggestedLabel;
+        }
+        if (libraryItem.suggestedImage){
+            item.imageURL = JSURL.initWithString(libraryItem.suggestedImage);
+        }
         this._dragImage = JSImage.initWithResourceName(libraryItem.icon);
         return [
-            {objectValue: barItem, type: "x-morphic-community/bar-item"}
+            {objectValue: item.dictionaryRepresentation(), type: "x-morphic-community/bar-item"}
         ];
     },
 

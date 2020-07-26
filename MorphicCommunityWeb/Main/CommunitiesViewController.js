@@ -90,7 +90,6 @@ JSClass("CommunitiesViewController", UIViewController, {
             }
             this.showCommunity(this.community, false);
             this.listView.reloadData();
-            this._skipNextSelection = true;
             this.listView.selectedIndexPath = JSIndexPath(0, selectedCommunityIndex);
             this.hideActivityIndicator();
             return;
@@ -144,13 +143,7 @@ JSClass("CommunitiesViewController", UIViewController, {
         return cell;
     },
 
-    _skipNextSelection: false,
-
     listViewDidSelectCellAtIndexPath: function(listView, indexPath){
-        if (this._skipNextSelection){
-            this._skipNextSelection = false;
-            return;
-        }
         var community = this.communities[indexPath.row];
         this.showCommunity(community, true);
     },

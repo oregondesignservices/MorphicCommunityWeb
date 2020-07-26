@@ -3,6 +3,16 @@ en:
     genericLink:
       title: Webpage Shortcut
       description: A button that opens the specified website
+      suggestedLabel: Web Page with a long label
     skypeMeetingLink:
       title: Skype Call
-      description: A button that will open Skype and join a preset conference link
+      description: A button that opens and joins a configured Skype conference call
+      suggestedLabel: Video Call
+    nativeEmail:
+      title: Email
+      description: A button that opens the computer's default email application
+      suggestedLabel: Email
+    gmail:
+      title: Gmail
+      description: A button that opens Gmail in a web browser
+      suggestedLabel: Email

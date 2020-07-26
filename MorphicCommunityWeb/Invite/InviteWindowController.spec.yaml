@@ -7,14 +7,13 @@ InviteWindowController:
     title: .window.title
     heightTracksContent: true
     toolbar:
-      styler: $Theme.default.toolbarStyler
       items:
         -
           title: .sendButton.title
           tooltip: .sendButton.tooltip
           view:
             class: UIButton
-            styler: $Theme.default.toolbarButtonStyler
+            styler: toolbar
             image: SendInviteIcon
           target: /InviteWindowController
           action: send

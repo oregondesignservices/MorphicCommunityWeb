@@ -75,16 +75,19 @@ JSClass("MemberDetailViewController", UIViewController, {
 
     loadBar: function(){
         this.showBarLoading();
-        this.service.loadCommunityBar(this.community.id, this.member.barId || this.community.defaultBarId, function(result, bar){
+        var loadingBarId = this.member.barId || this.community.defaultBarId;
+        this.service.loadCommunityBar(this.community.id, loadingBarId, function(result, bar){
+            var latestMemberBarId = this.member.barId || this.community.defaultBarId;
+            if (latestMemberBarId != loadingBarId){
+                return;
+            }
             this.hideBarLoading();
             if (result !== Service.Result.success){
                 this.barEditor.hidden = true;
                 return;
             }
-            if ((this.member.barId !== null && bar.id === this.member.barId) || (bar.id === this.community.defaultBarId)){
-                this.bar = Bar.initWithDictionary(bar);
-                // TODO: populate bar editor
-            }
+            this.bar = Bar.initWithDictionary(bar);
+            this.barEditor.bar = this.bar;
         }, this);
     },
 

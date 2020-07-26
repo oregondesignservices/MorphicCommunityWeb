@@ -2,23 +2,34 @@
 // #import "DesktopView.js"
 // #import "BarView.js"
 // #import "BarItemView.js"
+// #import "Bar.js"
 'use strict';
 
 JSProtocol("BarEditorDelegate", JSProtocol, {
 
     barEditorDidInsertItemAtIndex: function(barEditor, index){},
     barEditorDidRemoveItemAtIndex: function(barEditor, index){},
-    barEditorDidChangeItemAtIndex: function(barEditor, index){}
+    barEditorDidSelectItemAtIndex: function(barEditor, index){}
 
 });
 
 JSClass("BarEditor", UIView, {
+
+
+    initWithFrame: function(frame){
+        BarEditor.$super.initWithFrame.call(this, frame);
+        this._commonBarEditorInit();
+    },
 
     initWithSpec: function(spec){
         BarEditor.$super.initWithSpec.call(this, spec);
         if (spec.containsKey("delegate")){
             this.delegate = spec.valueForKey("delegate");
         }
+        this._commonBarEditorInit();
+    },
+
+    _commonBarEditorInit: function(){
         this.clipsToBounds = true;
         this.captionLabel = UILabel.init();
         this.captionLabel.textColor = JSColor.white;
@@ -32,10 +43,17 @@ JSClass("BarEditor", UIView, {
         this.desktopContainer.backgroundColor = JSColor.white;
         this.desktopView = DesktopView.init();
         this.barView = BarView.init();
+        this.barView.editor = this;
         this.barView.borderColor = JSColor.black;
         this.barView.borderWidth  = 0;
         this.barView.maskedBorders = UIView.Sides.minX | UIView.Sides.maxY;
         this.barView.backgroundColor = JSColor.white;
+
+        this.selectionIndicator = UIView.init();
+        this.selectionIndicator.backgroundColor = JSColor.initWithRGBA(0, 41/255.0, 87/255.0, 0.3);
+        this.selectionIndicator.cornerRadius = 2;
+        this.selectionIndicator.hidden = true;
+        this.barView.insertSubviewAtIndex(this.selectionIndicator, 0);
 
         this.addSubview(this.desktopContainer);
         this.addSubview(this.captionLabel);
@@ -49,6 +67,162 @@ JSClass("BarEditor", UIView, {
     captionLabel: null,
     desktopView: null,
     barView: null,
+
+    // MARK: - Bar
+
+    bar: JSDynamicProperty('_bar', 1),
+
+    setBar: function(bar){
+        this._bar = bar;
+        var i, l;
+        for (i = this.barView.itemViews.length - 1; i >= 0; --i){
+            this.barView.removeItemViewAtIndex(i);
+        }
+        var item, itemView;
+        for (i = bar.items.length; i < l; ++i){
+            item = bar.items[i];
+            itemView = BarItemView.initWithItem(item);
+            bar.insertItemViewAtIndex(itemView, i);
+        }
+    },
+
+    // MARK: - Selection
+
+    selectedItemIndex: JSDynamicProperty('_selectedItemIndex', -1),
+    selectionIndicator: null,
+
+    setSelectedItemIndex: function(selectedItemIndex){
+        this._selectedItemIndex = selectedItemIndex;
+        var view = this.viewForItemAtIndex(this._selectedItemIndex);
+        if (view !== null){
+            var rect = this.selectionIndicator.superview.convertRectFromView(view.bounds, view);
+            this.selectionIndicator.frame = rect.rectWithInsets(JSInsets(-5));
+            this.selectionIndicator.hidden = false;
+        }else{
+            this.selectionIndicator.hidden = true;
+        }
+    },
+
+    viewForItemAtIndex: function(index){
+        if (index < 0 || index >= this.barView.itemViews.length){
+            return null;
+        }
+        return this.barView.itemViews[index];
+    },
+
+    // MARK: - Details
+
+    detailsWindow: null,
+
+    showDetailsForItemAtIndex: function(index){
+        this.hideDetails();
+        this.selectedItemIndex = index;
+        var item = this.bar.items[index];
+        // TODO: create and show details window based on item kind
+    },
+
+    hideDetails: function(){
+        if (this.detailsWindow !== null){
+            this.detailsWindow.close();
+            this.detailsWindow = null;
+        }
+    },
+
+    // MARK: - Drag Destination
+
+    dragDestinationAnimator: null,
+
+    setDragDestination: function(isDestination){
+        if (this.dragDestinationAnimator !== null){
+            this.dragDestinationAnimator.reverse();
+        }else{
+            this.dragDestinationAnimator = UIViewPropertyAnimator.initWithDuration(0.1);
+            var editor = this;
+            this.dragDestinationAnimator.addAnimations(function(){
+                if (isDestination){
+                    editor.desktopView.alpha = 0.2;
+                    editor.barView.borderWidth = 2;
+                }else{
+                    editor.desktopView.alpha = 1;
+                    editor.barView.borderWidth = 0;
+                }
+            });
+            this.dragDestinationAnimator.addCompletion(function(){
+                editor.dragDestinationAnimator = null;
+            });
+            this.dragDestinationAnimator.start();
+        }
+    },
+
+    draggingEntered: function(session){
+        if (session.pasteboard.containsType("x-morphic-community/bar-item")){
+            this.setDragDestination(true);
+            this.updateItemDropLocation(session);
+            return UIDragOperation.copy;
+        }
+        return UIDragOperation.none;
+    },
+
+    draggingUpdated: function(session){
+        this.updateItemDropLocation(session);
+        return UIDragOperation.copy;
+    },
+
+    draggingExited: function(session){
+        this.setDragDestination(false);
+        this.updateItemDropLocation(session, true);
+    },
+
+    dropLocationAnimator: null,
+
+    updateItemDropLocation: function(session, exited){
+        var barLocation = this.barView.convertPointFromScreen(session.screenLocation);
+        var oldIndex = this.barView.targetItemViewIndex;
+        var newIndex = exited ? -1 : this.barView.targetItemViewIndexForLocation(barLocation);
+        if (newIndex !== oldIndex){
+            if (this.dropLocationAnimator !== null){
+                this.dropLocationAnimator.stop();
+                // FIXME: stop animation and set model to current presentation values
+            }
+            var editor = this;
+            this.barView.targetItemViewIndex = newIndex;
+            this.dropLocationAnimator = UIViewPropertyAnimator.initWithDuration(0.1);
+            this.dropLocationAnimator.addAnimations(function(){
+                editor.barView.layoutIfNeeded();
+            });
+            this.dropLocationAnimator.addCompletion(function(){
+                editor.dropLocationAnimator = null;
+            });
+            this.dropLocationAnimator.start();
+        }
+    },
+
+    performDragOperation: function(session){
+        this.setDragDestination(false);
+
+        var index = this.barView.targetItemViewIndex;
+
+        var itemDictionary = session.pasteboard.objectForType("x-morphic-community/bar-item");
+        var item = BarItem.initWithDictionary(itemDictionary);
+        this.bar.items.splice(index, 0, item);
+
+        var itemView = BarItemView.initWithItem(item);
+        this.barView.insertItemViewAtIndex(itemView, index);
+        this.barView.targetItemViewIndex = -1;
+
+        var editor = this;
+        var animator = UIViewPropertyAnimator.initWithDuration(0.1);
+        animator.addAnimations(function(){
+            editor.barView.layoutIfNeeded();
+        });
+
+        if (this.delegate && this.delegate.barEditorDidInsertItemAtIndex){
+            this.delegate.barEditorDidInsertItemAtIndex(this, index);
+        }
+    },
+
+    // MARK: - Layout
+
     barWidth: 120,
     desktopHeight: 800,
 
@@ -67,61 +241,7 @@ JSClass("BarEditor", UIView, {
         this.barView.frame = JSRect(this.desktopContainer.bounds.size.width - this.barWidth, 0, this.barWidth, this.desktopContainer.bounds.size.height - this.desktopView.taskbarHeight);
     },
 
-    dragDestinationAnimator: null,
-
-    toggleDragDestination: function(){
-
-    },
-
-    draggingEntered: function(session){
-        if (session.pasteboard.containsType("x-morphic-community/bar-item")){
-            if (this.dragDestinationAnimator !== null){
-                this.dragDestinationAnimator.reverse();
-            }else{
-                this.dragDestinationAnimator = UIViewPropertyAnimator.initWithDuration(0.1);
-                var editor = this;
-                this.dragDestinationAnimator.addAnimations(function(){
-                    editor.desktopView.alpha = 0.2;
-                    editor.barView.borderWidth = 2;
-                });
-                this.dragDestinationAnimator.addCompletion(function(){
-                    editor.dragDestinationAnimator = null;
-                });
-                this.dragDestinationAnimator.start();
-            }
-            return UIDragOperation.copy;
-        }
-        return UIDragOperation.none;
-    },
-
-    draggingUpdated: function(session){
-        return UIDragOperation.copy;
-    },
-
-    draggingExited: function(session){
-        if (this.dragDestinationAnimator !== null){
-            this.dragDestinationAnimator.reverse();
-        }else{
-            this.dragDestinationAnimator = UIViewPropertyAnimator.initWithDuration(0.1);
-            var editor = this;
-            this.dragDestinationAnimator.addAnimations(function(){
-                editor.desktopView.alpha = 1;
-                editor.barView.borderWidth = 0;
-            });
-            this.dragDestinationAnimator.addCompletion(function(){
-                editor.dragDestinationAnimator = null;
-            });
-            this.dragDestinationAnimator.start();
-        }
-    },
-
-    performDragOperation: function(session){
-        this.draggingExited(session);
-        var item = session.pasteboard.objectForType("x-morphic-community/bar-item");
-        var itemView = BarItemView.init();
-        itemView.titleLabel.text = "Title";
-        this.barView.addItemView(itemView);
-    },
+    // MARK: - Zooming
 
     zoomed: false,
 
