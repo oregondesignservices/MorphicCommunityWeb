@@ -72,6 +72,9 @@ JSClass("BarView", UIView, {
         for (var i = index, l = this.itemViews.length; i < l; ++i){
             this.itemViews[i].index -= 1;
         }
+        if (this.targetItemViewIndex >= 0 && index < this.targetItemViewIndex){
+            this.targetItemViewIndex -= 1;
+        }
         this.setNeedsLayout();
     },
 
@@ -82,6 +85,9 @@ JSClass("BarView", UIView, {
         var itemView;
         for (var i = 0, l = this.itemViews.length; i < l; ++i){
             itemView = this.itemViews[i];
+            if (itemView.hidden){
+                continue;
+            }
             itemView.sizeToFitSize(maxItemSize);
             if (i === this.targetItemViewIndex){
                 origin.y += this.targetItemHeight;

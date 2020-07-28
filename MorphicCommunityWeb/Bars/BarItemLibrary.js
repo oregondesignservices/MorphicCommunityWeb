@@ -12,8 +12,10 @@ JSClass("BarItemLibrary", JSObject, {
             item = this.items[i];
             item.title = bundle.localizedString(item.title.substr(1), "BarItemLibrary");
             item.description = bundle.localizedString(item.description.substr(1), "BarItemLibrary");
-            if (item.suggestedLabel){
-                item.suggestedLabel = bundle.localizedString(item.suggestedLabel.substr(1), "BarItemLibrary");
+            if (item.configuration){
+                if (item.configuration.label){
+                    item.configuration.label = bundle.localizedString(item.configuration.label.substr(1), "BarItemLibrary");
+                }
             }
         }
     },

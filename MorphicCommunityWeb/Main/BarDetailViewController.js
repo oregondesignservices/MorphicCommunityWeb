@@ -143,6 +143,10 @@ JSClass("BarDetailViewController", UIViewController, {
         }
     },
 
+    barEditorDidChange: function(barEditor){
+        // this.saveBar();
+    },
+
     saveTask: null,
     saveQueued: false,
 

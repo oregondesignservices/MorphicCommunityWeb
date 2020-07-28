@@ -3,13 +3,12 @@
 // #import "BarView.js"
 // #import "BarItemView.js"
 // #import "Bar.js"
+// #import "BarItemDetailViewController.js"
 'use strict';
 
 JSProtocol("BarEditorDelegate", JSProtocol, {
 
-    barEditorDidInsertItemAtIndex: function(barEditor, index){},
-    barEditorDidRemoveItemAtIndex: function(barEditor, index){},
-    barEditorDidSelectItemAtIndex: function(barEditor, index){}
+    barEditorDidChange: function(barEditor, index){},
 
 });
 
@@ -31,17 +30,26 @@ JSClass("BarEditor", UIView, {
 
     _commonBarEditorInit: function(){
         this.clipsToBounds = true;
+
+        // The caption label gives the user a small description of what they're seeing
         this.captionLabel = UILabel.init();
         this.captionLabel.textColor = JSColor.white;
         this.captionLabel.font = JSFont.systemFontOfSize(JSFont.Size.detail);
         this.captionLabel.textAlignment = JSTextAlignment.center;
         this.captionLabel.maximumNumberOfLines = 1;
         this.captionLabel.textInsets = JSInsets(2, 10);
+
+        // The desktop container hold both the desktop view and the simulated bar
+        // and gets scaled to fit the available space
         this.desktopContainer = UIView.init();
         this.desktopContainer.anchorPoint = JSPoint.Zero;
         this.desktopContainer.clipsToBounds = true;
         this.desktopContainer.backgroundColor = JSColor.white;
+
+        // The desktop view shows a simulated Windows desktop
         this.desktopView = DesktopView.init();
+
+        // The bar view shows a simulated morphic bar
         this.barView = BarView.init();
         this.barView.editor = this;
         this.barView.borderColor = JSColor.black;
@@ -49,6 +57,8 @@ JSClass("BarEditor", UIView, {
         this.barView.maskedBorders = UIView.Sides.minX | UIView.Sides.maxY;
         this.barView.backgroundColor = JSColor.white;
 
+        // The selection indicator sits behind bar items and shows which one,
+        // if any, is selected
         this.selectionIndicator = UIView.init();
         this.selectionIndicator.backgroundColor = JSColor.initWithRGBA(0, 41/255.0, 87/255.0, 0.3);
         this.selectionIndicator.cornerRadius = 2;
@@ -61,6 +71,10 @@ JSClass("BarEditor", UIView, {
         this.desktopContainer.addSubview(this.barView);
         this.backgroundColor = JSColor.black;
         this.setNeedsLayout();
+
+        // For ease of use, the entire bar editor, including the simulated
+        // desktop, acts as a dropzone for dragged bar items.  As seen below,
+        // the bar view gets highlighted when dragging anywhere over the editor
         this.registerForDraggedTypes(["x-morphic-community/bar-item"]);
     },
 
@@ -112,19 +126,48 @@ JSClass("BarEditor", UIView, {
 
     // MARK: - Details
 
-    detailsWindow: null,
+    itemDetailViewController: null,
 
     showDetailsForItemAtIndex: function(index){
         this.hideDetails();
         this.selectedItemIndex = index;
         var item = this.bar.items[index];
-        // TODO: create and show details window based on item kind
+        var view = this.viewForItemAtIndex(index);
+        this.itemDetailViewController = BarItemDetailViewController.init();
+        this.itemDetailViewController.item = this.bar.items[index];
+        this.itemDetailViewController.delegate = this;
+        this.itemDetailViewController.popupAdjacentToView(view, UIPopupWindow.Placement.left);
     },
 
     hideDetails: function(){
-        if (this.detailsWindow !== null){
-            this.detailsWindow.close();
-            this.detailsWindow = null;
+        if (this.itemDetailViewController !== null){
+            this.itemDetailViewController.dismiss();
+            this.itemDetailViewController = null;
+        }
+    },
+
+    barItemDetailViewDidFinishEditing: function(){
+        if (this.delegate && this.delegate.barEditorDidChange){
+            this.selectedItemIndex = -1;
+            this.delegate.barEditorDidChange(this);
+        }
+    },
+
+    draggingItemIndex: null,
+
+    didBeginDraggingItemViewAtIndex: function(index){
+        this.draggingItemIndex = index;
+        var view = this.viewForItemAtIndex(index);
+        this.barView.targetItemHeight = view.bounds.size.height;
+        this.selectedItemIndex = -1;
+    },
+
+    didEndDraggingItemViewAtIndex: function(index, operation){
+        this.barView.targetItemHeight = BarView.prototype.targetItemHeight;
+        this.draggingItemIndex = null;
+        if (operation === UIDragOperation.move){
+            this.bar.items.splice(index, 1);
+            this.barView.removeItemViewAtIndex(index);
         }
     },
 
@@ -158,6 +201,9 @@ JSClass("BarEditor", UIView, {
         if (session.pasteboard.containsType("x-morphic-community/bar-item")){
             this.setDragDestination(true);
             this.updateItemDropLocation(session);
+            if (this.draggingItemIndex !== null){
+                return UIDragOperation.move;
+            }
             return UIDragOperation.copy;
         }
         return UIDragOperation.none;
@@ -165,6 +211,9 @@ JSClass("BarEditor", UIView, {
 
     draggingUpdated: function(session){
         this.updateItemDropLocation(session);
+        if (this.draggingItemIndex !== null){
+            return UIDragOperation.move;
+        }
         return UIDragOperation.copy;
     },
 
@@ -197,7 +246,7 @@ JSClass("BarEditor", UIView, {
         }
     },
 
-    performDragOperation: function(session){
+    performDragOperation: function(session, operation){
         this.setDragDestination(false);
 
         var index = this.barView.targetItemViewIndex;
@@ -216,8 +265,8 @@ JSClass("BarEditor", UIView, {
             editor.barView.layoutIfNeeded();
         });
 
-        if (this.delegate && this.delegate.barEditorDidInsertItemAtIndex){
-            this.delegate.barEditorDidInsertItemAtIndex(this, index);
+        if (operation === UIDragOperation.copy){
+            this.showDetailsForItemAtIndex(index);
         }
     },
 

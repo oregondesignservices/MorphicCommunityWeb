@@ -73,12 +73,6 @@ JSClass("BarItemLibraryViewController", UIViewController, {
         var libraryItem = this.items[indexPath.row];
         var item = BarItem.initWithKind(libraryItem.kind);
         item.configuration = JSDeepCopy(libraryItem.configuration);
-        if (libraryItem.suggestedLabel){
-            item.label = libraryItem.suggestedLabel;
-        }
-        if (libraryItem.suggestedImage){
-            item.imageURL = JSURL.initWithString(libraryItem.suggestedImage);
-        }
         this._dragImage = JSImage.initWithResourceName(libraryItem.icon);
         return [
             {objectValue: item.dictionaryRepresentation(), type: "x-morphic-community/bar-item"}

@@ -47,28 +47,21 @@ JSClass("BarItem", JSObject, {
 
     initWithDictionary: function(dictionary){
         this.kind = dictionary.kind;
-        this.label = dictionary.label;
         this.primary = dictionary.is_primary;
-        if (dictionary.image_url){
-            this.imageURL = JSURL.initWithString(dictionary.image_url);
-        }
-        this.configuration = JSDeepCopy(dictionary.configuration);
+        this.configuration = JSDeepCopy(dictionary.configuration || {});
     },
 
     dictionaryRepresentation: function(){
         return {
             kind: this.kind,
-            label: this.label,
-            image_url: this.imageURL !== null ? this.imageURL.encodedString : null,
+            is_primary: this.primary,
             configuration: JSDeepCopy(this.configuration)
         };
     },
 
     kind: null,
-    label: null,
-    imageURL: null,
-    configuration: null,
     primary: null,
+    configuration: null,
 
 });
 

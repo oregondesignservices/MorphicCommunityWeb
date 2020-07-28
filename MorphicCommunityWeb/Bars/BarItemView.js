@@ -17,7 +17,6 @@ JSClass("BarItemView", UIView, {
     item: JSDynamicProperty('_item', null),
     editor: null,
     index: 0,
-    dragging: false,
 
     setItem: function(item){
         this._item = item;
@@ -27,13 +26,30 @@ JSClass("BarItemView", UIView, {
     update: function(){
     },
 
-    mouseDown: function(){
+    dragging: false,
+
+    mouseDown: function(event){
         this.editor.selectedItemIndex = this.index;
     },
 
-    mouseDragged: function(){
-        this.editor.selectedItemIndex = -1;
+    mouseDragged: function(event){
+        var dragItems = [
+            {
+                type: "x-morphic-community/bar-item",
+                objectValue: this.item.dictionaryRepresentation()
+            }
+        ];
+        var session = this.beginDraggingSessionWithItems(dragItems, event);
+        session.allowedOperations = UIDragOperation.copy | UIDragOperation.move;
+    },
+
+    draggingSessionDidBecomeActive: function(session){
         this.dragging = true;
+        this.editor.didBeginDraggingItemViewAtIndex(this.index);
+    },
+
+    draggingSessionEnded: function(session, operation){
+        this.editor.didEndDraggingItemViewAtIndex(this.index, operation);
     },
 
     mouseUp: function(event){
@@ -75,12 +91,14 @@ JSClass("BarItemButtonView", BarItemView, {
     },
 
     update: function(){
-        this.titleLabel.text = this._item.label;
-        if (this._item.imageURL){
-            if (this._item.imageURL.isAbolute){
-                this.imageView.image = JSImage.initWithURL(this._item.imageURL);
+        var item = this._item;
+        this.titleLabel.text = item.configuration.label;
+        if (item.configuration.image_url){
+            var url = JSURL.initWithString(item.configuration.image_url);
+            if (url.isAbolute){
+                this.imageView.image = JSImage.initWithURL(url);
             }else{
-                this.imageView.image = JSImage.initWithResourceName(this._item.imageURL.path).imageWithRenderMode(JSImage.RenderMode.template);
+                this.imageView.image = JSImage.initWithResourceName(url.path).imageWithRenderMode(JSImage.RenderMode.template);
             }
             this.imageView.hidden = false;
             this.imageBorderView.hidden = false;

@@ -4,34 +4,34 @@ items:
     title: .items.genericLink.title
     description: .items.genericLink.description
     icon: BarItemLibraryIconLink
-    suggestedLabel: .items.genericLink.suggestedLabel
-    suggestedImage: link-solid
     configuration:
+      label: .items.genericLink.suggestedLabel
+      image_url: link-solid
       url: "https://"
   -
     kind: link
     title: .items.skypeMeetingLink.title
     description: .items.skypeMeetingLink.description
     icon: BarItemLibraryIconSkype
-    suggestedLabel: .items.skypeMeetingLink.suggestedLabel
-    suggestedImage: video-solid
     configuration:
+      label: .items.skypeMeetingLink.suggestedLabel
+      image_url: video-solid
       url: "https://join.skype.com/"
   -
     kind: application
     title: .items.nativeEmail.title
     description: .items.nativeEmail.description
     icon: BarItemLibraryIconEmail
-    suggestedLabel: .items.nativeEmail.suggestedLabel
-    suggestedImage: envelope-solid
     configuration:
+      label: .items.nativeEmail.suggestedLabel
+      image_url: envelope-solid
       default: email
   -
     kind: link
     title: .items.gmail.title
     description: .items.gmail.description
     icon: BarItemLibraryIconGmail
-    suggestedLabel: .items.gmail.suggestedLabel
-    suggestedImage: google-brands
     configuration:
+      label: .items.gmail.suggestedLabel
+      image_url: google-brands
       url: https://mail.google.com
