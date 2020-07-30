@@ -55,7 +55,6 @@ JSClass("BarEditor", UIView, {
         this.barView.borderColor = JSColor.black;
         this.barView.borderWidth  = 0;
         this.barView.maskedBorders = UIView.Sides.minX | UIView.Sides.maxY;
-        this.barView.backgroundColor = JSColor.white;
 
         this.addSubview(this.desktopContainer);
         this.addSubview(this.captionLabel);
@@ -133,10 +132,12 @@ JSClass("BarEditor", UIView, {
         }
     },
 
-    barItemDetailViewDidFinishEditing: function(){
+    barItemDetailViewDidFinishEditing: function(vc, withChanges){
         if (this.delegate && this.delegate.barEditorDidChange){
             this.selectedItemIndex = -1;
-            this.delegate.barEditorDidChange(this);
+            if (withChanges){
+                this.delegate.barEditorDidChange(this);
+            }
         }
     },
 
@@ -263,6 +264,8 @@ JSClass("BarEditor", UIView, {
         this.bar.items.splice(index, 0, item);
 
         var itemView = BarItemView.initWithItem(item);
+        itemView.sizeToFitSize(JSSize(this.barView.bounds.size.width - this.barView.itemInsets.width, Number.MAX_VALUE));
+        itemView.frame = JSRect(this.barView.targetItemOrigin, itemView.bounds.size);
         this.barView.insertItemViewAtIndex(itemView, index);
         this.barView.targetItemViewIndex = -1;
 

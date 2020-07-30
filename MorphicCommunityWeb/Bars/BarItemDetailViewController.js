@@ -8,7 +8,7 @@
 JSProtocol("BarItemDetailViewController", JSProtocol, {
 
     barItemDetailViewDidAffectBarLayout: function(viewController){},
-    barItemDetailViewDidFinishEditing: function(viewController){},
+    barItemDetailViewDidFinishEditing: function(viewController, withChanges){},
     barItemDetailViewDidRemoveItem: function(viewController){}
 
 });
@@ -31,6 +31,8 @@ JSClass("BarItemDetailViewController", UIViewController, {
         JSColor.initWithRGBA(197/255.0, 36/255.0, 98/255.0),
         JSColor.initWithRGBA(0/255.0, 0/255.0, 0/255.0),
     ],
+
+    changed: false,
 
     // MARK: - View Lifecycle
 
@@ -71,12 +73,14 @@ JSClass("BarItemDetailViewController", UIViewController, {
             }});
             this.view.colorBar.shortcutColors = this.buttonColorShortcuts;
             this.view.colorBar.bind("color", this, "item.configuration.color", {nullPlaceholder: this.defaultButtonColor});
+            this.view.colorBar.addAction(this.colorChanged, this);
         }
         if (this.view instanceof BarItemApplicationDetailView){
             this.view.labelField.delegate = this;
             this.view.labelField.bind("text", this, "item.configuration.label");
             this.view.colorBar.shortcutColors = this.buttonColorShortcuts;
             this.view.colorBar.bind("color", this, "item.configuration.color", {nullPlaceholder: this.defaultButtonColor});
+            this.view.colorBar.addAction(this.colorChanged, this);
         }
     },
 
@@ -96,7 +100,7 @@ JSClass("BarItemDetailViewController", UIViewController, {
     viewDidDisappear: function(animated){
         BarItemDetailViewController.$super.viewDidDisappear.call(this, animated);
         if (this.delegate && this.delegate.barItemDetailViewDidFinishEditing){
-            this.delegate.barItemDetailViewDidFinishEditing(this);
+            this.delegate.barItemDetailViewDidFinishEditing(this, this.changed);
         }
     },
 
@@ -141,12 +145,17 @@ JSClass("BarItemDetailViewController", UIViewController, {
     },
 
     textFieldDidChange: function(textField){
+        this.changed = true;
         if (textField === this.view.labelField){
             if (this.delegate && this.delegate.barItemDetailViewDidAffectBarLayout){
                 this.delegate.barItemDetailViewDidAffectBarLayout(this);
             }
         }
-    }
+    },
+
+    colorChanged: function(){
+        this.changed = true;
+    },
 
 });
 
