@@ -261,15 +261,27 @@ JSClass("MemberDetailViewController", UIViewController, {
         }
     },
 
+    barEditorDidChange: function(barEditor){
+        if (this.bar.shared){
+            this.barPopupButton.selectedTag = "__custom__";
+            this.customizeBar();
+        }else{
+            this.saveBar();
+        }
+    },
+
     saveTask: null,
     saveQueued: false,
 
     saveMember: function(completion, target){
         if (this.deleted){
+            completion.call(target, false);
             return;
         }
         if (this.saveTask !== null){
             this.saveQueued = true;
+            // FIXME: save completion and target so they can be called when
+            // the final save completes
             return;
         }
         var success = false;
@@ -307,6 +319,48 @@ JSClass("MemberDetailViewController", UIViewController, {
                     this.service.notificationCenter.post(Community.Notification.memberChanged, this.community, {member: this.member});
                 }
                 completeSave.call(this);
+            }, this);
+        }
+    },
+
+    saveBarTask: null,
+    saveBarQueued: false,
+
+    saveBar: function(){
+        if (this.deleted){
+            return;
+        }
+        if (this.saveBarTask !== null){
+            this.saveBarQueued = true;
+            return;
+        }
+        var completeSave = function(){
+            this.saveBarTask = null;
+            if (this.saveBarQueued){
+                this.saveBarQueued = false;
+                this.saveBar();
+            }
+        };
+        if (this.bar.id === null){
+            this.saveBarTask = this.service.createCommunityBar(this.community.id, this.bar.dictionaryRepresentation(), function(result, post){
+                if (result !== Service.Result.success){
+                    // TODO:
+                }else{
+                    var bar = Bar.initWithDictionary(post.bar);
+                    this.community.addBar(bar);
+                    this.member.barId = bar.id;
+                    this.bar = bar;
+                    this.saveMember();
+                }
+                completeSave.call(this);
+            }, this);
+        }else{
+            this.saveBarTask = this.service.saveCommunityBar(this.community.id, this.bar.dictionaryRepresentation(), function(result, post){
+                if (result !== Service.Result.success){
+                    // TODO:
+                }else{
+                    completeSave.call(this);
+                }
             }, this);
         }
     },
@@ -369,20 +423,7 @@ JSClass("MemberDetailViewController", UIViewController, {
     changeBar: function(){
         var selectedTag = this.barPopupButton.selectedTag;
         if (selectedTag === "__custom__"){
-            this.bar.id = null;
-            this.bar.name = "%s's Bar".sprintf(this.member.fullName);
-            this.bar.shared = false;
-            this.service.createCommunityBar(this.community.id, this.bar.dictionaryRepresentation(), function(result, post){
-                if (result !== Service.Result.success){
-                    // TODO:
-                    return;
-                }
-                var bar = Bar.initWithDictionary(post.bar);
-                this.community.addBar(bar);
-                this.member.barId = bar.id;
-                this.bar = bar;
-                this.saveMember();
-            }, this);
+            this.customizeBar();
         }else{
             if (selectedTag === "__default__"){
                 this.member.barId = null;
@@ -413,6 +454,9 @@ JSClass("MemberDetailViewController", UIViewController, {
 
     customizeBar: function(){
         this.bar.id = null;
+        this.bar.name = "%s's Bar".sprintf(this.member.fullName);
+        this.bar.shared = false;
+        this.saveBar();
     },
 
     // MARK: - Invitations

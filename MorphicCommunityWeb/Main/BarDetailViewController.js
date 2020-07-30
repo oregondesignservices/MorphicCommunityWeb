@@ -144,7 +144,7 @@ JSClass("BarDetailViewController", UIViewController, {
     },
 
     barEditorDidChange: function(barEditor){
-        // this.saveBar();
+        this.saveBar();
     },
 
     saveTask: null,

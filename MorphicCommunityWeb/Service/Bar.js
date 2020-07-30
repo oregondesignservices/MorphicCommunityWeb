@@ -47,7 +47,7 @@ JSClass("BarItem", JSObject, {
 
     initWithDictionary: function(dictionary){
         this.kind = dictionary.kind;
-        this.primary = dictionary.is_primary;
+        this.primary = dictionary.is_primary || false;
         this.configuration = BarItemConfiguration.initWithKind(this.kind, dictionary.configuration || {});
     },
 

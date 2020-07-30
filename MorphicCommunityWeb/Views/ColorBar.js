@@ -62,7 +62,7 @@ JSClass("ColorBar", UIControl, {
 
     mouseMoved: function(event){
         var location = event.locationInView(this);
-        var shortcut = this.shortcutAtLocation(location);
+        var shortcut = this.unselectedShortcutAtLocation(location);
         if (shortcut !== this.overShortcut){
             if (this.overShortcut !== null){
                 this.overShortcut.highlighted = false;
@@ -83,7 +83,7 @@ JSClass("ColorBar", UIControl, {
 
     mouseDown: function(event){
         var location = event.locationInView(this);
-        var shortcut = this.shortcutAtLocation(location);
+        var shortcut = this.unselectedShortcutAtLocation(location);
         if (shortcut !== null){
             this.activeShortcut = shortcut;
             shortcut.active = true;
@@ -94,7 +94,7 @@ JSClass("ColorBar", UIControl, {
 
     mouseDragged: function(event){
         var location = event.locationInView(this);
-        var shortcut = this.shortcutAtLocation(location);
+        var shortcut = this.unselectedShortcutAtLocation(location);
         if (shortcut !== this.activeShortcut){
             if (this.activeShortcut !== null){
                 this.activeShortcut.active = false;
@@ -110,16 +110,19 @@ JSClass("ColorBar", UIControl, {
         var location = event.locationInView(this);
         if (this.activeShortcut !== null){
             this.color = this.activeShortcut.color;
+            this.activeShortcut.active = false;
             this.activeShortcut = null;
             this.didChangeValueForBinding('color');
             this.sendActionsForEvents(UIControl.Event.primaryAction | UIControl.Event.valueChanged, event);
         }
     },
 
-    shortcutAtLocation: function(location){
+    unselectedShortcutAtLocation: function(location){
         var hit = this.hitTest(location);
         if (hit instanceof ColorBarColorView){
-            return hit;
+            if (!hit.color.isEqual(this.color)){
+                return hit;
+            }
         }
         return null;
     },
@@ -197,7 +200,7 @@ JSClass("ColorBarColorView", UIView, {
         }else{
             this.borderColor = this._color.colorDarkenedByPercentage(0.2);
             if (this._highlighted){
-                this.backgroundColor = this._color.colorLightenedByPercentage(0.1);
+                this.backgroundColor = this._color.colorLightenedByPercentage(0.2);
             }else{
                 this.backgroundColor = this._color;
             }

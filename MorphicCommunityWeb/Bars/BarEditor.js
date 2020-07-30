@@ -85,10 +85,10 @@ JSClass("BarEditor", UIView, {
             this.barView.removeItemViewAtIndex(i);
         }
         var item, itemView;
-        for (i = bar.items.length; i < l; ++i){
+        for (i = 0, l = bar.items.length; i < l; ++i){
             item = bar.items[i];
             itemView = BarItemView.initWithItem(item);
-            bar.insertItemViewAtIndex(itemView, i);
+            this.barView.insertItemViewAtIndex(itemView, i);
         }
     },
 
@@ -274,6 +274,10 @@ JSClass("BarEditor", UIView, {
 
         if (operation === UIDragOperation.copy){
             this.showDetailsForItemAtIndex(index);
+        }else{
+            if (this.delegate && this.delegate.barEditorDidChange){
+                this.delegate.barEditorDidChange(this);
+            }
         }
     },
 

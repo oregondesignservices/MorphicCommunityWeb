@@ -2,6 +2,7 @@
 // #import "Bar.js"
 // #import "BarItemDetailView.js"
 // #import "BarItemLinkDetailView.js"
+// #import "BarItemApplicationDetailView.js"
 'use strict';
 
 JSProtocol("BarItemDetailViewController", JSProtocol, {
@@ -42,6 +43,9 @@ JSClass("BarItemDetailViewController", UIViewController, {
             if (this.item.kind == BarItem.Kind.link){
                 return BarItemLinkDetailView.init();
             }
+            if (this.item.kind == BarItem.Kind.application){
+                return BarItemApplicationDetailView.init();
+            }
         }
         return BarItemDetailView.init();
     },
@@ -65,6 +69,12 @@ JSClass("BarItemDetailViewController", UIViewController, {
                     return JSURL.initWithString(string);
                 }
             }});
+            this.view.colorBar.shortcutColors = this.buttonColorShortcuts;
+            this.view.colorBar.bind("color", this, "item.configuration.color", {nullPlaceholder: this.defaultButtonColor});
+        }
+        if (this.view instanceof BarItemApplicationDetailView){
+            this.view.labelField.delegate = this;
+            this.view.labelField.bind("text", this, "item.configuration.label");
             this.view.colorBar.shortcutColors = this.buttonColorShortcuts;
             this.view.colorBar.bind("color", this, "item.configuration.color", {nullPlaceholder: this.defaultButtonColor});
         }
@@ -92,12 +102,15 @@ JSClass("BarItemDetailViewController", UIViewController, {
 
     contentSizeThatFitsSize: function(maxSize){
         var size = JSSize.Zero;
-        if (maxSize.width < Number.MAX_VALUE){
-            size.width = maxSize.width;
-        }else{
+        var intrinsicSize = this.view.intrinsicSize;
+        size.height = intrinsicSize.height;
+        size.width = intrinsicSize.width;
+        if (size.width === UIView.noIntrinsicSize){
             size.width = 220;
         }
-        size.height = this.view.intrinsicSize.height;
+        if (size.width > maxSize.width){
+            size.width = maxSize.width;
+        }
         return size;
     },
 
