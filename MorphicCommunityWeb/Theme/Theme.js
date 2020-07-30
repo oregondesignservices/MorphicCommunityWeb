@@ -1,10 +1,18 @@
 // #import UIKit
+// #import "BarItemDetailViewTextFieldStyler.js"
 'use strict';
 
 JSClass("Theme", JSObject, {
 
     init: function(){
     },
+
+    itemDetailTextFieldStyler: JSLazyInitProperty('createItemDetailTextFieldStyler'),
+
+    createItemDetailTextFieldStyler: function(){
+        var styler = BarItemDetailViewTextFieldStyler.init();
+        return styler;
+    }
 
 });
 

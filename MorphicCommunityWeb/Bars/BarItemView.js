@@ -40,15 +40,19 @@ JSClass("BarItemView", UIView, {
             }
         ];
         var session = this.beginDraggingSessionWithItems(dragItems, event);
-        session.allowedOperations = UIDragOperation.copy | UIDragOperation.move;
+        if (session){
+            session.allowedOperations = UIDragOperation.copy | UIDragOperation.move;
+        }
     },
 
     draggingSessionDidBecomeActive: function(session){
+        this.alpha = 0;
         this.dragging = true;
         this.editor.didBeginDraggingItemViewAtIndex(this.index);
     },
 
     draggingSessionEnded: function(session, operation){
+        this.alpha = 1;
         this.editor.didEndDraggingItemViewAtIndex(this.index, operation);
     },
 
@@ -67,6 +71,7 @@ JSClass("BarItemButtonView", BarItemView, {
     imageView: null,
     imageBorderView: null,
     titleLabel: null,
+    defaultColor: JSColor.initWithRGBA(0, 41/255.0, 87/255.0),
 
     init: function(){
         BarItemButtonView.$super.init.call(this);
@@ -74,16 +79,16 @@ JSClass("BarItemButtonView", BarItemView, {
         this.titleLabel.maximumNumberOfLines = 2;
         this.titleLabel.font = JSFont.systemFontOfSize(14);
         this.titleLabel.textInsets = JSInsets(10);
-        this.titleLabel.backgroundColor = JSColor.initWithRGBA(0, 41/255.0, 87/255.0);
+        this.titleLabel.backgroundColor = this.defaultColor;
         this.titleLabel.textAlignment = JSTextAlignment.center;
         this.titleLabel.textColor = JSColor.white;
         this.imageBorderView = UIView.init();
-        this.imageBorderView.backgroundColor = this.titleLabel.backgroundColor;
+        this.imageBorderView.backgroundColor = this.defaultColor;
         this.imageView = UIImageView.init();
         this.imageView.backgroundColor = JSColor.white;
         this.imageView.borderColor = JSColor.white;
         this.imageView.borderWidth = 2;
-        this.imageView.templateColor = this.titleLabel.backgroundColor;
+        this.imageView.templateColor = this.defaultColor;
         this.imageView.scaleMode = UIImageView.ScaleMode.aspectFill;
         this.addSubview(this.titleLabel);
         this.addSubview(this.imageBorderView);
@@ -92,20 +97,23 @@ JSClass("BarItemButtonView", BarItemView, {
 
     update: function(){
         var item = this._item;
-        this.titleLabel.text = item.configuration.label;
-        if (item.configuration.image_url){
-            var url = JSURL.initWithString(item.configuration.image_url);
-            if (url.isAbolute){
-                this.imageView.image = JSImage.initWithURL(url);
-            }else{
-                this.imageView.image = JSImage.initWithResourceName(url.path).imageWithRenderMode(JSImage.RenderMode.template);
+        this.titleLabel.bind("text", item.configuration, "label");
+        this.titleLabel.bind("backgroundColor", item.configuration, "color", {nullPlaceholder: this.defaultColor});
+        this.imageBorderView.bind("backgroundColor", item.configuration, "color", {nullPlaceholder: this.defaultColor});
+        this.imageView.bind("templateColor", item.configuration, "color", {nullPlaceholder: this.defaultColor});
+        this.imageView.bind("image", item.configuration, "imageURL", {valueTransformer: {
+            transformValue: function(url){
+                if (url === null){
+                    return null;
+                }
+                if (url.isAbolute){
+                    return JSImage.initWithURL(url);
+                }
+                return JSImage.initWithResourceName(url.path).imageWithRenderMode(JSImage.RenderMode.template);
             }
-            this.imageView.hidden = false;
-            this.imageBorderView.hidden = false;
-        }else{
-            this.imageView.hidden = true;
-            this.imageBorderView.hidden = true;
-        }
+        }});
+        this.imageView.bind("hidden", item.configuration, "imageURL=null");
+        this.imageBorderView.bind("hidden", item.configuration, "imageURL=null");
     },
 
     sizeToFitSize: function(maxSize){

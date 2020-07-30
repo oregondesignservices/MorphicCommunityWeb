@@ -16,6 +16,7 @@ items:
     configuration:
       label: .items.skypeMeetingLink.suggestedLabel
       image_url: video-solid
+      subkind: skype
       url: "https://join.skype.com/"
   -
     kind: application

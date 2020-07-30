@@ -57,14 +57,6 @@ JSClass("BarEditor", UIView, {
         this.barView.maskedBorders = UIView.Sides.minX | UIView.Sides.maxY;
         this.barView.backgroundColor = JSColor.white;
 
-        // The selection indicator sits behind bar items and shows which one,
-        // if any, is selected
-        this.selectionIndicator = UIView.init();
-        this.selectionIndicator.backgroundColor = JSColor.initWithRGBA(0, 41/255.0, 87/255.0, 0.3);
-        this.selectionIndicator.cornerRadius = 2;
-        this.selectionIndicator.hidden = true;
-        this.barView.insertSubviewAtIndex(this.selectionIndicator, 0);
-
         this.addSubview(this.desktopContainer);
         this.addSubview(this.captionLabel);
         this.desktopContainer.addSubview(this.desktopView);
@@ -102,19 +94,14 @@ JSClass("BarEditor", UIView, {
 
     // MARK: - Selection
 
-    selectedItemIndex: JSDynamicProperty('_selectedItemIndex', -1),
-    selectionIndicator: null,
+    selectedItemIndex: JSDynamicProperty(),
+
+    getSelectedItemIndex: function(){
+        return this.barView.selectedItemIndex;
+    },
 
     setSelectedItemIndex: function(selectedItemIndex){
-        this._selectedItemIndex = selectedItemIndex;
-        var view = this.viewForItemAtIndex(this._selectedItemIndex);
-        if (view !== null){
-            var rect = this.selectionIndicator.superview.convertRectFromView(view.bounds, view);
-            this.selectionIndicator.frame = rect.rectWithInsets(JSInsets(-5));
-            this.selectionIndicator.hidden = false;
-        }else{
-            this.selectionIndicator.hidden = true;
-        }
+        this.barView.selectedItemIndex = selectedItemIndex;
     },
 
     viewForItemAtIndex: function(index){
@@ -150,6 +137,26 @@ JSClass("BarEditor", UIView, {
         if (this.delegate && this.delegate.barEditorDidChange){
             this.selectedItemIndex = -1;
             this.delegate.barEditorDidChange(this);
+        }
+    },
+
+    barItemDetailViewDidAffectBarLayout: function(viewController){
+        this.barView.setNeedsLayout();
+    },
+
+    barItemDetailViewDidRemoveItem: function(viewController){
+        this.itemDetailViewController.delegate = null;
+        this.itemDetailViewController.dismiss();
+        if (this.delegate && this.delegate.barEditorDidChange){
+            this.bar.items.splice(this.selectedItemIndex, 1);
+            this.barView.removeItemViewAtIndex(this.selectedItemIndex);
+            this.selectedItemIndex = -1;
+            this.delegate.barEditorDidChange(this);
+            var animator = UIViewPropertyAnimator.initWithDuration(0.2);
+            animator.addAnimations(function(){
+                this.barView.layoutIfNeeded();
+            }, this);
+            animator.start();
         }
     },
 

@@ -9,7 +9,7 @@
   "author": "Raising the Floor",
   "license": "SEE LICENSE IN LICENSE.txt",
   "devDependencies": {
-    "@breakside/jskit": "^2020.30.1",
+    "@breakside/jskit": "file:../../Breakside/JSKit/builds/io.breakside.jskit/debug/jskit",
     "jshint": "^2.11.1"
   },
   "dependencies": {}

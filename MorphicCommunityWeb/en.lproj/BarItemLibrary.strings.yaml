@@ -3,7 +3,7 @@ en:
     genericLink:
       title: Webpage Shortcut
       description: A button that opens the specified website
-      suggestedLabel: Web Page with a long label
+      suggestedLabel: Web Page
     skypeMeetingLink:
       title: Skype Call
       description: A button that opens and joins a configured Skype conference call

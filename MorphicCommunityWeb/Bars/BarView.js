@@ -14,6 +14,14 @@ JSClass("BarView", UIView, {
         this.itemViewsContainer = UIView.init();
         this.addSubview(this.itemViewsContainer);
 
+        // The selection indicator sits behind bar items and shows which one,
+        // if any, is selected
+        this.selectionIndicator = UIView.init();
+        this.selectionIndicator.backgroundColor = JSColor.initWithRGBA(0, 41/255.0, 87/255.0, 0.3);
+        this.selectionIndicator.cornerRadius = 2;
+        this.selectionIndicator.hidden = true;
+        this.insertSubviewAtIndex(this.selectionIndicator, 0);
+
     },
 
     editor: null,
@@ -22,6 +30,14 @@ JSClass("BarView", UIView, {
     itemInsets: null,
     itemSpacing: 10,
     overflowButton: null,
+
+    selectionIndicator: null,
+    selectedItemIndex: JSDynamicProperty('_selectedItemIndex', -1),
+
+    setSelectedItemIndex: function(selectedItemIndex){
+        this._selectedItemIndex = selectedItemIndex;
+        this.setNeedsLayout();
+    },
 
     targetItemViewIndex: JSDynamicProperty('_targetItemViewIndex', -1),
     targetItemHeight: 100,
@@ -83,20 +99,25 @@ JSClass("BarView", UIView, {
         var origin = JSPoint(this.itemInsets.left, this.itemInsets.top);
         var maxItemSize = JSSize(this.bounds.size.width - this.itemInsets.width, Number.MAX_VALUE);
         var itemView;
+        this.selectionIndicator.hidden = true;
         for (var i = 0, l = this.itemViews.length; i < l; ++i){
             itemView = this.itemViews[i];
-            if (itemView.hidden){
+            if (i === this.targetItemViewIndex){
+                origin.y += this.targetItemHeight + this.itemSpacing;
+            }
+            if (itemView.dragging){
                 continue;
             }
             itemView.sizeToFitSize(maxItemSize);
-            if (i === this.targetItemViewIndex){
-                origin.y += this.targetItemHeight;
-            }
             if (origin.y + itemView.bounds.size.height + this.itemInsets.bottom > this.bounds.size.height){
                 break;
             }
             itemView.frame = JSRect(origin, itemView.bounds.size);
             origin.y += itemView.bounds.size.height + this.itemSpacing;
+            if (i === this._selectedItemIndex){
+                this.selectionIndicator.hidden = false;
+                this.selectionIndicator.frame = itemView.convertRectToView(itemView.bounds, this.selectionIndicator.superview).rectWithInsets(-5);
+            }
         }
         this.overflowButton.hidden = i == l;
         for (; i < l; ++i){
