@@ -1,0 +1,33 @@
+File's Owner: /WindowController
+
+WindowController:
+  class: CommunitySettingsWindowController
+  window:
+    title: .window.title
+    frame: 0,0,500,300
+    backgroundColor: white
+    firstResponder: /ListView
+    contentView:
+      subviews:
+        - /ListView
+  outlets:
+    categoriesListView: /ListView
+
+ListView:
+  class: UIListView
+  delegate: /WindowController
+  dataSource: /WindowController
+  rowHeight: 31
+  reusableCellClasses:
+    category: UIListViewCell
+  styler:
+    class: UIListViewDefaultStyler
+    showsSeparators: false
+    cellContentCornerRadius: 2
+    cellTextColor: black
+    selectedCellTextColor: white
+    mutedSelectedCellTextColor: white
+    selectedCellBackgroundColor:
+      rgba: 0,129,69
+    mutedSelectedCellBackgroundColor:
+      rgba: 0,129,69

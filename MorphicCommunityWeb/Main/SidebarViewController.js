@@ -58,6 +58,7 @@ JSClass("SidebarViewController", UIViewController, {
 
 JSClass("SidebarNavigationBarStyler", UINavigationBarDefaultStyler, {
 
+
     initWithSpec: function(spec){
         SidebarNavigationBarStyler.$super.initWithSpec.call(this, spec);
         if (spec.containsKey("height")){

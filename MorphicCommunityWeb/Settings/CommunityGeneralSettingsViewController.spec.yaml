@@ -1,0 +1,29 @@
+File's Owner: /ViewController
+
+ViewController:
+  class: CommunityGeneralSettingsViewController
+  view:
+    subviews:
+      - /Form
+  outlets:
+    form: /Form
+    nameField: /NameField
+
+Form:
+  class: FormView
+  labelSpacing: 10
+  fields:
+    -
+      label: /NameLabel
+      view: /NameField
+
+NameLabel:
+  class: UILabel
+  text: .fields.name.label
+
+NameField:
+  class: UITextField
+  bindings:
+    text: {to: /ViewController, value: community.name}
+  target: /ViewController
+  action: nameChanged

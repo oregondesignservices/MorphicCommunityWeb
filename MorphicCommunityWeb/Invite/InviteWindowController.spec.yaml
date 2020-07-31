@@ -6,6 +6,7 @@ InviteWindowController:
     frame: 0,0,600,0
     title: .window.title
     heightTracksContent: true
+    showsContentSeparator: true
     toolbar:
       items:
         -

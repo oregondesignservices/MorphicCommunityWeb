@@ -1,0 +1,9 @@
+File's Owner: /ViewController
+
+ViewController:
+  class: CommunityPermissionsSettingsViewController
+  view:
+    subviews:
+      -
+        class: UILabel
+        text: Permissions

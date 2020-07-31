@@ -3,6 +3,7 @@
 // #import "BarDetailViewController.js"
 // #import "MemberDetailViewController.js"
 // #import "Community.js"
+// #import "CommunitySettingsWindowController.js"
 'use strict';
 
 (function(){
@@ -423,6 +424,25 @@ JSClass("CommunityViewController", UIListViewController, {
         this.listView.layoutIfNeeded();
         this.listView.selectedIndexPath = indexPath;
         this.showMemberDetail(member);
+    },
+
+    settingsWindowController: null,
+
+    openSettings: function(){
+        if (!this.settingsWindowController){
+            this.settingsWindowController = CommunitySettingsWindowController.initWithSpecName("CommunitySettingsWindowController");
+            this.settingsWindowController.service = this.service;
+            this.settingsWindowController.community = this.community;
+            this.settingsWindowController.delegate = this;
+        }
+        this.settingsWindowController.makeKeyAndOrderFront();
+    },
+
+    windowControllerDidClose: function(windowController){
+        if (windowController === this.settingsWindowController){
+            this.settingsWindowController = null;
+            this.navigationItem.title = this.community.name;
+        }
     },
 
     // MARK: - Layout

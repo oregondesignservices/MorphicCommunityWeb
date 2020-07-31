@@ -1,0 +1,9 @@
+File's Owner: /ViewController
+
+ViewController:
+  class: CommunityBillingSettingsViewController
+  view:
+    subviews:
+      -
+        class: UILabel
+        text: Billing

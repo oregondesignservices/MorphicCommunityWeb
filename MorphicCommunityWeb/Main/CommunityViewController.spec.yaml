@@ -19,6 +19,14 @@ CommunityViewController:
     watermarkView: /WatermarkView
     addBarButton: /AddBarButton
     addMemberButton: /AddMemberButton
+  navigationItem:
+    rightBarItems:
+      -
+        image:
+          name: SettingsIcon
+          renderMode: template
+        action: openSettings
+        target: /CommunityViewController
 
 ListView:
   class: UIListView
