@@ -114,7 +114,7 @@ JSClass("BarEditor", UIView, {
 
     itemDetailViewController: null,
 
-    showDetailsForItemAtIndex: function(index){
+    showDetailsForItemAtIndex: function(index, isChange){
         this.hideDetails();
         this.selectedItemIndex = index;
         var item = this.bar.items[index];
@@ -122,6 +122,7 @@ JSClass("BarEditor", UIView, {
         this.itemDetailViewController = BarItemDetailViewController.init();
         this.itemDetailViewController.item = this.bar.items[index];
         this.itemDetailViewController.delegate = this;
+        this.itemDetailViewController.changed = isChange;
         this.itemDetailViewController.popupAdjacentToView(view, UIPopupWindow.Placement.left);
     },
 
@@ -276,7 +277,7 @@ JSClass("BarEditor", UIView, {
         });
 
         if (operation === UIDragOperation.copy){
-            this.showDetailsForItemAtIndex(index);
+            this.showDetailsForItemAtIndex(index, true);
         }else{
             if (this.delegate && this.delegate.barEditorDidChange){
                 this.delegate.barEditorDidChange(this);
