@@ -12,9 +12,12 @@ var logger = JSLog("morphic", "appdelegate");
 
 JSClass("ApplicationDelegate", JSObject, {
 
+    baseURL: null,
+
     // MARK: - Application Lifecyle
 
     applicationDidFinishLaunching: function(application, launchOptions){
+        this.baseURL = application.baseURL;
         this.registerDefaults();
         this.service = Service.initWithBaseURL(JSURL.initWithString(application.getenv('MORPHIC_SERVER_URL')));
         this.service.notificationCenter = JSNotificationCenter.shared;
@@ -65,6 +68,7 @@ JSClass("ApplicationDelegate", JSObject, {
     },
 
     registerSceneDidComplete: function(registerScene, community){
+        window.history.replaceState(null, null, this.baseURL.encodedString);
         this.defaults.setValueForKey(community.id, "selectedCommunityId");
         registerScene.close();
         this.showMain();
