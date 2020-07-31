@@ -71,9 +71,9 @@ SidebarNavigationController:
         rgba: 0,82,43,0.7
       disabledtemColor:
         rgba: 0,82,43,0.2
-      backItemColor: white
+      backButtonColor: white
       itemTitleInsets: 10,0
-      backItemTitleInsets: 10
+      backButtonTitleInsets: 10
 
 SidebarWatermarkView:
   class: UIImageView
