@@ -6,5 +6,11 @@ en:
       emptyView:
         label.text: No communities
       navigation.title: Communities
+      nameField.placeholder: Community Name
+      errors:
+        createFailed:
+          title: Could not create Community
+          message: Sorry, we couldn't create your new community.  Please try again.
+          dismiss.title: OK
   library:
     navigation.title: Bar Customizations

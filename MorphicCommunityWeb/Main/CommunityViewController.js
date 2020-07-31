@@ -14,7 +14,7 @@ JSClass("CommunityViewController", UIListViewController, {
 
     service: null,
 
-    communityId: null,
+    partialCommunity: null,
     startingActivityAnimationPercentComplete: 0,
 
     // MARK: - View Lifecycle
@@ -52,7 +52,7 @@ JSClass("CommunityViewController", UIListViewController, {
         this.errorView.hidden = true;
 
         // First load the full community details
-        this.service.loadCommunity(this.communityId, function(result, community){
+        this.service.loadCommunity(this.partialCommunity.id, function(result, community){
             if (result !== Service.Result.success){
                 this.hideActivityIndicator();
                 this.errorView.hidden = false;
@@ -442,6 +442,7 @@ JSClass("CommunityViewController", UIListViewController, {
         if (windowController === this.settingsWindowController){
             this.settingsWindowController = null;
             this.navigationItem.title = this.community.name;
+            this.partialCommunity.name = this.community.name;
         }
     },
 

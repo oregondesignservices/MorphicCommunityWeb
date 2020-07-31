@@ -36,6 +36,16 @@ JSClass("CommunitiesViewController", UIViewController, {
         }
         if (this._didDisappear){
             this._didDisappear = false;
+            var originalIndex = this.listView.selectedIndexPath.row;
+            var selectedCommunity = this.communities[originalIndex];
+            this.communities.sort(Community.nameComparison);
+            this.listView.reloadData();
+            this.listView.layoutIfNeeded();
+            var searcher = JSBinarySearcher(this.communities, Community.nameComparison);
+            var index = searcher.indexMatchingValue(selectedCommunity);
+            if (index !== originalIndex){
+                this.listView.selectedIndexPath = JSIndexPath(0, index);
+            }
             this.listView.setSelectedIndexPathAnimated(null);
         }
     },
@@ -62,9 +72,7 @@ JSClass("CommunitiesViewController", UIViewController, {
                 return;
             }
             var community;
-            this.communities = page.communities.sort(function(a, b){
-                return a.name.localeCompare(b.name);
-            });
+            this.communities = page.communities.sort(Community.nameComparison);
             var selectedCommunityIndex = 0;
             for (var i = this.communities.length - 1; i >= 0 ; --i){
                 community = page.communities[i];
@@ -152,7 +160,7 @@ JSClass("CommunitiesViewController", UIViewController, {
 
     showCommunity: function(community, animated){
         var communityViewController = CommunityViewController.initWithSpecName("CommunityViewController");
-        communityViewController.communityId = community.id;
+        communityViewController.partialCommunity = community;
         communityViewController.service = this.service;
         communityViewController.navigationItem.title = community.name;
         communityViewController.mainViewController = this.mainViewController;
@@ -163,6 +171,56 @@ JSClass("CommunitiesViewController", UIViewController, {
             }
         }
         this.navigationController.pushViewController(communityViewController, animated);
+    },
+
+    // MARK: - Adding a community
+
+    addCommunity: function(sender){
+        var popupWindow = UIPopupWindow.init();
+        popupWindow.frame = JSRect(0, 0, 200, 0);
+        popupWindow.heightTracksContent = true;
+        var contentView = CreateCommunityView.init();
+        contentView.nameField = UITextField.init();
+        contentView.addSubview(contentView.nameField);
+        contentView.nameField.placeholder = JSBundle.mainBundle.localizedString("sidebar.communities.nameField.placeholder", "MainScene");
+        contentView.nameField.delegate = this;
+        popupWindow.contentView = contentView;
+        popupWindow._initialFirstResponder = contentView.nameField;
+        popupWindow.escapeClosesWindow = true;
+        popupWindow.sizeToFit();
+        this.view.window.modal = popupWindow;
+        popupWindow.openAdjacentToView(sender, UIPopupWindow.Placement.below);
+    },
+
+    textFieldDidReceiveEnter: function(textField){
+        var name = textField.text;
+        textField.enabled = false;
+        this.service.createCommunity({name: name}, function(result, post){
+            if (result !== Service.Result.success){
+                textField.enabled = true;
+                var alert = UIAlertController.initWithTitle(
+                    JSBundle.mainBundle.localizedString("sidebar.communities.errors.createFailed.title", "MainScene"),
+                    JSBundle.mainBundle.localizedString("sidebar.communities.errors.createFailed.message", "MainScene")
+                );
+                alert.addAction(UIAlertAction.initWithTitle(
+                    JSBundle.mainBundle.localizedString("sidebar.communities.errors.createFailed.dismiss.title", "MainScene"),
+                    UIAlertAction.Style.cancel
+                ));
+                alert.popupCenteredInView(textField.window, true);
+                return;
+            }
+            textField.window.close();
+            var community = Community.init();
+            community.id = post.community.id;
+            community.name = post.community.name;
+            var searcher = JSBinarySearcher(this.communities, Community.nameComparison);
+            var index = searcher.insertionIndexForValue(community);
+            this.communities.splice(index, 0, community);
+            this.listView.insertRowAtIndexPath(JSIndexPath(0, index));
+            this.listView.layoutIfNeeded();
+            this.listView.selectedIndexPath = JSIndexPath(0, index);
+            this.showCommunity(community, true);
+        }, this);
     },
 
     // MARK: - Layout
@@ -183,6 +241,24 @@ JSClass("CommunitiesViewController", UIViewController, {
         this.emptyView.position = center;
         this.watermarkView.bounds = JSRect(0, 0, bounds.size.width, bounds.size.width);
         this.watermarkView.position = JSPoint(bounds.center.x, bounds.size.height - 125 + bounds.size.width / 2.0); 
+    }
+
+});
+
+JSClass("CreateCommunityView", UIView, {
+
+    nameField: null,
+
+    initWithFrame: function(frame){
+        CreateCommunityView.$super.initWithFrame.call(this, frame);
+    },
+
+    sizeToFitSize: function(maxSize){
+        this.bounds = JSRect(0, 0, 180, this.nameField.intrinsicSize.height);
+    },
+
+    layoutSubviews: function(){
+        this.nameField.frame = this.bounds;
     }
 
 });

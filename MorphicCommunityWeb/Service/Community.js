@@ -144,3 +144,7 @@ Community.Notification = {
     memberChanged: "org.raisingthefloor.CommunityMemberChangedNotification",
     memberDeleted: "org.raisingthefloor.CommunityMemberDeletedNotification"
 };
+
+Community.nameComparison = function(a, b){
+    return a.name.localeCompare(b.name);
+};

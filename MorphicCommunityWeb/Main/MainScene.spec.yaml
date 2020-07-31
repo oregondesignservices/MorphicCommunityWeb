@@ -72,7 +72,7 @@ SidebarNavigationController:
       disabledtemColor:
         rgba: 0,82,43,0.2
       backButtonColor: white
-      itemTitleInsets: 10,0
+      itemTitleInsets: 11,0
       backButtonTitleInsets: 10
 
 SidebarWatermarkView:
@@ -108,7 +108,14 @@ CommunitiesViewController:
     title: .sidebar.communities.navigation.title
     backBarButtonItem:
       class: UINavigationItem
-      # title: null
+    rightBarItems:
+      -
+        image:
+          name: SidebarAddButton
+          renderMode: template
+        target: /CommunitiesViewController
+        action: addCommunity
+
 
 CommunitiesWatermarkView:
   class: UIImageView
