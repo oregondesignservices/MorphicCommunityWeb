@@ -22,3 +22,4 @@ en:
     general.message: Sorry, we could not delete this bar.  Please try again.
     dismiss: OK
   preview.caption: A preview of how the %1$s bar will look along the right edge of the Windows desktop
+  syncError.tooltip: Sorry, we couldn't save your last changes.  Click to retry.

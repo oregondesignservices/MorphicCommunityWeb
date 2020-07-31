@@ -25,3 +25,4 @@ en:
   errorView.label.text: Sorry, we couldn't load the member data
   preview.caption: A preview of how %1$s's bar will look along the right edge of the Windows desktop
   preview.unnamedCaption: A preview of how the bar will look along the right edge of the Windows desktop
+  syncError.tooltip: Sorry, we couldn't save your last changes.  Click to retry.

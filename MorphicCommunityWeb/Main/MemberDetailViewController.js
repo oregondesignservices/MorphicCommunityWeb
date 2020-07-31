@@ -15,6 +15,12 @@ JSClass("MemberDetailViewController", UIViewController, {
 
     viewDidLoad: function(){
         MemberDetailViewController.$super.viewDidLoad.call(this);
+        this.memberSaveSynchronizer = JSSynchronizer.initWithAction(this.saveMember, this);
+        this.memberSaveSynchronizer.addObserverForKeyPath(this, "state");
+        this.memberSaveSynchronizer.pendingInterval = 0;
+        this.barSaveSynchronizer = JSSynchronizer.initWithAction(this.saveBar, this);
+        this.barSaveSynchronizer.addObserverForKeyPath(this, "state");
+        this.barSaveSynchronizer.pendingInterval = 0;
     },
 
     viewWillAppear: function(animated){
@@ -55,6 +61,14 @@ JSClass("MemberDetailViewController", UIViewController, {
     barLabel: JSOutlet(),
     barPopupButton: JSOutlet(),
     barEditor: JSOutlet(),
+
+    // MARK: - Observers
+
+    observeValueForKeyPath: function(keyPath, ofObject, change, context){
+        if (ofObject === this.memberSaveSynchronizer || ofObject === this.barSaveSynchronizer){
+            this.updateCombinedSyncState();
+        }
+    },
 
     // MARK: - Loading Data
 
@@ -228,13 +242,13 @@ JSClass("MemberDetailViewController", UIViewController, {
 
     firstNameEditingEnded: function(){
         if (this.member.id === null){
-            this.saveMember();
+            this.memberSaveSynchronizer.sync();
         }
     },
 
     firstNameChanged: function(){
         if (this.member.id !== null){
-            this.saveMember();
+            this.memberSaveSynchronizer.sync();
         }
         this.updateBarLabel();
         this.view.setNeedsLayout();
@@ -243,7 +257,7 @@ JSClass("MemberDetailViewController", UIViewController, {
 
     lastNameChanged: function(){
         if (this.member.id !== null){
-            this.saveMember();
+            this.memberSaveSynchronizer.sync();
         }
         this.updateBarLabel();
         this.view.setNeedsLayout();
@@ -266,101 +280,101 @@ JSClass("MemberDetailViewController", UIViewController, {
             this.barPopupButton.selectedTag = "__custom__";
             this.customizeBar();
         }else{
-            this.saveBar();
+            this.barSaveSynchronizer.sync();
         }
     },
 
-    saveTask: null,
-    saveQueued: false,
+    combinedSyncState: JSSynchronizer.State.idle,
 
-    saveMember: function(completion, target){
+    updateCombinedSyncState: function(){
+        this.combinedSyncState = this._getCombinedSyncState();
+    },
+
+    _getCombinedSyncState: function(){
+        if (this.memberSaveSynchronizer.state === JSSynchronizer.State.working || this.barSaveSynchronizer.state === JSSynchronizer.State.working){
+            return JSSynchronizer.State.working;
+        }
+        if (this.memberSaveSynchronizer.state === JSSynchronizer.State.pending || this.barSaveSynchronizer.state === JSSynchronizer.State.pending){
+            return JSSynchronizer.State.pending;
+        }
+        if (this.memberSaveSynchronizer.state === JSSynchronizer.State.error || this.barSaveSynchronizer.state === JSSynchronizer.State.error){
+            return JSSynchronizer.State.error;
+        }
+        if (this.memberSaveSynchronizer.state === JSSynchronizer.State.success || this.barSaveSynchronizer.state === JSSynchronizer.State.success){
+            return JSSynchronizer.State.success;
+        }
+        return JSSynchronizer.State.idle;
+    },
+
+    resync: function(){
+        if (this.memberSaveSynchronizer.state === JSSynchronizer.State.error){
+            this.memberSaveSynchronizer.sync();
+        }
+        if (this.barSaveSynchronizer.state === JSSynchronizer.State.error){
+            this.barSaveSynchronizer.sync();
+        }
+    },
+
+    syncIndicator: JSOutlet(),
+    memberSaveSynchronizer: null,
+
+    saveMember: function(syncContext){
         if (this.deleted){
-            completion.call(target, false);
             return;
         }
-        if (this.saveTask !== null){
-            this.saveQueued = true;
-            // FIXME: save completion and target so they can be called when
-            // the final save completes
-            return;
-        }
-        var success = false;
-        var completeSave = function(){
-            this.saveTask = null;
-            if (this.saveQueued){
-                this.saveQueued = false;
-                this.saveMember(completion, target);
-            }else{
-                if (completion){
-                    completion.call(target, success);
-                }
-            }
-        };
+        syncContext.started();
         if (this.member.id === null){
-            this.saveTask = this.service.createCommunityMember(this.community.id, this.member.dictionaryRepresentation(), function(result, response){
+            this.service.createCommunityMember(this.community.id, this.member.dictionaryRepresentation(), function(result, response){
                 if (result !== Service.Result.success){
-                    // TODO: show error?
-                }else{
-                    success = true;
-                    var replacedMember = this.member;
-                    this.member = Member.initWithDictionary(response.member);
-                    this.community.addMember(this.member);
-                    this.service.notificationCenter.post(Community.Notification.memberChanged, this.community, {member: this.member, replacedMember: replacedMember});
+                    syncContext.completed(new Error("Request failed"));
+                    return;
                 }
-                completeSave.call(this);
+                var replacedMember = this.member;
+                this.member = Member.initWithDictionary(response.member);
+                this.community.addMember(this.member);
+                this.service.notificationCenter.post(Community.Notification.memberChanged, this.community, {member: this.member, replacedMember: replacedMember});
+                syncContext.completed();
             }, this);
         }else{
-            this.saveTask = this.service.saveCommunityMember(this.community.id, this.member.dictionaryRepresentation(), function(result){
+            this.service.saveCommunityMember(this.community.id, this.member.dictionaryRepresentation(), function(result){
                 if (result !== Service.Result.success){
-                    // TODO: show error?
-                }else{
-                    success = true;
-                    this.community.updateMember(this.member);
-                    this.service.notificationCenter.post(Community.Notification.memberChanged, this.community, {member: this.member});
+                    syncContext.completed(new Error("Request Failed"));
+                    return;
                 }
-                completeSave.call(this);
+                this.community.updateMember(this.member);
+                this.service.notificationCenter.post(Community.Notification.memberChanged, this.community, {member: this.member});
+                syncContext.completed();
             }, this);
         }
     },
 
-    saveBarTask: null,
-    saveBarQueued: false,
+    barSaveSynchronizer: null,
 
-    saveBar: function(){
+    saveBar: function(syncContext){
         if (this.deleted){
             return;
         }
-        if (this.saveBarTask !== null){
-            this.saveBarQueued = true;
-            return;
-        }
-        var completeSave = function(){
-            this.saveBarTask = null;
-            if (this.saveBarQueued){
-                this.saveBarQueued = false;
-                this.saveBar();
-            }
-        };
+        syncContext.started();
         if (this.bar.id === null){
-            this.saveBarTask = this.service.createCommunityBar(this.community.id, this.bar.dictionaryRepresentation(), function(result, post){
+            this.service.createCommunityBar(this.community.id, this.bar.dictionaryRepresentation(), function(result, post){
                 if (result !== Service.Result.success){
-                    // TODO:
-                }else{
-                    var bar = Bar.initWithDictionary(post.bar);
-                    this.community.addBar(bar);
-                    this.member.barId = bar.id;
-                    this.bar = bar;
-                    this.saveMember();
+                    syncContext.completed(new Error("Request failed"));
+                    return;
                 }
-                completeSave.call(this);
+                var bar = Bar.initWithDictionary(post.bar);
+                this.community.addBar(bar);
+                this.member.barId = bar.id;
+                this.bar = bar;
+                this.memberSaveSynchronizer.sync();
+                syncContext.completed();
             }, this);
         }else{
-            this.saveBarTask = this.service.saveCommunityBar(this.community.id, this.bar.dictionaryRepresentation(), function(result, post){
+            this.service.saveCommunityBar(this.community.id, this.bar.dictionaryRepresentation(), function(result, post){
                 if (result !== Service.Result.success){
-                    // TODO:
-                }else{
-                    completeSave.call(this);
+                    syncContext.completed(new Error("Request failed"));
+                    return;
                 }
+                syncContext.completed();
             }, this);
         }
     },
@@ -434,8 +448,8 @@ JSClass("MemberDetailViewController", UIViewController, {
             if (!this.bar.shared){
                 deletingBar = this.bar;
             }
-            this.saveMember(function(success){
-                if (success){
+            this.memberSaveSynchronizer.sync(function(){
+                if (this.memberSaveSynchronizer.error === null){
                     if (deletingBar !== null){
                         this.service.deleteCommunityBar(this.community.id, deletingBar.id, function(result){
                             if (result !== Service.Result.success){
@@ -456,7 +470,7 @@ JSClass("MemberDetailViewController", UIViewController, {
         this.bar.id = null;
         this.bar.name = "%s's Bar".sprintf(this.member.fullName);
         this.bar.shared = false;
-        this.saveBar();
+        this.barSaveSynchronizer.sync();
     },
 
     // MARK: - Invitations
@@ -547,6 +561,9 @@ JSClass("MemberDetailViewController", UIViewController, {
         y += 7;
         this.barEditor.frame = JSRect(24, y, bounds.size.width - 48, bounds.size.height - y - 24);
         this.barLoadingView.frame = this.barEditor.frame;
+
+        var indicatorSize = this.syncIndicator.intrinsicSize;
+        this.syncIndicator.frame = JSRect(this.view.bounds.size.width - 5 - indicatorSize.width, 5, indicatorSize.width, indicatorSize.height);
     }
 
 });

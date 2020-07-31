@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="12px" height="11px" viewBox="0 0 12 11" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>SyncPending</title>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" fill-opacity="0.1">
+        <g id="Community" transform="translate(-968.000000, -5.000000)" fill="#000000" fill-rule="nonzero">
+            <path d="M974,5 C977.037566,5 979.5,7.46243388 979.5,10.5 C979.5,13.5375661 977.037566,16 974,16 C970.962434,16 968.5,13.5375661 968.5,10.5 C968.5,7.46243388 970.962434,5 974,5 Z M974,6 C971.514719,6 969.5,8.01471863 969.5,10.5 C969.5,12.9852814 971.514719,15 974,15 C976.485281,15 978.5,12.9852814 978.5,10.5 C978.5,8.01471863 976.485281,6 974,6 Z" id="SyncPending"></path>
+        </g>
+    </g>
+</svg>

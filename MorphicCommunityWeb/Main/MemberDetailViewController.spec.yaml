@@ -7,6 +7,7 @@ MemberDetailViewController:
       - /ActivityIndicator
       - /ErrorView
       - /DetailView
+      - /SyncIndicator
   outlets:
     detailView: /DetailView
     firstNameField: /FirstNameField
@@ -22,6 +23,15 @@ MemberDetailViewController:
     barLoadingActivityIndicator: /BarLoadingActivityIndicator
     errorView: /ErrorView
     activityIndicator: /ActivityIndicator
+    syncIndicator: /SyncIndicator
+
+SyncIndicator:
+  class: SyncIndicator
+  errorTooltip: .syncError.tooltip
+  target: /MemberDetailViewController
+  action: resync
+  bindings:
+    state: {to: /MemberDetailViewController, value: combinedSyncState}
 
 ActivityIndicator:
   frame: 0,0,20,20

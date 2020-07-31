@@ -20,6 +20,8 @@ JSClass("BarDetailViewController", UIViewController, {
 
     viewDidLoad: function(){
         BarDetailViewController.$super.viewDidLoad.call(this);
+        this.saveSynchronizer = JSSynchronizer.initWithAction(this.saveBar, this);
+        this.saveSynchronizer.pendingInterval = 0;
     },
 
     viewWillAppear: function(animated){
@@ -120,13 +122,13 @@ JSClass("BarDetailViewController", UIViewController, {
 
     nameEditingEnded: function(){
         if (this.bar.id === null){
-            this.saveBar();
+            this.saveSynchronizer.sync();
         }
     },
 
     nameChanged: function(){
         if (this.bar.id !== null){
-            this.saveBar();
+            this.saveSynchronizer.sync();
         }
         this.updateCaption();
     },
@@ -144,49 +146,45 @@ JSClass("BarDetailViewController", UIViewController, {
     },
 
     barEditorDidChange: function(barEditor){
-        this.saveBar();
+        this.saveSynchronizer.sync();
     },
 
-    saveTask: null,
-    saveQueued: false,
+    resync: function(){
+        if (this.saveSynchronizer.state === JSSynchronizer.State.error){
+            this.saveSynchronizer.sync();
+        }
+    },
 
-    saveBar: function(){
+    syncIndicator: JSOutlet(),
+    saveSynchronizer: null,
+
+    saveBar: function(syncContext){
         if (this.deleted){
             return;
         }
-        if (this.saveTask !== null){
-            this.saveQueued = true;
-            return;
-        }
-        var completeSave = function(){
-            this.saveTask = null;
-            if (this.saveQueued){
-                this.saveQueued = false;
-                this.saveBar();
-            }
-        };
+        syncContext.started();
         if (this.bar.id === null){
-            this.saveTask = this.service.createCommunityBar(this.community.id, this.bar.dictionaryRepresentation(), function(result, response){
+            this.service.createCommunityBar(this.community.id, this.bar.dictionaryRepresentation(), function(result, response){
                 if (result !== Service.Result.success){
-                    // TODO: show error?
-                }else{
-                    var replacedBar = this.bar;
-                    this.bar = Bar.initWithDictionary(response.bar);
-                    this.update();
-                    this.community.addBar(this.bar);
-                    this.service.notificationCenter.post(Community.Notification.barChanged, this.community, {bar: this.bar, replacedBar: replacedBar});
+                    syncContext.completed(new Error("Request failed"));
+                    return;
                 }
-                completeSave.call(this);
+                var replacedBar = this.bar;
+                this.bar = Bar.initWithDictionary(response.bar);
+                this.update();
+                this.community.addBar(this.bar);
+                this.service.notificationCenter.post(Community.Notification.barChanged, this.community, {bar: this.bar, replacedBar: replacedBar});
+                syncContext.completed();
             }, this);
         }else{
-            this.saveTask = this.service.saveCommunityBar(this.community.id, this.bar.dictionaryRepresentation(), function(result){
+            this.service.saveCommunityBar(this.community.id, this.bar.dictionaryRepresentation(), function(result){
                 if (result !== Service.Result.success){
-                    // TODO: show error?
-                }else{
-                    this.community.updateBar(this.bar);
-                    this.service.notificationCenter.post(Community.Notification.barChanged, this.community, {bar: this.bar});
+                    syncContext.completed(new Error("Request failed"));
+                    return;
                 }
-                completeSave.call(this);
+                this.community.updateBar(this.bar);
+                this.service.notificationCenter.post(Community.Notification.barChanged, this.community, {bar: this.bar});
+                syncContext.completed();
             }, this);
         }
     },
@@ -305,6 +303,9 @@ JSClass("BarDetailViewController", UIViewController, {
         this.nameField.position = JSPoint(x + this.nameField.bounds.size.width / 2, baseline - this.nameField.firstBaselineOffsetFromTop + this.nameField.bounds.size.height / 2);
         var y = this.nameField.frame.origin.y + this.nameField.frame.size.height + 40;
         this.barEditor.frame = JSRect(24, y, bounds.size.width - 48, bounds.size.height - y - 24);
+
+        var indicatorSize = this.syncIndicator.intrinsicSize;
+        this.syncIndicator.frame = JSRect(this.view.bounds.size.width - 5 - indicatorSize.width, 5, indicatorSize.width, indicatorSize.height);
     }
 
 });

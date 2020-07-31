@@ -7,6 +7,7 @@ BarDetailViewController:
       - /ActivityIndicator
       - /ErrorView
       - /DetailView
+      - /SyncIndicator
   outlets:
     detailView: /DetailView
     nameField: /BarNameField
@@ -15,12 +16,21 @@ BarDetailViewController:
     barEditor: /BarEditor
     errorView: /ErrorView
     activityIndicator: /ActivityIndicator
+    syncIndicator: /SyncIndicator
 
 ActivityIndicator:
   frame: 0,0,20,20
   class: UIActivityIndicatorView
   style: dark
   hidesWhenStopped: true
+
+SyncIndicator:
+  class: SyncIndicator
+  target: /BarDetailViewController
+  action: resync
+  errorTooltip: .syncError.tooltip
+  bindings:
+    state: {to: /BarDetailViewController, value: saveSynchronizer.state}
 
 ErrorView:
   class: UIStackView
