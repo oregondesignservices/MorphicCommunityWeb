@@ -7,16 +7,25 @@ WindowController:
     frame: 0,0,500,300
     backgroundColor: white
     firstResponder: /ListView
+    subviews:
+      - /SyncIndicator
     contentView:
       subviews:
         - /ListView
   outlets:
     categoriesListView: /ListView
+    syncIndicator: /SyncIndicator
 
 ListView:
   class: UIListView
   delegate: /WindowController
   dataSource: /WindowController
+  backgroundColor:
+    rgba: 240,240,240
+  borderColor:
+    rgba: 224,224,224
+  borderWidth: 1
+  maskedBorders: maxX
   rowHeight: 31
   reusableCellClasses:
     category: UIListViewCell
@@ -24,6 +33,7 @@ ListView:
     class: UIListViewDefaultStyler
     showsSeparators: false
     cellContentCornerRadius: 2
+    cellContentInsets: 0,10
     cellTextColor: black
     selectedCellTextColor: white
     mutedSelectedCellTextColor: white
@@ -31,3 +41,11 @@ ListView:
       rgba: 0,129,69
     mutedSelectedCellBackgroundColor:
       rgba: 0,129,69
+
+SyncIndicator:
+  class: SyncIndicator
+  errorTooltip: .syncError.tooltip
+  target: /WindowController
+  action: resync
+  bindings:
+    state: {to: /WindowController, value: communitySaveSynchronizer.state}

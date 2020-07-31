@@ -6,6 +6,7 @@ JSClass("CommunityGeneralSettingsViewController", UIViewController, {
 
     community: null,
     service: null,
+    communitySaveSynchronizer: null,
 
     // MARK: - View Lifecycle
 
@@ -23,6 +24,9 @@ JSClass("CommunityGeneralSettingsViewController", UIViewController, {
 
     viewWillDisappear: function(animated){
         CommunityGeneralSettingsViewController.$super.viewWillDisappear.call(this, animated);
+        if (this.nameField.window && this.nameField.window.firstResponder === this.nameField){
+            this.nameField.window.firstResponder = null;
+        }
     },
 
     viewDidDisappear: function(animated){
@@ -35,15 +39,12 @@ JSClass("CommunityGeneralSettingsViewController", UIViewController, {
 
     // MARK: - Form
 
+    scrollView: JSOutlet(),
     form: JSOutlet(),
     nameField: JSOutlet(),
 
     nameChanged: function(){
-        this.service.saveCommunity(this.community.dictionaryRepresentation(), function(result){
-            if (result !== Service.Result.success){
-                // TODO: show error?? window might be closing
-            }
-        });
+        this.communitySaveSynchronizer.sync();
     },
 
     textFieldDidReceiveEnter: function(textField){
@@ -55,7 +56,10 @@ JSClass("CommunityGeneralSettingsViewController", UIViewController, {
     // MARK: - Layout
 
     viewDidLayoutSubviews: function(){
-        this.form.frame = this.view.bounds;
+        this.scrollView.frame = this.view.bounds;
+        var formSize = this.form.intrinsicSize;
+        this.scrollView.contentSize = JSSize(this.view.bounds.size.width, formSize.height + 40);
+        this.form.frame = JSRect(20, 20, this.view.bounds.size.width - 40, formSize.height);
     }
 
 });

@@ -1,4 +1,5 @@
 // #import UIKit
+// #import "Service+Extensions.js"
 'use strict';
 
 JSClass("CommunitySettingsWindowController", UIWindowController, {
@@ -15,6 +16,8 @@ JSClass("CommunitySettingsWindowController", UIWindowController, {
             {title: JSBundle.mainBundle.localizedString("categories.permissions.title", "CommunitySettingsWindowController"), viewControllerSpec: "CommunityPermissionsSettingsViewController"},
             {title: JSBundle.mainBundle.localizedString("categories.billing.title", "CommunitySettingsWindowController"), viewControllerSpec: "CommunityBillingSettingsViewController"}
         ];
+        this.communitySaveSynchronizer = JSSynchronizer.initWithAction(this.saveCommunity, this);
+        this.communitySaveSynchronizer.pendingInterval = 0;
         this.showDetailsForCategory(this.categories[0]);
         this.categoriesListView.selectedIndexPath = JSIndexPath(0, 0);
         this.categoriesListView.reloadData();
@@ -83,6 +86,7 @@ JSClass("CommunitySettingsWindowController", UIWindowController, {
         var viewController = spec.filesOwner;
         viewController.service = this.service;
         viewController.community = this.community;
+        viewController.communitySaveSynchronizer = this.communitySaveSynchronizer;
         this.detailsViewController = viewController;
         viewController.viewWillAppear(false);
         this.addChildViewController(viewController);
@@ -92,15 +96,39 @@ JSClass("CommunitySettingsWindowController", UIWindowController, {
         viewController.viewDidAppear(false);
     },
 
+    // MARK: Saving
+
+    communitySaveSynchronizer: null,
+    syncIndicator: JSOutlet(),
+
+    saveCommunity: function(syncContext){
+        syncContext.started();
+        this.service.saveCommunity(this.community.dictionaryRepresentation(), function(result){
+            if (result !== Service.Result.success){
+                syncContext.completed(new Error("Request failed"));
+                return;
+            }
+            syncContext.completed();
+        });
+    },
+
+    resync: function(){
+        this.communitySaveSynchronizer.sync();
+    },
+
     // MARK: - Layout
 
     viewDidLayoutSubviews: function(){
+        var windowBounds = this.window.bounds;
         var bounds = this.window.contentView.bounds;
         var listWidth = 150;
-        this.categoriesListView.frame = JSRect(10, 20, listWidth - 20, bounds.size.height - 30);
+        this.categoriesListView.frame = this.categoriesListView.superview.convertRectFromView(JSRect(0, 0, listWidth, windowBounds.size.height), this.window);
+        this.categoriesListView.contentInsets = JSInsets(-this.categoriesListView.frame.origin.y + 20, 0, 0, 0);
         if (this.detailsViewController !== null){
-            this.detailsViewController.view.frame = JSRect(listWidth, 20, bounds.size.width - listWidth - 10, bounds.size.height - 20);
+            this.detailsViewController.view.frame = JSRect(listWidth, 0, bounds.size.width - listWidth, bounds.size.height);
         }
+        var indicatorSize = this.syncIndicator.intrinsicSize;
+        this.syncIndicator.frame = JSRect(this.window.bounds.size.width - 5 - indicatorSize.width, 5, indicatorSize.width, indicatorSize.height);
     }
 
 

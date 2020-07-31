@@ -4,10 +4,16 @@ ViewController:
   class: CommunityGeneralSettingsViewController
   view:
     subviews:
-      - /Form
+      - /ScrollView
   outlets:
+    scrollView: /ScrollView
     form: /Form
     nameField: /NameField
+
+ScrollView:
+  class: UIScrollView
+  subviews:
+    - /Form
 
 Form:
   class: FormView

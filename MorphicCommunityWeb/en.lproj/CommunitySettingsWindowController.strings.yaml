@@ -4,3 +4,4 @@ en:
     general.title: General
     permissions.title: Permissions
     billing.title: Billing
+  syncError.tooltip:  Sorry, we couldn't save your last change.  Click to retry.
