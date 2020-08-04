@@ -164,8 +164,7 @@ JSClass("BarItemActionConfiguration", JSObject, {
 
     dictionaryRepresentation: function(){
         return {
-            label: this.label,
-            image_url: this.imageURL !== null ? this.imageURL.encodedString : null,
+            identifier: this.identifier,
             color: this.color !== null ? this.color.morphicString() : null
         };
     }

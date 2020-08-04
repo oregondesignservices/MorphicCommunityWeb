@@ -24,8 +24,27 @@ JSClass("ApplicationDelegate", JSObject, {
         this.service.defaults = this.defaults;
         this.service.notificationCenter.addObserver(Service.Notification.userDidSignin, this.service, this.userDidSignin, this);
         this.service.notificationCenter.addObserver(Service.Notification.userDidSignout, this.service, this.userDidSignout, this);
+        application.shortcutMenu = this.createShortcutMenu();
         this.recallUser();
         this.showLoading(launchOptions);
+    },
+
+    // MARK: - Shortcut menu
+
+    createShortcutMenu: function(){
+        var menu = UIMenu.init();
+        var item = UIMenuItem.initWithTitle("Undo", "undo");
+        item.keyEquivalent = "z";
+        menu.addItem(item);
+        item = UIMenuItem.initWithTitle("Redo", "redo");
+        if (UIPlatform.shared.identifier == UIPlatform.Identifier.mac){
+            item.keyEquivalent = "z";
+            item.keyModifiers = UIEvent.Modifier.shift;
+        }else{
+            item.keyEquivalent = "y";
+        }
+        menu.addItem(item);
+        return menu;
     },
 
     // MARK: - Service

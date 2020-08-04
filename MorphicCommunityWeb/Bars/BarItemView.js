@@ -1,4 +1,5 @@
 // #import UIKit
+// #import "Bar.js"
 'use strict';
 
 JSClass("BarItemView", UIView, {
@@ -6,6 +7,11 @@ JSClass("BarItemView", UIView, {
     initWithItem: function(item){
         var view = null;
         switch (item.kind){
+            case BarItem.Kind.action:
+                view = BarItemControlView.init();
+                break;
+            case BarItem.Kind.link:
+            case BarItem.Kind.application:
             default:
                 view = BarItemButtonView.init();
                 break;
@@ -137,6 +143,74 @@ JSClass("BarItemButtonView", BarItemView, {
         this.imageView.contentInsets = JSInsets(this.imageView.bounds.size.height * 0.2);
         var y = iconDiameter - iconOverlap;
         this.titleLabel.frame = JSRect(0, y, this.bounds.size.width, this.bounds.size.height - y);
+    }
+
+});
+
+JSClass("BarItemControlView", BarItemView, {
+
+    titleLabel: null,
+    segmentsContainer: null,
+    defaultColor: JSColor.initWithRGBA(0, 129/255.0, 69/255.0),
+
+    init: function(){
+        BarItemControlView.$super.init.call(this);
+        this.titleLabel = UILabel.init();
+        this.titleLabel.maximumNumberOfLines = 1;
+        this.titleLabel.font = JSFont.systemFontOfSize(14);
+        this.titleLabel.textInsets = JSInsets(5, 0);
+        this.titleLabel.textAlignment = JSTextAlignment.center;
+        this.titleLabel.textColor = JSColor.black;
+        this.segmentsContainer = UIStackView.initWithFrame(JSRect(0, 0, 0, 30));
+        this.segmentsContainer.axis = UIStackView.Axis.horizontal;
+        this.segmentsContainer.viewSpacing = 1;
+        this.segmentsContainer.distribution = UIStackView.Distribution.equal;
+        this.addSubview(this.titleLabel);
+        this.addSubview(this.segmentsContainer);
+    },
+
+    update: function(){
+        var i;
+        for (i = this.segmentsContainer.subviews.length - 1; i >= 0; --i){
+            this.segmentsContainer.subviews[i].removeFromSuperview();
+        }
+        var item = this._item;
+        switch (item.configuration.identifier){
+            case "copypaste":
+                this.titleLabel.text = "Copy & Paste";
+                this.addSegment("Copy");
+                this.addSegment("Paste");
+                break;
+            default:
+                this.titleLabel.text = "Unknown";
+                this.addSegment("Unknown");
+                break;
+        }
+        for (i = this.segmentsContainer.subviews.length - 1; i >= 0; --i){
+            this.segmentsContainer.subviews[i].bind("backgroundColor", item.configuration, "color", {nullPlaceholder: this.defaultColor});
+        }
+    },
+
+    addSegment: function(title){
+        var segment = UILabel.init();
+        segment.textAlignment = JSTextAlignment.center;
+        segment.maximumNumberOfLines = 1;
+        segment.text = title;
+        segment.textColor = JSColor.white;
+        segment.textInsets = JSInsets((this.segmentsContainer.bounds.size.height - segment.intrinsicSize.height) / 2, 0);
+        this.segmentsContainer.addSubview(segment);
+    },
+
+    sizeToFitSize: function(maxSize){
+        this.bounds = JSRect(0, 0, maxSize.width, this.titleLabel.intrinsicSize.height + this.segmentsContainer.bounds.size.height);
+        this.setNeedsLayout();
+    },
+
+    layoutSubviews: function(){
+        var y = 0;
+        this.titleLabel.frame = JSRect(0, y, this.bounds.size.width, this.titleLabel.intrinsicSize.height);
+        y += this.titleLabel.bounds.size.height;
+        this.segmentsContainer.frame = JSRect(0, y, this.bounds.size.width, this.segmentsContainer.bounds.size.height);
     }
 
 });

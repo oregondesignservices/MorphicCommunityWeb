@@ -16,3 +16,7 @@ en:
       title: Gmail
       description: A button that opens Gmail in a web browser
       suggestedLabel: Email
+    copypaste:
+      title: Copy and Paste Controls
+      description: Shortcuts buttons to the computer's copy and
+        paste commands

@@ -3,6 +3,7 @@
 // #import "BarItemDetailView.js"
 // #import "BarItemLinkDetailView.js"
 // #import "BarItemApplicationDetailView.js"
+// #import "BarItemActionDetailView.js"
 'use strict';
 
 JSProtocol("BarItemDetailViewController", JSProtocol, {
@@ -20,6 +21,7 @@ JSClass("BarItemDetailViewController", UIViewController, {
     delegate: null,
 
     defaultButtonColor: JSColor.initWithRGBA(0, 41/255.0, 87/255.0),
+    defaultActionColor: JSColor.initWithRGBA(0, 129/255.0, 69/255.0),
 
     buttonColorShortcuts: [
         JSColor.initWithRGBA(0, 41/255.0, 87/255.0),
@@ -48,6 +50,9 @@ JSClass("BarItemDetailViewController", UIViewController, {
             if (this.item.kind == BarItem.Kind.application){
                 return BarItemApplicationDetailView.init();
             }
+            if (this.item.kind == BarItem.Kind.action){
+                return BarItemActionDetailView.init();
+            }
         }
         return BarItemDetailView.init();
     },
@@ -74,12 +79,15 @@ JSClass("BarItemDetailViewController", UIViewController, {
             this.view.colorBar.shortcutColors = this.buttonColorShortcuts;
             this.view.colorBar.bind("color", this, "item.configuration.color", {nullPlaceholder: this.defaultButtonColor});
             this.view.colorBar.addAction(this.colorChanged, this);
-        }
-        if (this.view instanceof BarItemApplicationDetailView){
+        }else if (this.view instanceof BarItemApplicationDetailView){
             this.view.labelField.delegate = this;
             this.view.labelField.bind("text", this, "item.configuration.label");
             this.view.colorBar.shortcutColors = this.buttonColorShortcuts;
             this.view.colorBar.bind("color", this, "item.configuration.color", {nullPlaceholder: this.defaultButtonColor});
+            this.view.colorBar.addAction(this.colorChanged, this);
+        }else if (this.view instanceof BarItemActionDetailView){
+            this.view.colorBar.shortcutColors = this.buttonColorShortcuts;
+            this.view.colorBar.bind("color", this, "item.configuration.color", {nullPlaceholder: this.defaultActionColor});
             this.view.colorBar.addAction(this.colorChanged, this);
         }
     },

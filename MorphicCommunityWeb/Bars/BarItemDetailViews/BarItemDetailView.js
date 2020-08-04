@@ -17,7 +17,7 @@ JSClass("BarItemDetailView", UIView, {
     initialFirstResponder: null,
 
     getIntrinsicSize: function(){
-        var size = JSSize(this.contentInsets.size.width, this.contentInsets.height);
+        var size = JSSize(this.contentInsets.width, this.contentInsets.height);
         var buttonSize = this.removeButton.intrinsicSize;
         size.width += buttonSize.width;
         size.height += buttonSize.height;

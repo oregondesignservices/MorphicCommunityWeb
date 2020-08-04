@@ -36,3 +36,10 @@ items:
       label: .items.gmail.suggestedLabel
       image_url: google-brands
       url: https://mail.google.com
+  -
+    kind: action
+    title: .items.copypaste.title
+    description: .items.copypaste.description
+    icon: BarItemLibraryIconCopyPaste
+    configuration:
+      identifier: copypaste
