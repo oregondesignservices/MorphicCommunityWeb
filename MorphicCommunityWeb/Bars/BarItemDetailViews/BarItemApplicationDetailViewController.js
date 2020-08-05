@@ -1,35 +1,36 @@
 // #import UIKit
-// #import "BarItemDetailView.js"
-// #import "Theme.js"
-// #import "ColorBar.js"
-// #import "ImagePicker.js"
+// #import "BarItemButtonDetailViewController.js"
 'use strict';
 
-JSClass("BarItemApplicationDetailView", BarItemDetailView, {
+(function(){
 
-    initWithFrame: function(frame){
-        BarItemApplicationDetailView.$super.initWithFrame.call(this, frame);
-        this.labelField = UITextField.initWithStyler(Theme.default.itemDetailTextFieldStyler);
-        this.labelField.placeholder = JSBundle.mainBundle.localizedString("label.placeholder", "BarItemDetailViews");
-        this.addSubview(this.labelField);
+JSClass("BarItemApplicationDetailViewController", BarItemButtonDetailViewController, {
 
-        this.colorBar = ColorBar.init();
-        this.addSubview(this.colorBar);
-
-        this.imagePicker = ImagePicker.init();
-        this.addSubview(this.imagePicker);
-
-        this.initialFirstResponder = this.labelField;
+    viewDidLoad: function(){
+        BarItemApplicationDetailViewController.$super.viewDidLoad.call(this);
     },
 
-    labelField: null,
-    colorBar: null,
-    imagePicker: null,
-    fieldSpacing: 7,
+    viewWillAppear: function(animated){
+        BarItemApplicationDetailViewController.$super.viewWillAppear.call(this, animated);
+    },
 
-    getIntrinsicSize: function(){
-        var size = JSSize(this.contentInsets.width + this.colorBar.shortcutSize * 8 + this.colorBar.shortcutSpacing * 7, this.contentInsets.height);
+    viewDidAppear: function(animated){
+        BarItemApplicationDetailViewController.$super.viewDidAppear.call(this, animated);
+        this.view.window.firstResponder = this.labelField;
+    },
+
+    viewWillDisappear: function(animated){
+        BarItemApplicationDetailViewController.$super.viewWillDisappear.call(this, animated);
+    },
+
+    viewDidDisappear: function(animated){
+        BarItemApplicationDetailViewController.$super.viewDidDisappear.call(this, animated);
+    },
+
+    contentSizeThatFitsSize: function(maxSize){
+        var size = JSSize(this.colorBar.shortcutSize * 8 + this.colorBar.shortcutSpacing * 7, 0);
         size.height += this.removeButton.intrinsicSize.height;
+        size.height += this.fieldSpacing;
         size.height += this.labelField.intrinsicSize.height;
         size.height += this.fieldSpacing;
         size.height += this.colorBar.intrinsicSize.height;
@@ -39,15 +40,14 @@ JSClass("BarItemApplicationDetailView", BarItemDetailView, {
         return size;
     },
 
-    layoutSubviews: function(){
-        BarItemApplicationDetailView.$super.layoutSubviews.call(this);
-        var bounds = this.bounds.rectWithInsets(this.contentInsets);
+    viewDidLayoutSubviews: function(){
+        var bounds = this.view.bounds;
         var height = this.labelField.intrinsicSize.height;
         var x = 0;
         var y = 0;
         var buttonSize = this.removeButton.intrinsicSize;
         this.removeButton.frame = JSRect(bounds.origin.x + bounds.size.width - buttonSize.width, y, buttonSize.width, buttonSize.height);
-        y += buttonSize.height;
+        y += buttonSize.height + this.fieldSpacing;
         this.labelField.frame = JSRect(bounds.origin.x + x, bounds.origin.y + y, bounds.size.width, height);
         y += height + this.fieldSpacing;
         height = this.colorBar.intrinsicSize.height;
@@ -58,3 +58,5 @@ JSClass("BarItemApplicationDetailView", BarItemDetailView, {
     }
 
 });
+
+})();

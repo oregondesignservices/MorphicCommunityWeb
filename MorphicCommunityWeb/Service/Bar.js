@@ -115,16 +115,21 @@ JSClass("BarItemLinkConfiguration", BarItemButtonConfiguration, {
 
     initWithDictionary: function(dictionary){
         BarItemLinkConfiguration.$super.initWithDictionary.call(this, dictionary);
+        if (dictionary.subkind){
+            this.subkind = dictionary.subkind;
+        }
         if (dictionary.url){
             this.url = JSURL.initWithString(dictionary.url);
         }
     },
 
+    subkind: null,
     url: null,
 
     dictionaryRepresentation: function(){
         var dictionary = BarItemLinkConfiguration.$super.dictionaryRepresentation.call(this);
         dictionary.url = this.url !== null ? this.url.encodedString : null;
+        dictionary.subkind = this.subkind;
         return dictionary;
     }
 

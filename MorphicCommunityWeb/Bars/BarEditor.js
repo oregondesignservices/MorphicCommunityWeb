@@ -119,7 +119,7 @@ JSClass("BarEditor", UIView, {
         this.selectedItemIndex = index;
         var item = this.bar.items[index];
         var view = this.viewForItemAtIndex(index);
-        this.itemDetailViewController = BarItemDetailViewController.init();
+        this.itemDetailViewController = BarItemDetailViewController.initForItem(item);
         this.itemDetailViewController.item = this.bar.items[index];
         this.itemDetailViewController.delegate = this;
         this.itemDetailViewController.changed = isChange;

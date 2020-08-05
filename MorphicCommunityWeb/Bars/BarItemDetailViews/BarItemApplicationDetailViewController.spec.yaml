@@ -1,0 +1,58 @@
+File's Owner: /ViewController
+
+ViewController:
+  class: BarItemApplicationDetailViewController
+  view:
+    subviews:
+      - /RemoveButton
+      - /LabelField
+      - /ColorBar
+      - /ImagePicker
+  outlets:
+    removeButton: /RemoveButton
+    labelField: /LabelField
+    colorBar: /ColorBar
+    imagePicker: /ImagePicker
+
+RemoveButton:
+  class: UIButton
+  styler:
+    class: DetailViewButtonStyler
+    color:
+      rgba: 129,43,0
+  title: .remove.title
+  image: RemoveIcon
+  target: /ViewController
+  action: removeItem
+
+LabelField:
+  class: UITextField
+  styler: $Theme.default.itemDetailTextFieldStyler
+  placeholder: .label.placeholder
+  delegate: /ViewController
+  bindings:
+    text: {to: /ViewController, value: "item.configuration.label"}
+
+ColorBar:
+  class: ColorBar
+  shortcutColors:
+    - /DefaultColor
+    - rgba: 0,129,43
+    - rgba: 129,43,0
+    - rgba: 217,106,49
+    - rgba: 33,174,154
+    - rgba: 101,54,171
+    - rgba: 197,36,98
+    - rgba: 0,0,0
+  target: /ViewController
+  action: colorChanged
+  bindings:
+    color: {to: /ViewController, value: "item.configuration.color", nullPlaceholder: /DefaultColor}
+
+DefaultColor:
+  rgba: 0,41,87
+
+ImagePicker:
+  class: ImagePicker
+  target: /ViewController
+  action: imageChanged

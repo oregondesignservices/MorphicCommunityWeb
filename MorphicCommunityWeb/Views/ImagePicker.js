@@ -11,7 +11,41 @@ JSClass("ImagePicker", UIControl, {
         this.backgroundColor = JSColor.white;
         this.contentInsets = JSInsets(5);
         this.borderWidth = 1;
-        this.borderColor = JSColor.initWithWhite(0.4);
+        this.borderColor = JSColor.initWithWhite(0.8);
+        this.cornerRadius = 2;
+        this.commonImagePickerInit();
+    },
+
+    initWithSpec: function(spec){
+        ImagePicker.$super.initWithSpec.call(this, spec);
+        this._images = [];
+        this._cells = [];
+        if (spec.containsKey("noImage")){
+            this.noImage = spec.valueForKey("noImage");
+        }else{
+            this.noImage = JSImage.initWithResourceName("NoImage");
+        }
+        if (spec.containsKey("contentInsets")){
+            this.contentInsets = spec.valueForKey("contentInsets", JSInsets);
+        }else{
+            this.contentInsets = JSInsets(5);
+        }
+        if (!spec.containsKey("backgroundColor")){
+            this.backgroundColor = JSColor.white;
+        }
+        if (!spec.containsKey("borderColor")){
+            this.borderColor = JSColor.initWithWhite(0.8);
+        }
+        if (!spec.containsKey("borderWidth")){
+            this.borderWidth = 1;
+        }
+        if (!spec.containsKey("cornerRadius")){
+            this.cornerRadius = 2;
+        }
+        this.commonImagePickerInit();
+    },
+
+    commonImagePickerInit: function(){
         this.selectionIndicator = UIView.init();
         this.selectionIndicator.backgroundColor = JSColor.initWithRGBA(0, 128/255.0, 255/255.0, 0.3);
         this.selectionIndicator.cornerRadius = 2;

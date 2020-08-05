@@ -1,0 +1,77 @@
+File's Owner: /ViewController
+
+ViewController:
+  class: BarItemSkypeDetailViewController
+  view:
+    subviews:
+      - /RemoveButton
+      - /LabelField
+      - /MeetingIdField
+      - /ColorBar
+      - /ImagePicker
+  outlets:
+    removeButton: /RemoveButton
+    labelField: /LabelField
+    meetingIdField: /MeetingIdField
+    colorBar: /ColorBar
+    imagePicker: /ImagePicker
+    joinURLLabel: /JoinURLLabel
+
+RemoveButton:
+  class: UIButton
+  styler:
+    class: DetailViewButtonStyler
+    color:
+      rgba: 129,43,0
+  title: .remove.title
+  image: RemoveIcon
+  target: /ViewController
+  action: removeItem
+
+JoinURLLabel:
+  class: UILabel
+  text: join.skype.com/
+  textColor:
+    rgba: 164,164,164
+
+LabelField:
+  class: UITextField
+  styler: $Theme.default.itemDetailTextFieldStyler
+  placeholder: .label.placeholder
+  delegate: /ViewController
+  nextKeyView: /MeetingIdField
+  bindings:
+    text: {to: /ViewController, value: "item.configuration.label"}
+
+MeetingIdField:
+  class: MeetingIdField
+  styler: $Theme.default.itemDetailTextFieldStyler
+  delegate: /ViewController
+  leftAccessoryView: /JoinURLLabel
+  nextKeyView: /LabelField
+  bindings:
+    text: {to: /ViewController, value: "item.configuration.url", transformer: $BarItemSkypeDetailViewController.URLToMeetingIdValueTransformer}
+
+ColorBar:
+  class: ColorBar
+  shortcutColors:
+    - /DefaultColor
+    - rgba: 0,129,43
+    - rgba: 129,43,0
+    - rgba: 217,106,49
+    - rgba: 33,174,154
+    - rgba: 101,54,171
+    - rgba: 197,36,98
+    - rgba: 0,0,0
+  target: /ViewController
+  action: colorChanged
+  bindings:
+    color: {to: /ViewController, value: "item.configuration.color", nullPlaceholder: /DefaultColor}
+
+DefaultColor:
+  rgba: 0,41,87
+
+ImagePicker:
+  class: ImagePicker
+  target: /ViewController
+  action: imageChanged

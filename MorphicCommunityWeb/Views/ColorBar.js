@@ -9,12 +9,38 @@ JSClass("ColorBar", UIControl, {
     shortcutSize: 19,
     shortcutSpacing: 6,
     shortcutColorViews: null,
-    contentInsets: null,
     selectionIndicator: null,
+
+    initWithSpec: function(spec){
+        ColorBar.$super.initWithSpec.call(this, spec);
+        this.shortcutColorViews = [];
+        if (spec.containsKey("shortcutColors")){
+            this._shortcutColors = [];
+            var shortcutColors = spec.valueForKey("shortcutColors");
+            for (var i = 0, l = shortcutColors.length; i < l; ++i){
+                this._shortcutColors.push(shortcutColors.valueForKey(i, JSColor));
+            }
+            this.updateShortcutViews();
+        }
+        if (spec.containsKey("shortcutRows")){
+            this.shortcutRows = spec.valueForKey("shortcutRows");
+        }
+        if (spec.containsKey("shortcutSize")){
+            this.shortcutSize = spec.valueForKey("shortcutSize");
+        }
+        if (spec.containsKey("shortcutSpacing")){
+            this.shortcutSpacing = spec.valueForKey("shortcutSpacing");
+        }
+        this.commonColorBarInit();
+    },
 
     initWithFrame: function(frame){
         ColorBar.$super.initWithFrame.call(this, frame);
         this.shortcutColorViews = [];
+        this.commonColorBarInit();
+    },
+
+    commonColorBarInit: function(){
         this.selectionIndicator = UIView.init();
         this.selectionIndicator.backgroundColor = JSColor.initWithRGBA(0, 128/255.0, 255/255.0, 0.75);
         this.addSubview(this.selectionIndicator);
