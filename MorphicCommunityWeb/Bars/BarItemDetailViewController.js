@@ -6,6 +6,8 @@
 // #import "BarItemActionDetailView.js"
 'use strict';
 
+(function(){
+
 JSProtocol("BarItemDetailViewController", JSProtocol, {
 
     barItemDetailViewDidAffectBarLayout: function(viewController){},
@@ -34,6 +36,27 @@ JSClass("BarItemDetailViewController", UIViewController, {
         JSColor.initWithRGBA(0/255.0, 0/255.0, 0/255.0),
     ],
 
+    defaultImageURLs: [
+        JSURL.initWithString("link-solid"),
+        JSURL.initWithString("envelope-solid"),
+        JSURL.initWithString("calendar-solid"),
+        JSURL.initWithString("video-solid"),
+        JSURL.initWithString("camera-solid"),
+        JSURL.initWithString("comment-solid"),
+        JSURL.initWithString("images-solid"),
+        JSURL.initWithString("music-solid"),
+        JSURL.initWithString("newspaper-solid"),
+        JSURL.initWithString("question-solid"),
+        JSURL.initWithString("shopping-cart-solid"),
+        JSURL.initWithString("google-brands"),
+        JSURL.initWithString("google-drive-brands"),
+        JSURL.initWithString("amazon-brands"),
+        JSURL.initWithString("skype-brands"),
+    ],
+    images: null,
+    imageURLsByObjectId: null,
+    imagesByURL: null,
+
     changed: false,
 
     // MARK: - View Lifecycle
@@ -57,9 +80,60 @@ JSClass("BarItemDetailViewController", UIViewController, {
         return BarItemDetailView.init();
     },
 
+    imageForURL: function(url){
+        if (url === null){
+            return null;
+        }
+        var image = this.imagesByURL[url.encodedString];
+        if (!image){
+            if (url.isAbsolute){
+                image = JSImage.initWithURL(url, JSSize(32, 32));
+            }else{
+                image = bundledImages[url.path];
+            }
+            this.imagesByURL[url.encodedString] = image;
+            this.imageURLsByObjectId[image.objectID] = url;
+        }
+        return image;
+    },
+
+    urlForImage: function(image){
+        if (image === null){
+            return null;
+        }
+        return this.imageURLsByObjectId[image.objectID];
+    },
+
     viewDidLoad: function(){
         BarItemDetailViewController.$super.viewDidLoad.call(this);
+
+        // Setup the images for the image picker
+        this.images = [
+            null
+        ];
+        this.imagesByURL = {};
+        this.imageURLsByObjectId = {};
+        var url;
+        var image;
+        for (var i = 0, l = this.defaultImageURLs.length; i < l; ++i){
+            url = this.defaultImageURLs[i];
+            this.images.push(this.imageForURL(url));
+        }
+        var controller = this;
+        var imageValueTransformer = {
+            transformValue: function(url){
+                return controller.imageForURL(url);
+            },
+
+            reverseTransformValue: function(image){
+                return controller.urlForImage(image);
+            }
+        };
+
+        // Every view has remove button
         this.view.removeButton.addAction(this.removeItem, this);
+
+        // Setup specific types of views 
         if (this.view instanceof BarItemLinkDetailView){
             this.view.labelField.delegate = this;
             this.view.urlField.delegate = this;
@@ -79,12 +153,18 @@ JSClass("BarItemDetailViewController", UIViewController, {
             this.view.colorBar.shortcutColors = this.buttonColorShortcuts;
             this.view.colorBar.bind("color", this, "item.configuration.color", {nullPlaceholder: this.defaultButtonColor});
             this.view.colorBar.addAction(this.colorChanged, this);
+            this.view.imagePicker.images = this.images;
+            this.view.imagePicker.bind("selectedImage", this, "item.configuration.imageURL", {valueTransformer: imageValueTransformer});
+            this.view.imagePicker.addAction(this.imageChanged, this);
         }else if (this.view instanceof BarItemApplicationDetailView){
             this.view.labelField.delegate = this;
             this.view.labelField.bind("text", this, "item.configuration.label");
             this.view.colorBar.shortcutColors = this.buttonColorShortcuts;
             this.view.colorBar.bind("color", this, "item.configuration.color", {nullPlaceholder: this.defaultButtonColor});
             this.view.colorBar.addAction(this.colorChanged, this);
+            this.view.imagePicker.images = this.images;
+            this.view.imagePicker.bind("selectedImage", this, "item.configuration.imageURL", {valueTransformer: imageValueTransformer});
+            this.view.imagePicker.addAction(this.imageChanged, this);
         }else if (this.view instanceof BarItemActionDetailView){
             this.view.colorBar.shortcutColors = this.buttonColorShortcuts;
             this.view.colorBar.bind("color", this, "item.configuration.color", {nullPlaceholder: this.defaultActionColor});
@@ -165,6 +245,13 @@ JSClass("BarItemDetailViewController", UIViewController, {
         this.changed = true;
     },
 
+    imageChanged: function(){
+        this.changed = true;
+        if (this.delegate && this.delegate.barItemDetailViewDidAffectBarLayout){
+            this.delegate.barItemDetailViewDidAffectBarLayout(this);
+        }
+    },
+
 });
 
 JSClass("BarItemDetailPopupWindow", UIPopupWindow, {
@@ -184,3 +271,41 @@ JSClass("BarItemDetailPopupWindow", UIPopupWindow, {
     },
 
 });
+
+var imageCache = function(names, bundle){
+    var cache = {};
+    var definePropertyFromName = function(name){
+        Object.defineProperty(cache, name, {
+            configurable: true,
+            get: function(){
+                var img = JSImage.initWithResourceName(name, bundle).imageWithRenderMode(JSImage.RenderMode.template);
+                Object.defineProperty(this, name, {value: img});
+                return img;
+            }
+        });
+    };
+    for (var i = 0, l = names.length; i < l; ++i){
+        definePropertyFromName(names[i]);
+    }
+    return cache;
+};
+
+var bundledImages = imageCache([
+    "amazon-brands",
+    "calendar-solid",
+    "camera-solid",
+    "comment-solid",
+    "envelope-solid",
+    "google-brands",
+    "google-drive-brands",
+    "images-solid",
+    "link-solid",
+    "music-solid",
+    "newspaper-solid",
+    "question-solid",
+    "shopping-cart-solid",
+    "skype-brands",
+    "video-solid"
+]);
+
+})();

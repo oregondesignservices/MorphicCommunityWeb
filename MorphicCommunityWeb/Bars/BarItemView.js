@@ -113,13 +113,13 @@ JSClass("BarItemButtonView", BarItemView, {
                     return null;
                 }
                 if (url.isAbolute){
-                    return JSImage.initWithURL(url);
+                    return JSImage.initWithURL(url, JSSize(32, 32));
                 }
                 return JSImage.initWithResourceName(url.path).imageWithRenderMode(JSImage.RenderMode.template);
             }
         }});
-        this.imageView.bind("hidden", item.configuration, "imageURL=null");
-        this.imageBorderView.bind("hidden", item.configuration, "imageURL=null");
+        this.imageView.bind("hidden", item.configuration, "imageURL==null");
+        this.imageBorderView.bind("hidden", item.configuration, "imageURL==null");
     },
 
     sizeToFitSize: function(maxSize){
@@ -176,14 +176,29 @@ JSClass("BarItemControlView", BarItemView, {
         }
         var item = this._item;
         switch (item.configuration.identifier){
-            case "copypaste":
+            case "copy-paste":
                 this.titleLabel.text = "Copy & Paste";
-                this.addSegment("Copy");
-                this.addSegment("Paste");
+                this.addTextSegment("Copy");
+                this.addTextSegment("Paste");
+                break;
+            case "screen-zoom":
+                this.titleLabel.text = "Screen Zoom";
+                this.addImageSegment("ControlPlus");
+                this.addImageSegment("ControlMinus");
+                break;
+            case "magnify":
+                this.titleLabel.text = "Magnifier";
+                this.addTextSegment("On");
+                this.addTextSegment("Off");
+                break;
+            case "volume":
+                this.titleLabel.text = "Volume";
+                this.addImageSegment("ControlPlus");
+                this.addImageSegment("ControlMinus");
                 break;
             default:
                 this.titleLabel.text = "Unknown";
-                this.addSegment("Unknown");
+                this.addTextSegment("Unknown");
                 break;
         }
         for (i = this.segmentsContainer.subviews.length - 1; i >= 0; --i){
@@ -191,13 +206,15 @@ JSClass("BarItemControlView", BarItemView, {
         }
     },
 
-    addSegment: function(title){
-        var segment = UILabel.init();
-        segment.textAlignment = JSTextAlignment.center;
-        segment.maximumNumberOfLines = 1;
-        segment.text = title;
-        segment.textColor = JSColor.white;
-        segment.textInsets = JSInsets((this.segmentsContainer.bounds.size.height - segment.intrinsicSize.height) / 2, 0);
+    addTextSegment: function(title){
+        var segment = BarItemControlSegmentView.init();
+        segment.titleLabel.text = title;
+        this.segmentsContainer.addSubview(segment);
+    },
+
+    addImageSegment: function(imageName){
+        var segment = BarItemControlSegmentView.init();
+        segment.imageView.image = JSImage.initWithResourceName(imageName);
         this.segmentsContainer.addSubview(segment);
     },
 
@@ -212,5 +229,34 @@ JSClass("BarItemControlView", BarItemView, {
         y += this.titleLabel.bounds.size.height;
         this.segmentsContainer.frame = JSRect(0, y, this.bounds.size.width, this.segmentsContainer.bounds.size.height);
     }
+
+});
+
+JSClass("BarItemControlSegmentView", UIView, {
+
+    titleLabel: null,
+    imageView: null,
+
+    initWithFrame: function(frame){
+        BarItemControlSegmentView.$super.initWithFrame.call(this, frame);
+        this.titleLabel = UILabel.init();
+        this.titleLabel.textAlignment = JSTextAlignment.center;
+        this.titleLabel.maximumNumberOfLines = 1;
+        this.titleLabel.textColor = JSColor.white;
+        this.imageView = UIImageView.init();
+        this.imageView.automaticRenderMode = JSImage.RenderMode.template;
+        this.imageView.templateColor = JSColor.white;
+        this.imageView.scaleMode = UIImageView.ScaleMode.aspectFit;
+        this.addSubview(this.titleLabel);
+        this.addSubview(this.imageView);
+    },
+
+    layoutSubviews: function(){
+        this.titleLabel.textInsets = JSInsets((this.bounds.size.height - this.titleLabel.intrinsicSize.height) / 2, 0);
+        this.imageView.contentInsets = JSInsets(this.bounds.size.height / 4, 0);
+        this.titleLabel.frame = this.bounds;
+        this.imageView.frame = this.bounds;
+    }
+    
 
 });

@@ -2,6 +2,7 @@
 // #import "BarItemDetailView.js"
 // #import "Theme.js"
 // #import "ColorBar.js"
+// #import "ImagePicker.js"
 'use strict';
 
 JSClass("BarItemApplicationDetailView", BarItemDetailView, {
@@ -15,11 +16,15 @@ JSClass("BarItemApplicationDetailView", BarItemDetailView, {
         this.colorBar = ColorBar.init();
         this.addSubview(this.colorBar);
 
+        this.imagePicker = ImagePicker.init();
+        this.addSubview(this.imagePicker);
+
         this.initialFirstResponder = this.labelField;
     },
 
     labelField: null,
     colorBar: null,
+    imagePicker: null,
     fieldSpacing: 7,
 
     getIntrinsicSize: function(){
@@ -28,6 +33,9 @@ JSClass("BarItemApplicationDetailView", BarItemDetailView, {
         size.height += this.labelField.intrinsicSize.height;
         size.height += this.fieldSpacing;
         size.height += this.colorBar.intrinsicSize.height;
+        var imagePickerSize = this.imagePicker.sizeThatFitsSize(JSSize(size.width, Number.MAX_VALUE));
+        size.height += this.fieldSpacing;
+        size.height += imagePickerSize.height;
         return size;
     },
 
@@ -44,6 +52,9 @@ JSClass("BarItemApplicationDetailView", BarItemDetailView, {
         y += height + this.fieldSpacing;
         height = this.colorBar.intrinsicSize.height;
         this.colorBar.frame = JSRect(bounds.origin.x + x, bounds.origin.y + y, bounds.size.width, height);
+        y += height + this.fieldSpacing;
+        var imagePickerSize = this.imagePicker.sizeThatFitsSize(JSSize(bounds.size.width, Number.MAX_VALUE));
+        this.imagePicker.frame = JSRect(bounds.origin.x + x, bounds.origin.y + y, bounds.size.width, imagePickerSize.height);
     }
 
 });

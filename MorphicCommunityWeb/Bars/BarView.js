@@ -8,7 +8,7 @@ JSClass("BarView", UIView, {
         this.itemViews = [];
         this.itemInsets = JSInsets(15,10);
         this.overflowBackgroundView = UIView.init();
-        this.overflowBackgroundView.backgroundColor = JSColor.initWithWhite(0.9);
+        this.overflowBackgroundView.backgroundColor = JSColor.white;
         this.addSubview(this.overflowBackgroundView);
         this.barBackgroundView = UIView.init();
         this.barBackgroundView.backgroundColor = JSColor.white;

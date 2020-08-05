@@ -16,7 +16,32 @@ en:
       title: Gmail
       description: A button that opens Gmail in a web browser
       suggestedLabel: Email
+        paste commands
+    gcalendar:
+      title: Google Calendar
+      description: A button that opens Google Calendar in a web browser
+      suggestedLabel: Calendar
+    amazon:
+      title: Amazon
+      description: A button that opens Aamazon in a web browser
+      suggestedLabel: Amazon
+    cnn:
+      title: CNN
+      description: A button that opens CNN in a web browser
+      suggestedLabel: CNN
     copypaste:
       title: Copy and Paste Controls
       description: Shortcuts buttons to the computer's copy and
-        paste commands
+    screenZoom:
+      title: Screen Zoom
+      description: A control that can adjust the computer's text and icon size
+    magnify:
+      title: Magnifying Glass
+      description: A control that can open a mangnifying glass on the computer
+    volume:
+      title: Volume
+      description: A control that can adjust the computer's volume
+    quickAssist:
+      title: Quick Assist
+      description: Opens a Windows program that makes it easy to get remote help
+      suggestedLabel: Quick Assist

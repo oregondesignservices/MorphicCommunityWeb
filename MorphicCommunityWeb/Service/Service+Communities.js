@@ -5,6 +5,9 @@ Service.definePropertiesFromExtensions({
 
     createCommunity: function(community, completion, target){
         var url = this.baseURL.appendingPathComponents([this.version, "communities"]);
+        var query = JSFormFieldMap();
+        query.add("populate_default_bars");
+        url.query = query;
         var request = JSURLRequest.initWithURL(url);
         request.method = JSURLRequest.Method.post;
         request.object = {

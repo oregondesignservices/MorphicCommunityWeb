@@ -1,15 +1,6 @@
 items:
   -
     kind: link
-    title: .items.genericLink.title
-    description: .items.genericLink.description
-    icon: BarItemLibraryIconLink
-    configuration:
-      label: .items.genericLink.suggestedLabel
-      image_url: link-solid
-      url: "https://"
-  -
-    kind: link
     title: .items.skypeMeetingLink.title
     description: .items.skypeMeetingLink.description
     icon: BarItemLibraryIconSkype
@@ -31,15 +22,81 @@ items:
     kind: link
     title: .items.gmail.title
     description: .items.gmail.description
-    icon: BarItemLibraryIconGmail
+    icon: BarItemLibraryIconEmail
     configuration:
       label: .items.gmail.suggestedLabel
-      image_url: google-brands
+      image_url: envelope-solid
       url: https://mail.google.com
+  -
+    kind: link
+    title: .items.gcalendar.title
+    description: .items.gcalendar.description
+    icon: BarItemLibraryIconCalendar
+    configuration:
+      label: .items.gcalendar.suggestedLabel
+      image_url: calendar-solid
+      url: https://calendar.google.com
+  -
+    kind: link
+    title: .items.amazon.title
+    description: .items.amazon.description
+    icon: BarItemLibraryIconAmazon
+    configuration:
+      label: .items.amazon.suggestedLabel
+      image_url: amazon-brands
+      url: https://amazon.com
+  -
+    kind: link
+    title: .items.cnn.title
+    description: .items.cnn.description
+    icon: BarItemLibraryIconNews
+    configuration:
+      label: .items.cnn.suggestedLabel
+      image_url: newspaper-solid
+      url: https://cnn.com
+  -
+    kind: link
+    title: .items.genericLink.title
+    description: .items.genericLink.description
+    icon: BarItemLibraryIconLink
+    configuration:
+      label: .items.genericLink.suggestedLabel
+      image_url: link-solid
+      url: "https://"
+  -
+    kind: application
+    title: .items.quickAssist.title
+    description: .items.quickAssist.description
+    icon: BarItemLibraryIconHelp
+    configuration:
+      label: .items.quickAssist.suggestedLabel
+      image_url: question-solid
+      default: quick-assist
+  -
+    kind: action
+    title: .items.screenZoom.title
+    description: .items.screenZoom.description
+    icon: BarItemLibraryIconScreenZoom
+    configuration:
+      identifier: screen-zoom
+  -
+    kind: action
+    title: .items.magnify.title
+    description: .items.magnify.description
+    icon: BarItemLibraryIconMagnify
+    configuration:
+      identifier: magnify
+  -
+    kind: action
+    title: .items.volume.title
+    description: .items.volume.description
+    icon: BarItemLibraryIconVolume
+    configuration:
+      identifier: volume
   -
     kind: action
     title: .items.copypaste.title
     description: .items.copypaste.description
     icon: BarItemLibraryIconCopyPaste
     configuration:
-      identifier: copypaste
+      identifier: copy-paste
