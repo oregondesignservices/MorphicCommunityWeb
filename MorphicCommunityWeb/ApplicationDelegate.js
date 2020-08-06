@@ -8,6 +8,12 @@
 
 (function(){
 
+UIControl.definePropertiesFromExtensions({
+    removeAllActions: function(){
+        this._actionsByEvent = {};
+    },
+});
+
 var logger = JSLog("morphic", "appdelegate");
 
 JSClass("ApplicationDelegate", JSObject, {

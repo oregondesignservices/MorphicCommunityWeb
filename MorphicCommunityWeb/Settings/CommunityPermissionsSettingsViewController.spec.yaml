@@ -4,6 +4,24 @@ ViewController:
   class: CommunityPermissionsSettingsViewController
   view:
     subviews:
-      -
-        class: UILabel
-        text: Permissions
+      - /ListView
+  outlets:
+    listView: /ListView
+
+ListView:
+  class: UIListView
+  delegate: /ViewController
+  dataSource: /ViewController
+  headerHeight: 32
+  headersStickToTop: true
+  rowHeight: 32
+  reusableCellClasses:
+    member: CommunityPermissionsMemberCell
+  reusableHeaderFooterClasses:
+    header: CommunityPermissionsHeaderView
+  styler:
+    class: UIListViewDefaultStyler
+    headerBackgroundColor: white
+    headerFont:
+      weight: regular
+    separatorInsets: 0,20,0,0
