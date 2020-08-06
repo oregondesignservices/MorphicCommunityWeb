@@ -128,6 +128,15 @@ Service.definePropertiesFromExtensions({
         request.addBearerAuthorization(this.authToken);
         return this.sendRequest(request, completion, target);
 
+    },
+
+    createSkypeMeeting: function(communityId, title, completion, target){
+        var url = this.baseURL.appendingPathComponents([this.version, "communities", communityId, "skype", "meetings"]);
+        var request = JSURLRequest.initWithURL(url);
+        request.method = JSURLRequest.Method.post;
+        request.object = {"Title": title};
+        request.addBearerAuthorization(this.authToken);
+        return this.sendRequest(request, completion, target);
     }
 
 });

@@ -284,6 +284,11 @@ JSClass("MemberDetailViewController", UIViewController, {
         }
     },
 
+    barEditorWillOpenItemDetailViewController: function(barEditor, viewController){
+        viewController.service = this.service;
+        viewController.community = this.community;
+    },
+
     combinedSyncState: JSSynchronizer.State.idle,
 
     updateCombinedSyncState: function(){

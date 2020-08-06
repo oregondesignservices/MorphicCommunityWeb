@@ -7,12 +7,14 @@ ViewController:
       - /RemoveButton
       - /LabelField
       - /MeetingIdField
+      - /CreateMeetingButton
       - /ColorBar
       - /ImagePicker
   outlets:
     removeButton: /RemoveButton
     labelField: /LabelField
     meetingIdField: /MeetingIdField
+    createMeetingButton: /CreateMeetingButton
     colorBar: /ColorBar
     imagePicker: /ImagePicker
     joinURLLabel: /JoinURLLabel
@@ -51,6 +53,19 @@ MeetingIdField:
   nextKeyView: /LabelField
   bindings:
     text: {to: /ViewController, value: "item.configuration.url", transformer: $BarItemSkypeDetailViewController.URLToMeetingIdValueTransformer}
+
+CreateMeetingButton:
+  class: UIButton
+  styler:
+    class: UIButtonCustomStyler
+    normalBackgroundColor:
+      rgba: 0,129,69
+    cornerRadius: 2
+    normalTitleColor: white
+  titleInsets: 3
+  title: .createMeeting.title
+  target: /ViewController
+  action: createMeeting
 
 ColorBar:
   class: ColorBar

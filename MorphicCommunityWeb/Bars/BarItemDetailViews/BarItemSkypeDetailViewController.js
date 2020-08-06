@@ -1,13 +1,22 @@
 // #import UIKit
 // #import "BarItemButtonDetailViewController.js"
+// #import "Service+Extensions.js"
 'use strict';
 
 (function(){
 
 JSClass("BarItemSkypeDetailViewController", BarItemButtonDetailViewController, {
 
+    initWithSpec: function(spec){
+        BarItemSkypeDetailViewController.$super.initWithSpec.call(this, spec);
+        this.urlSession = JSURLSession.shared;
+    },
+
     joinURLLabel: JSOutlet(),
     meetingIdField: JSOutlet(),
+    createMeetingButton: JSOutlet(),
+    service: null,
+    community: null,
 
     viewDidLoad: function(){
         BarItemSkypeDetailViewController.$super.viewDidLoad.call(this);
@@ -35,14 +44,29 @@ JSClass("BarItemSkypeDetailViewController", BarItemButtonDetailViewController, {
         BarItemSkypeDetailViewController.$super.viewDidDisappear.call(this, animated);
     },
 
+    createMeeting: function(){
+        this.createMeetingButton.enabled = false;
+        var task = this.service.createSkypeMeeting(this.community.id, "Meet Now", function(result, meeting){
+            this.createMeetingButton.enabled = true;
+            if (result != Service.Result.success){
+                return;
+            }
+            this.item.configuration.url = JSURL.initWithString(meeting.joinLink);
+            this.changed = true;
+        }, this);
+        task.resume();
+    },
+
     contentSizeThatFitsSize: function(maxSize){
         var size = JSSize(this.colorBar.shortcutSize * 8 + this.colorBar.shortcutSpacing * 7, 0);
         size.height += this.removeButton.intrinsicSize.height;
         size.height += this.fieldSpacing;
         size.height += this.labelField.intrinsicSize.height;
-        size.height += this.fieldSpacing;
+        size.height += this.fieldSpacing + this.fieldSpacing;
         size.height += this.meetingIdField.intrinsicSize.height;
         size.height += this.fieldSpacing;
+        size.height += this.createMeetingButton.intrinsicSize.height;
+        size.height += this.fieldSpacing + this.fieldSpacing;
         size.height += this.colorBar.intrinsicSize.height;
         var imagePickerSize = this.imagePicker.sizeThatFitsSize(JSSize(size.width, Number.MAX_VALUE));
         size.height += this.fieldSpacing;
@@ -59,10 +83,13 @@ JSClass("BarItemSkypeDetailViewController", BarItemButtonDetailViewController, {
         this.removeButton.frame = JSRect(bounds.origin.x + bounds.size.width - buttonSize.width, y, buttonSize.width, buttonSize.height);
         y += buttonSize.height + this.fieldSpacing;
         this.labelField.frame = JSRect(bounds.origin.x + x, bounds.origin.y + y, bounds.size.width, height);
-        y += height + this.fieldSpacing;
+        y += height + this.fieldSpacing + this.fieldSpacing;
         height = this.meetingIdField.intrinsicSize.height;
         this.meetingIdField.frame = JSRect(bounds.origin.x + x, bounds.origin.y + y, bounds.size.width, height);
         y += height + this.fieldSpacing;
+        height = this.createMeetingButton.intrinsicSize.height;
+        this.createMeetingButton.frame = JSRect(bounds.origin.x + x, bounds.origin.y + y, bounds.size.width, height);
+        y += height + this.fieldSpacing + this.fieldSpacing;
         height = this.colorBar.intrinsicSize.height;
         this.colorBar.frame = JSRect(bounds.origin.x + x, bounds.origin.y + y, bounds.size.width, height);
         y += height + this.fieldSpacing;

@@ -103,11 +103,11 @@ JSClass("BarItemButtonView", BarItemView, {
 
     update: function(){
         var item = this._item;
-        this.titleLabel.bind("text", item.configuration, "label");
-        this.titleLabel.bind("backgroundColor", item.configuration, "color", {nullPlaceholder: this.defaultColor});
-        this.imageBorderView.bind("backgroundColor", item.configuration, "color", {nullPlaceholder: this.defaultColor});
-        this.imageView.bind("templateColor", item.configuration, "color", {nullPlaceholder: this.defaultColor});
-        this.imageView.bind("image", item.configuration, "imageURL", {valueTransformer: {
+        this.titleLabel.bind("text", item, "configuration.label");
+        this.titleLabel.bind("backgroundColor", item, "configuration.color", {nullPlaceholder: this.defaultColor});
+        this.imageBorderView.bind("backgroundColor", item, "configuration.color", {nullPlaceholder: this.defaultColor});
+        this.imageView.bind("templateColor", item, "configuration.color", {nullPlaceholder: this.defaultColor});
+        this.imageView.bind("image", item, "configuration.imageURL", {valueTransformer: {
             transformValue: function(url){
                 if (url === null){
                     return null;
@@ -118,8 +118,8 @@ JSClass("BarItemButtonView", BarItemView, {
                 return JSImage.initWithResourceName(url.path).imageWithRenderMode(JSImage.RenderMode.template);
             }
         }});
-        this.imageView.bind("hidden", item.configuration, "imageURL==null");
-        this.imageBorderView.bind("hidden", item.configuration, "imageURL==null");
+        this.imageView.bind("hidden", item, "configuration.imageURL==null");
+        this.imageBorderView.bind("hidden", item, "configuration.imageURL==null");
     },
 
     sizeToFitSize: function(maxSize){
@@ -202,7 +202,7 @@ JSClass("BarItemControlView", BarItemView, {
                 break;
         }
         for (i = this.segmentsContainer.subviews.length - 1; i >= 0; --i){
-            this.segmentsContainer.subviews[i].bind("backgroundColor", item.configuration, "color", {nullPlaceholder: this.defaultColor});
+            this.segmentsContainer.subviews[i].bind("backgroundColor", item, "configuration.color", {nullPlaceholder: this.defaultColor});
         }
     },
 

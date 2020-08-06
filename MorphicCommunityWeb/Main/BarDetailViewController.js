@@ -149,6 +149,11 @@ JSClass("BarDetailViewController", UIViewController, {
         this.saveSynchronizer.sync();
     },
 
+    barEditorWillOpenItemDetailViewController: function(barEditor, viewController){
+        viewController.service = this.service;
+        viewController.community = this.community;
+    },
+
     resync: function(){
         if (this.saveSynchronizer.state === JSSynchronizer.State.error){
             this.saveSynchronizer.sync();

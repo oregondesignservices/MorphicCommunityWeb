@@ -9,6 +9,7 @@
 JSProtocol("BarEditorDelegate", JSProtocol, {
 
     barEditorDidChange: function(barEditor, index){},
+    barEditorWillOpenItemDetailViewController: function(barEditor, viewController){}
 
 });
 
@@ -123,6 +124,9 @@ JSClass("BarEditor", UIView, {
         this.itemDetailViewController.item = this.bar.items[index];
         this.itemDetailViewController.delegate = this;
         this.itemDetailViewController.changed = isChange;
+        if (this.delegate && this.delegate.barEditorWillOpenItemDetailViewController){
+            this.delegate.barEditorWillOpenItemDetailViewController(this, this.itemDetailViewController);
+        }
         this.itemDetailViewController.popupAdjacentToView(view, UIPopupWindow.Placement.left);
     },
 
