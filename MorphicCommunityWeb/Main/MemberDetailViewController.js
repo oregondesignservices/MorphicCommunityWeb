@@ -503,13 +503,34 @@ JSClass("MemberDetailViewController", UIViewController, {
 
     // MARK: - Invitations
 
-    sendInvitation: function(){
+    sendInvitation: function(sender){
         if (this.inviteWindowController === null){
             this.inviteWindowController = InviteWindowController.initWithSpecName("InviteWindowController");
             this.inviteWindowController.delegate = this;
             this.inviteWindowController.service = this.service;
             this.inviteWindowController.community = this.community;
             this.inviteWindowController.member = this.member;
+            this.inviteWindowController.prepareWindowIfNeeded();
+            var window = this.inviteWindowController.window;
+            var sourceRect = JSRect(sender.convertRectToScreen(sender.bounds).center, JSSize(1, 1));
+            var translation = sourceRect.center.subtracting(window.frame.center);
+            var transform = JSAffineTransform.Translated(translation.x, translation.y);
+            var scale = Math.min(sourceRect.size.width / window.frame.size.width, sourceRect.size.height / window.frame.size.height);
+            transform = transform.scaledBy(scale);
+            window.transform = transform;
+            window.openAnimator = UIViewPropertyAnimator.initWithDuration(0.12);
+            window.openAnimator.addAnimations(function(){
+                window.transform = JSAffineTransform.Identity;
+            }, this);
+            window.closeAnimator = UIViewPropertyAnimator.initWithDuration(0.12);
+            window.closeAnimator.addAnimations(function(){
+                var sourceRect = JSRect(sender.convertRectToScreen(sender.bounds).center, JSSize(1, 1));
+                var translation = sourceRect.center.subtracting(window.frame.center);
+                var transform = JSAffineTransform.Translated(translation.x, translation.y);
+                var scale = Math.min(sourceRect.size.width / window.frame.size.width, sourceRect.size.height / window.frame.size.height);
+                transform = transform.scaledBy(scale);
+                window.transform = transform;
+            }, this);
         }
         this.inviteWindowController.makeKeyAndOrderFront();
     },

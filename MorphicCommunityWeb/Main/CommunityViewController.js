@@ -58,6 +58,7 @@ JSClass("CommunityViewController", UIListViewController, {
     viewWillDisappear: function(animated){
         CommunityViewController.$super.viewWillDisappear.call(this, animated);
         this.stopListeningForCommunityNotifications();
+        this.closeAllWinodows();
     },
 
     viewDidDisappear: function(animated){
@@ -451,12 +452,33 @@ JSClass("CommunityViewController", UIListViewController, {
 
     settingsWindowController: null,
 
-    openSettings: function(){
+    openSettings: function(sender){
         if (!this.settingsWindowController){
             this.settingsWindowController = CommunitySettingsWindowController.initWithSpecName("CommunitySettingsWindowController");
             this.settingsWindowController.service = this.service;
             this.settingsWindowController.community = this.community;
             this.settingsWindowController.delegate = this;
+            this.settingsWindowController.prepareWindowIfNeeded();
+            var window = this.settingsWindowController.window;
+            var sourceRect = JSRect(sender.convertRectToScreen(sender.bounds).center, JSSize(1, 1));
+            var translation = sourceRect.center.subtracting(window.frame.center);
+            var transform = JSAffineTransform.Translated(translation.x, translation.y);
+            var scale = Math.min(sourceRect.size.width / window.frame.size.width, sourceRect.size.height / window.frame.size.height);
+            transform = transform.scaledBy(scale);
+            window.transform = transform;
+            window.openAnimator = UIViewPropertyAnimator.initWithDuration(0.12);
+            window.openAnimator.addAnimations(function(){
+                window.transform = JSAffineTransform.Identity;
+            }, this);
+            window.closeAnimator = UIViewPropertyAnimator.initWithDuration(0.12);
+            window.closeAnimator.addAnimations(function(){
+                var sourceRect = JSRect(sender.convertRectToScreen(sender.bounds).center, JSSize(1, 1));
+                var translation = sourceRect.center.subtracting(window.frame.center);
+                var transform = JSAffineTransform.Translated(translation.x, translation.y);
+                var scale = Math.min(sourceRect.size.width / window.frame.size.width, sourceRect.size.height / window.frame.size.height);
+                transform = transform.scaledBy(scale);
+                window.transform = transform;
+            }, this);
         }
         this.settingsWindowController.makeKeyAndOrderFront();
     },
@@ -466,6 +488,12 @@ JSClass("CommunityViewController", UIListViewController, {
             this.settingsWindowController = null;
             this.navigationItem.title = this.community.name;
             this.partialCommunity.name = this.community.name;
+        }
+    },
+
+    closeAllWinodows: function(){
+        if (this.settingsWindowController !== null){
+            this.settingsWindowController.close();
         }
     },
 
