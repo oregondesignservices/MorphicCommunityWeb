@@ -3,6 +3,8 @@ en:
   to:
     label.text: "To:"
     field.placeholder: email@example.com
+  subject:
+    label.text: "Subject:"
   message.placeholder: Add a personalized message
   sendButton:
     title: Send Invitation

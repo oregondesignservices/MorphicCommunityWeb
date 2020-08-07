@@ -38,6 +38,9 @@ JSClass("InviteWindowController", UIWindowController, {
         InviteWindowController.$super.viewDidLoad.call(this);
         this.invitation = Invitation.init();
         this.invitation.memberId = this.member.id;
+        this.subjectField.text = "Invitation to the %s Morphic Community".sprintf(this.community.name);
+        this.messageView.headerLabel.text = "Join the %s Morphic Community".sprintf(this.community.name);
+        this.messageView.introductionLabel.text = "Morphic Community makes it easier to use your computer.  %s will manage a shortcut bar that gives you everthing you need.".sprintf(this.community.name);
     },
 
     viewDidAppear: function(animated){
@@ -47,6 +50,8 @@ JSClass("InviteWindowController", UIWindowController, {
 
     formView: JSOutlet(),
     toField: JSOutlet(),
+    subjectField: JSOutlet(),
+    messageView: JSOutlet(),
     messageField: JSOutlet(),
 
     contentSizeThatFitsSize: function(maxSize){
@@ -64,7 +69,7 @@ JSClass("InviteWindowController", UIWindowController, {
     viewDidLayoutSubviews: function(){
         this.formView.frame = JSRect(0, 0, this.window.contentView.bounds.size.width, this.formView.intrinsicSize.height);
         var y = this.formView.bounds.size.height;
-        this.messageField.frame = JSRect(0, y, this.window.contentView.bounds.size.width, this.window.contentView.bounds.size.height - y);
+        this.messageView.frame = JSRect(0, y, this.window.contentView.bounds.size.width, this.window.contentView.bounds.size.height - y);
     },
 
     canPerformAction: function(action, sender){
@@ -125,6 +130,9 @@ JSClass("InviteWindowController", UIWindowController, {
     textFieldDidChange: function(textField){
         if (this.errorPopupWindow && textField === this.errorField){
             this.clearFieldErrorMessage();
+        }
+        if (textField === this.messageField){
+            this.messageView.setNeedsLayout();
         }
     },
 });

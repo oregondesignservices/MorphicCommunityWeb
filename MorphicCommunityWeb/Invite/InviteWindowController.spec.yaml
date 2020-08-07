@@ -22,10 +22,12 @@ InviteWindowController:
       backgroundColor: white
       subviews:
         - /FormView
-        - /MessageField
+        - /MessageView
   outlets:
     toField: /ToField
+    subjectField: /SubjectField
     formView: /FormView
+    messageView: /MessageView
     messageField: /MessageField
 
 FormView:
@@ -36,6 +38,9 @@ FormView:
     -
       label: /ToLabel
       view: /ToField
+    -
+      label: /SubjectLabel
+      view: /SubjectField
 
 ToLabel:
   class: UILabel
@@ -55,14 +60,35 @@ ToField:
   bindings:
     text: {to: /InviteWindowController, value: invitation.toEmail}
 
+SubjectLabel:
+  class: UILabel
+  text: .subject.label.text
+  textAlignment: right
+  textInsets: /FormLabelInsets
+  textColor:
+    rgba: 102,102,102
+
+SubjectField:
+  class: UITextField
+  styler: custom
+  textInsets: 4,0
+  enabled: false
+
 FormLabelInsets: 3,7
 
+MessageView:
+  class: InviteMessageView
+  messageField: /MessageField
+
 MessageField:
+  frame: 0,0,320,17
   class: UITextField
   multiline: true
   placeholder: .message.placeholder
   textInsets: 4,7
+  textAlignment: center
   styler: custom
   nextKeyView: /ToField
+  delegate: /InviteWindowController
   bindings:
     text: {to: /InviteWindowController, value: invitation.message}
