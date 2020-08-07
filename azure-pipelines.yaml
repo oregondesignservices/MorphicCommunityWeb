@@ -5,9 +5,18 @@ trigger:
     include:
       - master
       - release/*
+      - staging/*
 
 pool:
   vmImage: "ubuntu-18.04"
+
+variables:
+  ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+    envfile: buildenv/development.env
+  ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/staging/') }}:
+    envfile: buildenv/staging.env
+  ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/release/') }}:
+    envfile: buildenv/production.env
 
 stages:
   -
@@ -33,7 +42,7 @@ stages:
             script: npm install --production=false
             displayName: Install Development Tools
           -
-            script: npx jskit make MorphicCommunityWeb --no-tag --bundle-version $(Build.BuildNumber) 
+            script: npx jskit make MorphicCommunityWeb --no-tag --bundle-version $(Build.BuildNumber) --env $(envfile)
             displayName: Build MorphicCommunityWeb
           -
             task: Docker@2
