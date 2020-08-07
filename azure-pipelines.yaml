@@ -1,4 +1,4 @@
-name: $(Year:yyyy).$(Month).$(Day).$(Rev:r)
+name: $(Year:yyyy).$(Month).$(DayOfMonth).$(Rev:r)
 
 trigger:
   branches:
