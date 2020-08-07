@@ -9,5 +9,6 @@ UIApplicationLaunchOptions:
   others: {kind: unknown}
 UIApplicationSystemFont:    FiraSans-Light
 JSDevelopmentLanguage:      en
+DockerOwner:                morphicworld
 UIApplicationEnvironment:
   - MORPHIC_SERVER_URL

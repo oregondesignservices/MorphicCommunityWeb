@@ -1,0 +1,44 @@
+name: $(Year:yyyy).$(Month).$(Day).$(Rev:r)
+
+trigger:
+  branches:
+    include:
+      - master
+      - release/*
+
+pool:
+  vmImage: "ubuntu-18.04"
+
+stages:
+  -
+    stage: build
+    displayName: Build
+    jobs:
+      -
+        job: build
+        displayName: Build
+        steps:
+          -
+            task: NodeTool@0
+            displayName: Install Node
+            inputs:
+              versionSpec: 12.x
+          -
+            task: Docker@2
+            displayName: Install Docker
+            inputs:
+              command: login
+              containerRegistry: morphicworld dockerhub
+          -
+            script: npm install --production=false
+            displayName: Install Development Tools
+          -
+            script: npx jskit make MorphicCommunityWeb --no-tag --bundle-version $(Build.BuildNumber) 
+            displayName: Build MorphicCommunityWeb
+          -
+            task: Docker@2
+            displayName: Push Docker Image
+            inputs:
+              command: push
+              repository: morphicworld/morphiccommunityweb
+              tags: $(Build.BuildNumber)
