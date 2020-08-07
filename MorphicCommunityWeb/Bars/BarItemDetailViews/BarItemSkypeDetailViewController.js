@@ -145,7 +145,7 @@ JSClass("MeetingIdField", UITextField, {
             }else if (text.startsWith("join.skype.com/")){
                 text = text.substr(15);
             }
-            this._localEditor.insertText(text);
+            this.insertText(text);
         }
     },
 
