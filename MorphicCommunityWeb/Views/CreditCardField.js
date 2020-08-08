@@ -1,101 +1,15 @@
 // #import UIKit
+// #import "StripeElementControl.js"
 /* global Stripe */
 'use strict';
 
-JSClass("StripeElementField", UIControl, {
-
-    initwithFrame: function(frame){
-        StripeElementField.$super.initwithFrame.call(this, frame);
-        this.setNeedsDisplay();
-    },
-
-    initWithSpec: function(spec){
-        StripeElementField.$super.initWithSpec.call(this, spec);
-        this.setNeedsDisplay();
-    },
-
-    stripeContainerElement: null,
-    stripeElement: null,
-    stripeReady: false,
-    stripeElementOptions: JSReadOnlyProperty(),
-    stripeElementsOptions: JSReadOnlyProperty(),
-
-    createSharedStripeIfNeeded: function(document, completion, target){
-        if (StripeElementField.sharedStripeCount === 0){
-            var script = document.createElement("script");
-            script.type = "text/javascript";
-            script.src = "https://js.stripe.com/v3/";
-            var key = this.window.application.getenv("STRIPE_PUBLIC_KEY");
-            var onload = function(){
-                script.removeEventListener("load", onload);
-                StripeElementField.sharedStripeScript = script;
-                StripeElementField.stripe = new Stripe(key);
-                completion.call(target);
-            };
-            script.addEventListener("load", onload);
-            document.body.appendChild(script);
-        }
-        ++StripeElementField.sharedStripeCount;
-    },
-
-    removeSharedStripe: function(){
-        --StripeElementField.sharedStripeCount;
-        if (StripeElementField.sharedStripeCount === 0){
-            StripeElementField.sharedStripeScript.parentNode.removeChild(StripeElementField.sharedStripeScript);
-            StripeElementField.sharedStripeScript = null;
-        }
-    },
-
-    getStripeElementOptions: function(){
-        return {};
-    },
-
-    getStripeElementsOptions: function(){
-        return {};
-    },
-
-    setupIfNeeded: function(element){
-        if (this.stripeElement !== null){
-            return;
-        }
-        this.stripeContainerElement = element.ownerDocument.createElement("div");
-        this.stripeContainerElement.style.position = "absolute";
-        this.stripeContainerElement.style.right = "0";
-        this.stripeContainerElement.style.bottom = "0";
-        this.createSharedStripeIfNeeded(element.ownerDocument, function(){
-            this.stripeElement = StripeElementField.stripe.elements(this.stripeElementsOptions).create(this.stripeElementType, this.stripeElementOptions);
-            this.stripeElement.mount(this.stripeContainerElement);
-            var field = this;
-            this.stripeElement.on("ready", function(){
-                field.stripeReady = true;
-            });
-            this.stripeElement.on("focus", function(){
-                field.window.firstResponder = null;
-                field.becomeFirstResponder();
-            });
-            this.stripeElement.on("blur", function(){
-                field.resignFirstResponder();
-            });
-            this.setup();
-        }, this);
-    },
-
-    drawLayerInContext: function(layer, context){
-        if (context.isKindOfClass(UIHTMLDisplayServerContext)){
-            this.setupIfNeeded(context.element);
-            context.addExternalElementInRect(this.stripeContainerElement, this.layer.bounds);
-        }
-    }
-    
-
-});
-
-JSClass("CreditCardField", StripeElementField, {
+JSClass("CreditCardField", StripeElementControl, {
 
     stripeElementType: "card",
 
     initwithFrame: function(frame){
         CreditCardField.$super.initwithFrame.call(this, frame);
+        this.textInsets = JSInsets(3);
         this.fillInStyles();
     },
 
@@ -121,6 +35,8 @@ JSClass("CreditCardField", StripeElementField, {
         }
         if (spec.containsKey("textInsets")){
             this.textInsets = spec.valueForKey("textInsets", JSInsets);
+        }else{
+            this.textInsets = JSInsets(3);
         }
         if (spec.containsKey("cursorColor")){
             this.cursorColor = spec.valueForKey("cursorColor", JSColor);
@@ -147,9 +63,6 @@ JSClass("CreditCardField", StripeElementField, {
         if (this.invalidColor === null){
             this.invalidColor = JSColor.initWithRGBA(129/255.0, 43/255.0, 0);
         }
-        if (this.textInsets === null){
-            this.textInsets = JSInsets(3);
-        }
         if (this.activeColor === null){
             this.activeColor = JSColor.black;
         }
@@ -172,15 +85,31 @@ JSClass("CreditCardField", StripeElementField, {
     invalidColor: null,
     iconColor: null,
     errorMessage: null,
-    textInsets: null,
+    textInsets: JSDynamicProperty(),
+
+    setTextInsets: function(textInsets){
+        this.layer.elementInsets = textInsets;
+    },
+
+    getTextInsets: function(){
+        return this.layer.elementInsets;
+    },
 
     getStripeElementsOptions: function(){
         var descriptor = this.font.descriptor;
-        if (descriptor.family == "Fira Sans"){
+        var baseURL = StripeElementControl.baseURL;
+        if (baseURL.scheme === "http"){
+            // Stripe won't accept http urls, only https and data.
+            // We can make a data url if we really need to, but insetad we'll
+            // assume we're using a Google Font and just point there
+            var googleURL = JSURL.initWithString("https://fonts.googleapis.com/css");
+            var query = JSFormFieldMap();
+            query.add("family", "%s:%d".sprintf(descriptor.family, descriptor.weight));
+            googleURL.query = query;
             return {
                 fonts: [
                     {
-                        cssSrc: "https://fonts.googleapis.com/css?family=Fira+Sans:%d&display=block".sprintf(descriptor.weight)
+                        cssSrc: googleURL.encodedString
                     }
                 ]
             };
@@ -189,7 +118,7 @@ JSClass("CreditCardField", StripeElementField, {
             fonts: [
                 {
                     family: descriptor.family,
-                    src: "url('%s%s')".sprintf(this.window.application.baseURL.encodedString, descriptor.htmlURLString()),
+                    src: "url('%s')".sprintf(JSURL.initWithString(descriptor.htmlURLString(), baseURL).encodedString),
                     display: "block",
                     style: descriptor.style,
                     weight: descriptor.weight
@@ -222,22 +151,26 @@ JSClass("CreditCardField", StripeElementField, {
         };
     },
 
+    stripeElementChangeHandler: null,
+
     setup: function(){
-        var field = this;
-        this.stripeContainerElement.style.top = this.textInsets.top + "px";
-        this.stripeContainerElement.style.left = this.textInsets.left + "px";
-        this.stripeContainerElement.style.bottom = this.textInsets.bottom + "px";
-        this.stripeContainerElement.style.right = this.textInsets.right + "px";
-        this.stripeElement.on("change", function(event){
-            if (event.error){
-                field.updateErrorMessage(event.error.message);
-                return;
-            }
-            field.updateErrorMessage(null);
-            if (event.complete){
-                field.sendActionsForEvents(UIControl.Event.primaryAction | UIControl.Event.valueChanged);
-            }
-        });
+        this.stripeElementChangeHandler = this.stripeElementChange.bind(this);
+        this.stripeElement.on("change", this.stripeElementChangeHandler);
+    },
+
+    teardown: function(){
+        this.stripeElement.off("change", this.stripeElementChangeHandler);
+    },
+
+    stripeElementChange: function(event){
+        if (event.error){
+            this.updateErrorMessage(event.error.message);
+            return;
+        }
+        this.updateErrorMessage(null);
+        if (event.complete){
+            this.sendActionsForEvents(UIControl.Event.primaryAction | UIControl.Event.valueChanged);
+        }
     },
 
     canBecomeFirstResponder: function(){
@@ -270,7 +203,7 @@ JSClass("CreditCardField", StripeElementField, {
         if (!completion){
             completion = Promise.completion();
         }
-        StripeElementField.stripe.createToken(this.stripeElement).then(function(result){
+        StripeElementLayer.stripe.createToken(this.stripeElement).then(function(result){
             if (result.error){
                 completion.call(target, null);
                 return;
@@ -285,7 +218,3 @@ JSClass("CreditCardField", StripeElementField, {
     }
 
 });
-
-StripeElementField.sharedStripeCount = 0;
-StripeElementField.sharedStripeScript = null;
-StripeElementField.stripe = null;
