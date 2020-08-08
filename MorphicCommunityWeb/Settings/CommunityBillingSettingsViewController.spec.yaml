@@ -4,6 +4,25 @@ ViewController:
   class: CommunityBillingSettingsViewController
   view:
     subviews:
-      -
-        class: UILabel
-        text: Billing
+      - /CreditCardField
+      - /SubscribeButton
+  outlets:
+    creditCardField: /CreditCardField
+    subscribeButton: /SubscribeButton
+
+CreditCardField:
+  class: CreditCardField
+  borderWidth: 1
+  borderColor: black
+  maskedBorders: maxY
+
+SubscribeButton:
+  class: UIButton
+  styler:
+    class: UIButtonCustomStyler
+    normalBackgroundColor:
+      rgba: 0,129,69
+    normalTitleColor: white
+    titleInsets: 3,7
+    cornerRadius: 2
+  title: Subscribe
