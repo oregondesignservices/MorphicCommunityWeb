@@ -27,6 +27,7 @@
 // #import "MainScene.js"
 // #import "Service+Extensions.js"
 // #import "Theme.js"
+// #import "StripeElementControl.js"
 'use strict';
 
 (function(){
@@ -48,6 +49,8 @@ JSClass("ApplicationDelegate", JSObject, {
         this.service.notificationCenter.addObserver(Service.Notification.userDidSignin, this.service, this.userDidSignin, this);
         this.service.notificationCenter.addObserver(Service.Notification.userDidSignout, this.service, this.userDidSignout, this);
         application.shortcutMenu = this.createShortcutMenu();
+        StripeElementControl.stripePublicKey = application.getenv("STRIPE_PUBLIC_KEY");
+        StripeElementControl.baseURL = application.baseURL;
         this.recallUser();
         this.showLoading(launchOptions);
     },

@@ -48,4 +48,36 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
         CommunityBillingSettingsViewController.$super.viewDidDisappear.call(this, animated);
     },
 
+    // Credit Card
+
+    creditCardField: JSOutlet(),
+    subscribeButton: JSOutlet(),
+
+    viewDidLayoutSubviews: function(){
+        var insets = JSInsets(20);
+        this.subscribeButton.sizeToFit();
+        this.subscribeButton.frame = JSRect(this.view.bounds.size.width - insets.right - this.subscribeButton.bounds.size.width, insets.top, this.subscribeButton.bounds.size.width, this.subscribeButton.bounds.size.height);
+        var right = this.subscribeButton.frame.origin.x - 7;
+        this.creditCardField.frame = JSRect(insets.left, this.subscribeButton.frame.origin.y + this.subscribeButton.firstBaselineOffsetFromTop - this.creditCardField.firstBaselineOffsetFromTop, right - insets.left, this.creditCardField.intrinsicSize.height);
+    },
+
+});
+
+JSClass("CommunityBillingPlanView", UIControl, {
+
+    nameLabel: null,
+    priceLabel: null,
+
+    priceFormatter: null,
+
+    initWithSpec: function(spec){
+        CommunityBillingPlanView.$super.initWithSpec.call(this, spec);
+        if (spec.containsKey("name")){
+            this.name = spec.valueForKey("name");
+        }
+        if (spec.containsKey("price")){
+            this.price = spec.valueForKey("price");
+        }
+    },
+
 });

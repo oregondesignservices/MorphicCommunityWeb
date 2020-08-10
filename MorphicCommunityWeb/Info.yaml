@@ -12,3 +12,4 @@ JSDevelopmentLanguage:      en
 DockerOwner:                morphicworld
 UIApplicationEnvironment:
   - MORPHIC_SERVER_URL
+  - STRIPE_PUBLIC_KEY
