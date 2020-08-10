@@ -98,10 +98,6 @@ JSClass("StripeElementControl", UIControl, {
         return {};
     },
 
-    drawLayerInContext: function(layer, context){
-        layer.drawInContext(context);
-    },
-
     setup: function(){
     },
 
