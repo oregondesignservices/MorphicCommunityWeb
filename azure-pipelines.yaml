@@ -70,10 +70,10 @@ stages:
             displayName: Build MorphicCommunityWeb
           -
             task: Docker@2
-            displayName: Build & Push Docker Image with Dashes for Dayton
+            displayName: Build & Push Docker Image
             inputs:
               command: buildAndPush
-              dockerfile: builds/org.raisingthefloor.MorphicCommunityWeb/latest/Dockerfile
+              dockerfile: Dockerfile
               repository: morphicworld/morphic-community-web
               tags: $(Build.BuildNumber)
 
