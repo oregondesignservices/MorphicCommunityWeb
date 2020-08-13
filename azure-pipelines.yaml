@@ -49,8 +49,7 @@ stages:
     stage: build
     displayName: Build
     jobs:
-      -
-        job: build
+      - job: build
         displayName: Build
         steps:
           - task: Docker@2
@@ -65,10 +64,10 @@ stages:
               dockerfile: Dockerfile
               repository: morphicworld/morphic-community-web
               tags: $(imageTags)
-              arguments: "--build-arg 'BUNDLE_VERSION=$(Build.BuildNumber)'"
+              arguments: "--build-arg BUNDLE_VERSION=$(Build.BuildNumber)"
           - task: Docker@2
             displayName: push image
-            condition: ne(variables['imageTags'], '')
+            condition: ne(variables['newDeployTag'], '')
             inputs:
               command: push
               dockerfile: Dockerfile
