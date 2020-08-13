@@ -115,20 +115,16 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
             }else{
                 this.trialStatusLabel.hidden = false;
                 var calendar = JSCalendar.gregorian;
-                var now = JSDate.now;
-                var ymd = JSCalendar.Unit.year | JSCalendar.Unit.month | JSCalendar.Unit.day;
-                var nowComponents = calendar.componentsFromDate(ymd, now);
-                var trialEndComponents = calendar.componentsFromDate(ymd, this.billing.trialEndDate);
-                var dayBeforeTrialEndDate = calendar.dateByAddingComponents({day: -1}, this.billing.trialEndDate);
-                var dayBeforeTrialEndComponents = calendar.componentsFromDate(ymd, dayBeforeTrialEndDate);
-                if (nowComponents.year == trialEndComponents.year && nowComponents.month == trialEndComponents.month && nowComponents.day == trialEndComponents.day){
+                var startOfDayComponents = calendar.componentsFromDate(JSCalendar.Unit.year | JSCalendar.Unit.month | JSCalendar.Unit.day, JSDate.now);
+                var startOfDay = calendar.dateFromComponents(startOfDayComponents);
+                var componentsUntilTrialEnd = calendar.componentsBetweenDates(JSCalendar.Unit.day | JSCalendar.Unit.hour, startOfDay, this.billing.trialEndDate);
+                if (componentsUntilTrialEnd.day === 0){
                     this.trialStatusLabel.text = JSBundle.mainBundle.localizedString("trial.today.text", "CommunityBillingSettingsViewController");
-                }else if (nowComponents.year == dayBeforeTrialEndComponents.year && nowComponents.month == dayBeforeTrialEndComponents.month && nowComponents.day == dayBeforeTrialEndComponents.day){
+                }else if (componentsUntilTrialEnd.day === 1){
                     this.trialStatusLabel.text = JSBundle.mainBundle.localizedString("trial.tomorrow.text", "CommunityBillingSettingsViewController");
                 }else{
-                    var componentsUntilTrialEnd = calendar.componentsBetweenDates(JSCalendar.Unit.day | JSCalendar.Unit.hour, JSDate.now, this.billing.trialEndDate);
                     format = JSBundle.mainBundle.localizedString("trial.days.format", "CommunityBillingSettingsViewController");
-                    this.trialStatusLabel.text = String.initWithFormat(format, componentsUntilTrialEnd.day + (componentsUntilTrialEnd.hour >= 12 ? 1 : 0));
+                    this.trialStatusLabel.text = String.initWithFormat(format, componentsUntilTrialEnd.day);
                 }
             }
         }else{
