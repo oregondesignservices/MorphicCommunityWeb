@@ -1,8 +1,8 @@
 FROM node:14.8-alpine
 
+ARG BUNDLE_VERSION
 ENV MORPHIC_SERVER_URL ""
 ENV STRIPE_PUBLIC_KEY ""
-ENV BUNDLE_VERSION ""
 
 EXPOSE 80
 
@@ -13,6 +13,7 @@ RUN apk add --no-cache nginx
 WORKDIR /MorphicCommunityWeb
 
 COPY . /MorphicCommunityWeb
-RUN npm install
+RUN echo -n "${BUNDLE_VERSION}" > bundle-version.txt
+RUN npm install --production=false
 
 ENTRYPOINT ["sh", "entrypoint.sh"]

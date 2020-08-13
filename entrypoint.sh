@@ -4,10 +4,10 @@ set -x
 set -e
 
 # To be provided by environment
-BUNDLE_VERSION="${BUNDLE_VERSION}"
+BUNDLE_VERSION="$(cat bundle-version.txt)"
 
 if [ "${BUNDLE_VERSION}" == "" ] ; then
-  echo "BUNDLE_VERSION must be provided in the environment"
+  echo "bundle-version.txt was empty or did not exist"
   exit 1
 fi
 
