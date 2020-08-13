@@ -114,17 +114,14 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
                 this.trialStatusLabel.hidden = true;
             }else{
                 this.trialStatusLabel.hidden = false;
-                var calendar = JSCalendar.gregorian;
-                var startOfDayComponents = calendar.componentsFromDate(JSCalendar.Unit.year | JSCalendar.Unit.month | JSCalendar.Unit.day, JSDate.now);
-                var startOfDay = calendar.dateFromComponents(startOfDayComponents);
-                var componentsUntilTrialEnd = calendar.componentsBetweenDates(JSCalendar.Unit.day | JSCalendar.Unit.hour, startOfDay, this.billing.trialEndDate);
-                if (componentsUntilTrialEnd.day === 0){
+                var days = this.billing.daysUntilTrialEnd();
+                if (days === 0){
                     this.trialStatusLabel.text = JSBundle.mainBundle.localizedString("trial.today.text", "CommunityBillingSettingsViewController");
-                }else if (componentsUntilTrialEnd.day === 1){
+                }else if (days === 1){
                     this.trialStatusLabel.text = JSBundle.mainBundle.localizedString("trial.tomorrow.text", "CommunityBillingSettingsViewController");
                 }else{
                     format = JSBundle.mainBundle.localizedString("trial.days.format", "CommunityBillingSettingsViewController");
-                    this.trialStatusLabel.text = String.initWithFormat(format, componentsUntilTrialEnd.day);
+                    this.trialStatusLabel.text = String.initWithFormat(format, days);
                 }
             }
         }else{

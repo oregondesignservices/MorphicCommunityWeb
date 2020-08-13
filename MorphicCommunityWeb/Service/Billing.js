@@ -47,6 +47,14 @@ JSClass("Billing", JSObject, {
         };
     },
 
+    daysUntilTrialEnd: function(){
+        var calendar = JSCalendar.gregorian;
+        var startOfDayComponents = calendar.componentsFromDate(JSCalendar.Unit.year | JSCalendar.Unit.month | JSCalendar.Unit.day, JSDate.now);
+        var startOfDay = calendar.dateFromComponents(startOfDayComponents);
+        var componentsUntilTrialEnd = calendar.componentsBetweenDates(JSCalendar.Unit.day | JSCalendar.Unit.hour, startOfDay, this.trialEndDate);
+        return componentsUntilTrialEnd.day;
+    },
+
     planId: null,
     contactMemberId: null,
     status: null,
