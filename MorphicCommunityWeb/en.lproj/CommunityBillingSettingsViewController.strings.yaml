@@ -1,3 +1,12 @@
 en:
-  fields:
-    name.label: Community Name
+  error.text: Sorry, we couldn't load your billing information.  Please try again.
+  card.text: "Payment Method:"
+  noCard.text: No card on file
+  addCard.title: Add a Card
+  card.format: "%1$s - %2$s"
+  changeCard.title: Change
+  contact.text: "Billing Contact:"
+  trial.days.format: "Your trial ends in %1$d days"
+  trial.tomorrow.text: Your trial ends tomorrow!
+  trial.today.text: Your trial ends today!
+  paymentError.text: We could not process your most recent payment.  Please update your payment method.

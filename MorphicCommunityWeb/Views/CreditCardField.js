@@ -203,12 +203,8 @@ JSClass("CreditCardField", StripeElementControl, {
         if (!completion){
             completion = Promise.completion();
         }
-        StripeElementLayer.stripe.createToken(this.stripeElement).then(function(result){
-            if (result.error){
-                completion.call(target, null);
-                return;
-            }
-            completion.call(target, result.token);
+        this.stripe.createToken(this.stripeElement).then(function(result){
+            completion.call(target, result.error, result.token);
         });
         return completion.promise;
     },

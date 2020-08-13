@@ -4,25 +4,112 @@ ViewController:
   class: CommunityBillingSettingsViewController
   view:
     subviews:
-      - /CreditCardField
-      - /SubscribeButton
+      - /ScrollView
+      - /ErrorView
   outlets:
-    creditCardField: /CreditCardField
-    subscribeButton: /SubscribeButton
+    scrollView: /ScrollView
+    errorView: /ErrorView
+    trialStatusLabel: /TrialStatusLabel
+    paymentErrorLabel: /PaymentErrorLabel
+    formView: /FormView
+    contactPopupButton: /ContactPopupButton
+    cardValueView: /CardValueView
+    cardValueLabel: /CardValueLabel
+    cardValueButton: /CardValueButton
 
-CreditCardField:
-  class: CreditCardField
-  borderWidth: 1
-  borderColor: black
-  maskedBorders: maxY
+ScrollView:
+  class: UIScrollView
+  hidden: true
+  subviews:
+    - /TrialStatusLabel
+    - /PaymentErrorLabel
+    - /FormView
 
-SubscribeButton:
+ErrorView:
+  class: UILabel
+  text: .error.text
+  textInsets: 0,40
+  lines: 0
+  hidden: true
+  font:
+    size: detail
+  textColor:
+    rgba: 128,128,128
+
+TrialStatusLabel:
+  class: UILabel
+  lines: 0
+  textInsets: 10,0
+  textAlignment: center
+  color:
+    rgba: 102,102,102
+  font:
+    weight: regular
+
+PaymentErrorLabel:
+  class: UILabel
+  lines: 0
+  textInsets: 10,0
+  textAlignment: center
+  textColor:
+    rgba: 129,43,0
+  font:
+    weight: regular
+  text: .paymentError.text
+
+FormView:
+  class: FormView
+  labelSpacing: 10
+  fieldSpacing: 10
+  fields:
+    -
+      label: /CardLabel
+      view: /CardValueView
+    -
+      label: /ContactLabel
+      view: /ContactPopupButton
+
+ContactLabel:
+  class: UILabel
+  text: .contact.text
+  textAlignment: right
+
+ContactPopupButton:
+  class: UIPopupButton
+  target: /ViewController
+  action: contactChanged
+
+CardLabel:
+  class: UILabel
+  text: .card.text
+  textAlignment: right
+
+CardValueView:
+  class: CommunityBillingCardField
+  label: /CardValueLabel
+  button: /CardValueButton
+
+CardValueLabel:
+  class: UILabel
+  textInsets: 0,0,0,7
+
+CardValueButton:
   class: UIButton
-  styler:
-    class: UIButtonCustomStyler
-    normalBackgroundColor:
-      rgba: 0,129,69
-    normalTitleColor: white
-    titleInsets: 3,7
-    cornerRadius: 2
-  title: Subscribe
+  styler: /CardButtonStyler
+  target: /ViewController
+  action: changeCard
+  title: ""
+
+CardButtonStyler:
+  class: UIButtonCustomStyler
+  normalBackgroundColor:
+    rgba: 0,129,69
+  normalTitleColor: white
+  titleInsets: 3,7
+  cornerRadius: 2
+
+# CreditCardField:
+#   class: CreditCardField
+#   borderWidth: 1
+#   borderColor: black
+#   maskedBorders: maxY

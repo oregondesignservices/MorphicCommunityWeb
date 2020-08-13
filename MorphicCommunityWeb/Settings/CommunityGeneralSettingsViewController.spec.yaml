@@ -26,6 +26,7 @@ Form:
 NameLabel:
   class: UILabel
   text: .fields.name.label
+  textAlignment: right
 
 NameField:
   class: UITextField
