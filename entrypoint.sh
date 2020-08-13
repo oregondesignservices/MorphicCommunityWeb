@@ -12,7 +12,7 @@ if [ "${BUNDLE_VERSION}" == "" ] ; then
 fi
 
 # Build the final JS files
-npx jskit make --bundle-version "${BUNDLE_VERSION}" MorphicCommunityWeb --no-tag --no-docker
+npx jskit make --bundle-version "${BUNDLE_VERSION}" --build-label "${BUNDLE_VERSION}" MorphicCommunityWeb --no-tag --no-docker
 
 BUILDS_DIR="$(pwd)/builds/org.raisingthefloor.MorphicCommunityWeb/latest/MorphicCommunityWeb"
 LOG_DIR="${BUILDS_DIR}/logs"
