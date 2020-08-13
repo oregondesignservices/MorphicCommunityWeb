@@ -57,13 +57,22 @@ stages:
               command: login
               containerRegistry: morphicworld dockerhub
           - task: Docker@2
-            displayName: Build & Push Docker Image
+            displayName: build image
             inputs:
-              command: buildAndPush
+              command: build
               dockerfile: Dockerfile
               repository: morphicworld/morphic-community-web
-              tags: $(Build.BuildNumber)
+              tags: $(imageTags)
               arguments: "--build-arg 'BUNDLE_VERSION=$(Build.BuildNumber)'"
+          - task: Docker@2
+            displayName: push image
+            condition: ne(variables['imageTags'], '')
+            inputs:
+              command: push
+              dockerfile: Dockerfile
+              repository: morphicworld/morphic-community-web
+              tags: $(imageTags)
+
 
   - stage: update_deploy_tag
     jobs:
