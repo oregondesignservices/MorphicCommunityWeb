@@ -33,6 +33,8 @@ variables:
   # branch to master. We won't use it anyway.
   ${{ if eq(variables['deployRepoRef'], '') }}:
     deployRepoRef: master
+    imageTags: |
+      pr-build
 
 resources:
   repositories:
