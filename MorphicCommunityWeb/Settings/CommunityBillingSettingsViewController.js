@@ -25,6 +25,9 @@
 // #import "Service+Extensions.js"
 // #import "Billing.js"
 // #import "Member.js"
+// #import "CommunityBillingPlanView.js"
+// #import "CommunityBillingCardField.js"
+// #import "CommunityBillingCardWindowController.js"
 'use strict';
 
 JSClass("CommunityBillingSettingsViewController", UIViewController, {
@@ -50,10 +53,13 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
 
     viewDidAppear: function(animated){
         CommunityBillingSettingsViewController.$super.viewDidAppear.call(this, animated);
+        this.view.window.addSubview(this.syncIndicator);
+        this.syncIndicator.frame = this.view.window.viewController.syncIndicator.frame;
     },
 
     viewWillDisappear: function(animated){
         CommunityBillingSettingsViewController.$super.viewWillDisappear.call(this, animated);
+        this.syncIndicator.removeFromSuperview();
     },
 
     viewDidDisappear: function(animated){
@@ -100,18 +106,9 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
     },
 
     update: function(){
-        var format;
         this.populatePlans();
         this.populateContactPopupMenu();
-        if (this.billing.card !== null){
-            format = JSBundle.mainBundle.localizedString("card.format", "CommunityBillingSettingsViewController");
-            this.cardValueLabel.text = String.initWithFormat(format, this.billing.card.brand, this.billing.card.last4);
-            this.cardValueButton.titleLabel.text = JSBundle.mainBundle.localizedString("changeCard.title", "CommunityBillingSettingsViewController");
-        }else{
-            this.cardValueLabel.text = JSBundle.mainBundle.localizedString("noCard.text", "CommunityBillingSettingsViewController");
-            this.cardValueButton.titleLabel.text = JSBundle.mainBundle.localizedString("addCard.title", "CommunityBillingSettingsViewController");
-        }
-
+        this.updateCardField();
         if (this.billing.status == Billing.Status.paid){
             this.paymentErrorLabel.hidden = true;
             if (this.billing.trialEndDate.isPast()){
@@ -124,7 +121,7 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
                 }else if (days === 1){
                     this.trialStatusLabel.text = JSBundle.mainBundle.localizedString("trial.tomorrow.text", "CommunityBillingSettingsViewController");
                 }else{
-                    format = JSBundle.mainBundle.localizedString("trial.days.format", "CommunityBillingSettingsViewController");
+                    var format = JSBundle.mainBundle.localizedString("trial.days.format", "CommunityBillingSettingsViewController");
                     this.trialStatusLabel.text = String.initWithFormat(format, days);
                 }
             }
@@ -132,10 +129,22 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
             this.trialStatusLabel.hidden = true;
             this.paymentErrorLabel.hidden = false;
         }
-        this.cardValueView.setNeedsLayout();
         this.scrollView.hidden = false;
         this.formView.setNeedsLayout();
         this.view.setNeedsLayout();
+    },
+
+    updateCardField: function(){
+        if (this.billing.card !== null){
+            var format = JSBundle.mainBundle.localizedString("card.format", "CommunityBillingSettingsViewController");
+            this.cardValueLabel.text = String.initWithFormat(format, this.billing.card.brand, this.billing.card.last4);
+            this.cardValueButton.titleLabel.text = JSBundle.mainBundle.localizedString("changeCard.title", "CommunityBillingSettingsViewController");
+        }else{
+            this.cardValueLabel.text = JSBundle.mainBundle.localizedString("noCard.text", "CommunityBillingSettingsViewController");
+            this.cardValueButton.titleLabel.text = JSBundle.mainBundle.localizedString("addCard.title", "CommunityBillingSettingsViewController");
+        }
+        this.cardValueView.setNeedsLayout();
+        this.formView.setNeedsLayout();
     },
 
     planGroups: null,
@@ -222,10 +231,10 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
             }
             this.plansView.addSubview(planView);
         }
-        this.updateSelectedPlan();
+        this.updatePlanSelection();
     },
 
-    updateSelectedPlan: function(){
+    updatePlanSelection: function(){
         var plans;
         var plan;
         var planView;
@@ -261,6 +270,7 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
 
     // Views
 
+    syncIndicator: JSOutlet(),
     errorView: JSOutlet(),
     scrollView: JSOutlet(),
     plansView: JSOutlet(),
@@ -308,56 +318,30 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
         this.scrollView.scrollContentSize = scrollContentSize;
     },
 
-    subscribe: function(){
-        this.setFieldsEnabled(false);
-        this.subscribeButton.createStripeToken(function(error, token){
-            if (error !== null){
-                this.setFieldsEnabled(true);
-                // error.type
-                // - api_connection_error
-                // - api_error
-                // - authentication_error
-                // - card_error
-                // - idempotency_error
-                // - invalid_request_error
-                // - rate_limit_error
-                // error.code
-                // - card_decline_rate_limit_exceeded
-                // - card_declined
-                // - expired_card
-                // - incorrect_address
-                // - incorrect_cvc
-                // - incorrect_number
-                // - incorrect_zip
-                // - invalid_card_type
-                // - invalid_characters
-                // - invalid_cvc
-                // - invalid_expiry_month
-                // - invalid_expiry_year
-                // - invalid_number
-                // - postal_code_invalid
-                // - processing_error
-                // error.decline_code
-                // 
-                // TODO: show credit card error message
-                return;
-            }
-        }, this);
-    },
-
-    setFieldsEnabled: function(enabled){
-        this.creditCardField.enabled = enabled;
-        this.subscribeButton.enabled = enabled;
-    },
-
     contactChanged: function(){
         var contact = this.contacts[this.contactPopupButton.selectedIndex];
         this.billing.contactMemberId = contact.id;
         this.billingSaveSynchronizer.sync();
     },
 
-    changeCard: function(sender){
+    cardWindowController: null,
 
+    changeCard: function(sender){
+        if (this.cardWindowController === null){
+            this.cardWindowController = CommunityBillingCardWindowController.initWithSpecName("CommunityBillingCardWindowController");
+            this.cardWindowController.delegate = this;
+            this.cardWindowController.service = this.service;
+            this.cardWindowController.community = this.community;
+            this.cardWindowController.billing = this.billing;
+        }
+        this.cardWindowController.makeKeyAndOrderFront();
+    },
+
+    windowControllerDidClose: function(controller){
+        if (controller === this.cardWindowController){
+            this.cardWindowController = null;
+            this.updateCardField();
+        }
     },
 
     planSelected: function(sender){
@@ -396,8 +380,9 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
 
     changeToPlan: function(plan){
         this.billing.planId = plan.id;
-        this.updateSelectedPlan();
+        this.updatePlanSelection();
         this.billingSaveSynchronizer.sync();
+        this.community.memberLimit = plan.member_limit;
     },
 
     priceFormatter: null,
@@ -416,170 +401,5 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
             syncContext.completed();
         }, this);
     },
-
-});
-
-JSClass("CommunityBillingPlanView", UIControl, {
-
-    index: 0,
-    nameLabel: null,
-    priceLabel: null,
-    periodLabel: null,
-    secondaryPriceLabel: null,
-    secondaryPeriodLabel: null,
-    color: JSColor.initWithWhite(0.8),
-    selectedColor: JSColor.initWithRGBA(0, 129/255.0, 69/255.0),
-
-    commonUIControlInit: function(){
-        CommunityBillingPlanView.$super.commonUIControlInit.call(this);
-        this.hasOverState = true;
-        this.borderWidth = 1;
-        this.nameLabel = UILabel.init();
-        this.nameLabel.textInsets = JSInsets(4);
-        this.nameLabel.font = this.nameLabel.font.fontWithWeight(JSFont.Weight.regular).fontWithPointSize(JSFont.Size.detail * 1.2);
-        this.nameLabel.textAlignment = JSTextAlignment.center;
-        this.priceLabel = UILabel.init();
-        this.priceLabel.textInsets = JSInsets(4);
-        this.priceLabel.font = this.priceLabel.font.fontWithWeight(JSFont.Weight.bold).fontWithPointSize(JSFont.Size.heading);
-        this.priceLabel.textAlignment = JSTextAlignment.center;
-        this.periodLabel = UILabel.init();
-        this.periodLabel.textInsets = JSInsets(0, 4);
-        this.periodLabel.textAlignment = JSTextAlignment.center;
-        this.periodLabel.font = this.periodLabel.font.fontWithPointSize(JSFont.Size.detail);
-        this.periodLabel.maximumNumberOfLines = 2;
-        this.secondaryPriceLabel = UILabel.init();
-        this.secondaryPriceLabel.textInsets = JSInsets(4, 4, 0, 4);
-        this.secondaryPriceLabel.textAlignment = JSTextAlignment.center;
-        this.secondaryPriceLabel.font = this.periodLabel.font.fontWithPointSize(JSFont.Size.detail);
-        this.secondaryPriceLabel.textColor = JSColor.initWithWhite(0.4);
-        this.secondaryPeriodLabel = UILabel.init();
-        this.secondaryPeriodLabel.textInsets = JSInsets(0, 4, 4, 4);
-        this.secondaryPeriodLabel.textAlignment = JSTextAlignment.center;
-        this.secondaryPeriodLabel.font = this.secondaryPeriodLabel.font.fontWithPointSize(JSFont.Size.detail);
-        this.secondaryPeriodLabel.textColor = this.secondaryPriceLabel.textColor;
-        this.secondaryPeriodLabel.maximumNumberOfLines = 2;
-
-        this.addSubview(this.nameLabel);
-        this.addSubview(this.priceLabel);
-        this.addSubview(this.periodLabel);
-        this.addSubview(this.secondaryPriceLabel);
-        this.addSubview(this.secondaryPeriodLabel);
-
-        this.update();
-    },
-
-    selected: JSDynamicProperty('_selected', false),
-
-    setSelected: function(selected){
-        if (selected != this._selected){
-            this._selected = selected;
-            this.update();
-        }
-    },
-
-    update: function(){
-        this.transform = JSAffineTransform.Identity;
-        this.alpha = 1;
-        this.backgroundColor = JSColor.white;
-        if (this.selected){
-            this.borderColor = this.selectedColor;
-            this.nameLabel.backgroundColor = this.selectedColor;
-            this.nameLabel.textColor = JSColor.white;
-        }else{
-            this.borderColor = this.color;
-            this.nameLabel.backgroundColor = this.color;
-            this.nameLabel.textColor = JSColor.black;
-        }
-        if (!this.enabled){
-            this.alpha = 0.3;
-        }else{
-            if (this.active){
-                this.backgroundColor = JSColor.initWithWhite(0.9);
-                this.transform = JSAffineTransform.Scaled(1.05, 1.05);
-            }else if (this.over){
-                this.transform = JSAffineTransform.Scaled(1.1, 1.1);
-            }
-        }
-    },
-
-    mouseDown: function(event){
-        if (!this.enabled){
-            CommunityBillingPlanView.$super.mouseDown.call(this, event);
-            return;
-        }
-        this.active = true;
-    },
-
-    mouseDragged: function(event){
-        var location = event.locationInView(this);
-        this.active = this.bounds.containsPoint(location);
-    },
-
-    mouseUp: function(event){
-        if (this.active){
-            this.sendActionsForEvents(UIControl.Event.primaryAction, event);
-            this.active = false;
-        }
-    },
-
-    layoutSubviews: function(){
-        var width = this.bounds.size.width;
-        var maxSize = JSSize(width, Number.MAX_VALUE);
-        var y = 0;
-        this.nameLabel.sizeToFitSize(maxSize);
-        var size = this.nameLabel.bounds.size;
-        this.nameLabel.frame = JSRect(0, y, width, size.height);
-        y += size.height;
-        this.priceLabel.sizeToFitSize(maxSize);
-        size = this.priceLabel.bounds.size;
-        this.priceLabel.frame = JSRect(0, y, width, size.height);
-        y += size.height;
-        this.periodLabel.sizeToFitSize(maxSize);
-        size = this.periodLabel.bounds.size;
-        this.periodLabel.frame = JSRect(0, y, width, size.height);
-
-        y = this.bounds.size.height;
-        this.secondaryPeriodLabel.sizeToFitSize(maxSize);
-        size = this.secondaryPeriodLabel.bounds.size;
-        y -= size.height;
-        this.secondaryPeriodLabel.frame = JSRect(0, y, width, size.height);
-        this.secondaryPriceLabel.sizeToFitSize(maxSize);
-        size = this.secondaryPriceLabel.bounds.size;
-        y -= size.height;
-        this.secondaryPriceLabel.frame = JSRect(0, y, width, size.height);
-    },
-
-});
-
-JSClass("CommunityBillingCardField", UIView, {
-
-    initWithSpec: function(spec){
-        CommunityBillingCardField.$super.initWithSpec.call(this, spec);
-        if (spec.containsKey("label")){
-            this.label = spec.valueForKey("label");
-            this.addSubview(this.label);
-        }
-        if (spec.containsKey("button")){
-            this.button = spec.valueForKey("button");
-            this.addSubview(this.button);
-        }
-    },
-
-    label: null,
-    button: null,
-
-    getIntrinsicSize: function(){
-        return JSSize(UIView.noIntrinsicSize, this.button.intrinsicSize.height);
-    },
-
-    layoutSubviews: function(){
-        this.button.sizeToFit();
-        this.button.frame = JSRect(JSPoint(this.bounds.size.width - this.button.bounds.size.width, 0), this.button.bounds.size);
-        this.label.frame = JSRect(0, this.button.firstBaselineOffsetFromTop - this.label.firstBaselineOffsetFromTop, this.button.frame.origin.x, this.label.intrinsicSize.height);
-    },
-
-    getFirstBaselineOffsetFromTop: function(){
-        return this.button.firstBaselineOffsetFromTop;
-    }
 
 });

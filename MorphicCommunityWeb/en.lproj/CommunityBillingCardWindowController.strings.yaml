@@ -1,0 +1,14 @@
+en:
+  window.title: Enter a new Card
+  save.title: Save Card
+  cardError:
+    generic: Could not verify card
+    number: Invalid card number
+    zip: Invalid zip code
+    expiration: Invalid expiration
+    cvc: Invalid 3-digit security code
+  saveError:
+    generic:
+      title: Unable to Save Card
+      message: Sorry, we were unable to save your card.  Please try again.
+    dismiss.title: OK

@@ -1,4 +1,5 @@
 en:
+  syncError.tooltip: Sorry, we couldn't save your latest changes.  Click to retry.
   error.text: Sorry, we couldn't load your billing information.  Please try again.
   card.text: "Payment Method:"
   noCard.text: No card on file

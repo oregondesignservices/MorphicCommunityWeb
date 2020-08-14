@@ -1,0 +1,46 @@
+File's Owner: /WindowController
+
+WindowController:
+  class: CommunityBillingCardWindowController
+  window: /Window
+  outlets:
+    cardField: /CardField
+    saveButton: /SaveButton
+    activityIndicator: /ActivityIndicator
+
+Window:
+  frame: 0,0,300,0
+  title: .window.title
+  heightTracksContent: true
+  showsContentSeparator: false
+  contentView:
+    subviews:
+      - /CardField
+      - /SaveButton
+
+CardField:
+  class: CreditCardField
+  target: /WindowController
+  action: cardChanged
+  backgroundColor: white
+
+SaveButton:
+  class: UIButton
+  title: .save.title
+  styler:
+    class: UIButtonCustomStyler
+    normalBackgroundColor:
+      rgba: 0,129,69
+    normalTitleColor: white
+    titleInsets: 3,7
+    cornerRadius: 2
+  subviews:
+    - /ActivityIndicator
+  target: /WindowController
+  action: save
+  enabled: false
+
+ActivityIndicator:
+  class: UIActivityIndicatorView
+  style: light
+  hidesWhenStopped: true
