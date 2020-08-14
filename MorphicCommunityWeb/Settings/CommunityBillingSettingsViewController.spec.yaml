@@ -9,6 +9,7 @@ ViewController:
   outlets:
     scrollView: /ScrollView
     errorView: /ErrorView
+    plansView: /PlansView
     trialStatusLabel: /TrialStatusLabel
     paymentErrorLabel: /PaymentErrorLabel
     formView: /FormView
@@ -21,6 +22,7 @@ ScrollView:
   class: UIScrollView
   hidden: true
   subviews:
+    - /PlansView
     - /TrialStatusLabel
     - /PaymentErrorLabel
     - /FormView
@@ -39,9 +41,9 @@ ErrorView:
 TrialStatusLabel:
   class: UILabel
   lines: 0
-  textInsets: 10,0
+  textInsets: 0,0,10,0
   textAlignment: center
-  color:
+  textColor:
     rgba: 102,102,102
   font:
     weight: regular
@@ -49,13 +51,19 @@ TrialStatusLabel:
 PaymentErrorLabel:
   class: UILabel
   lines: 0
-  textInsets: 10,0
+  textInsets: 0,0,10,0
   textAlignment: center
   textColor:
     rgba: 129,43,0
   font:
     weight: regular
   text: .paymentError.text
+
+PlansView:
+  class: UIStackView
+  axis: horizontal
+  viewSpacing: 10
+  distribution: equal
 
 FormView:
   class: FormView
@@ -68,16 +76,6 @@ FormView:
     -
       label: /ContactLabel
       view: /ContactPopupButton
-
-ContactLabel:
-  class: UILabel
-  text: .contact.text
-  textAlignment: right
-
-ContactPopupButton:
-  class: UIPopupButton
-  target: /ViewController
-  action: contactChanged
 
 CardLabel:
   class: UILabel
@@ -95,18 +93,26 @@ CardValueLabel:
 
 CardValueButton:
   class: UIButton
-  styler: /CardButtonStyler
+  styler:
+    class: UIButtonCustomStyler
+    normalBackgroundColor:
+      rgba: 0,129,69
+    normalTitleColor: white
+    titleInsets: 3,7
+    cornerRadius: 2
   target: /ViewController
   action: changeCard
   title: ""
 
-CardButtonStyler:
-  class: UIButtonCustomStyler
-  normalBackgroundColor:
-    rgba: 0,129,69
-  normalTitleColor: white
-  titleInsets: 3,7
-  cornerRadius: 2
+ContactLabel:
+  class: UILabel
+  text: .contact.text
+  textAlignment: right
+
+ContactPopupButton:
+  class: UIPopupButton
+  target: /ViewController
+  action: contactChanged
 
 # CreditCardField:
 #   class: CreditCardField

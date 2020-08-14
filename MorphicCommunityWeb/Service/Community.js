@@ -140,6 +140,7 @@ JSClass("Community", JSObject, {
         var memberInList = this.members[index];
         memberInList.firstName = member.firstName;
         memberInList.lastName = member.lastName;
+        memberInList.role = member.role;
     },
 
     removeMember: function(member){

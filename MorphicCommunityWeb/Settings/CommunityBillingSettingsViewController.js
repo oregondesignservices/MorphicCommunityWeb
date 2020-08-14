@@ -38,6 +38,9 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
         CommunityBillingSettingsViewController.$super.viewDidLoad.call(this);
         this.billingSaveSynchronizer = JSSynchronizer.initWithAction(this.saveBilling, this);
         this.billingSaveSynchronizer.pendingInterval = 0;
+        this.priceFormatter = JSNumberFormatter.init();
+        this.priceFormatter.format = "¤#,##0.##";
+        this.priceFormatter.multiplier = 0.01;
     },
 
     viewWillAppear: function(animated){
@@ -98,6 +101,7 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
 
     update: function(){
         var format;
+        this.populatePlans();
         this.populateContactPopupMenu();
         if (this.billing.card !== null){
             format = JSBundle.mainBundle.localizedString("card.format", "CommunityBillingSettingsViewController");
@@ -134,10 +138,132 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
         this.view.setNeedsLayout();
     },
 
+    planGroups: null,
+
+    populatePlans: function(){
+        // The list of plans from the server is a flat list like
+        // - 5 members, billed monthly
+        // - 5 members, billed every 6 months
+        // - 15 members, billed monthly
+        // - 15 members, billed every 6 months
+        // - 50 members, billed monthly
+        //
+        // For such a case, we want to show 3 boxes, one for each number of
+        // members.  Each box will contain the prices for both billing periods
+
+        // 1. Group the plans by their number of members
+        var plansByMembers = {};
+        var plan;
+        var i, l;
+        for (i = 0, l = this.plans.length; i < l; ++i){
+            plan = this.plans[i];
+            if (!plansByMembers[plan.member_limit]){
+                plansByMembers[plan.member_limit] = [];
+            }
+            plansByMembers[plan.member_limit].push(plan);
+        }
+
+        // 2. Get an array of grouped plans, sorted from lowest member count to highest
+        this.planGroups = [];
+        for (var x in plansByMembers){
+            this.planGroups.push(plansByMembers[x]);
+        }
+        this.planGroups.sort(function(a, b){
+            return a[0].member_limit - b[0].member_limit;
+        });
+
+        // 3. Create the boxes
+        var comparePlans = function(a, b){
+            return a.price / a.months - b.price / b.months;
+        };
+        var membersFormat = JSBundle.mainBundle.localizedString("plans.names.members.format", "CommunityBillingSettingsViewController");
+        var billingPeriodFormat = JSBundle.mainBundle.localizedString("plans.period.months.format", "CommunityBillingSettingsViewController");
+        var billingPeriodString = function(months){
+            if (months === 1){
+                return JSBundle.mainBundle.localizedString("plans.period.monthly", "CommunityBillingSettingsViewController");
+            }
+            if (months === 12){
+                return JSBundle.mainBundle.localizedString("plans.period.annually", "CommunityBillingSettingsViewController");
+            }
+            return String.initWithFormat(billingPeriodFormat, months);
+        };
+        var plans;
+        var planView;
+        var priceString;
+        var priceFormat = JSBundle.mainBundle.localizedString("plans.price.format", "CommunityBillingSettingsViewController");
+        var attributedPrice;
+        for (i = 0, l = this.planGroups.length; i < l; ++i){
+            plans = this.planGroups[i];
+            plans.sort(comparePlans);
+            plan = plans[0];
+            planView = CommunityBillingPlanView.init();
+            planView.index = i;
+            planView.addAction(this.planSelected, this);
+            if (plan.member_limit === 0){
+                planView.nameLabel = JSBundle.mainBundle.localizedString("plans.names.unlimited", "CommunityBillingSettingsViewController");
+                planView.enabled = true;
+            }else{
+                planView.nameLabel.text = String.initWithFormat(membersFormat, plan.member_limit);
+                planView.enabled = plan.member_limit >= this.community.memberCount;
+            }
+            priceString = this.priceFormatter.stringFromNumber(plan.price / plan.months);
+            attributedPrice = JSAttributedString.initWithString(priceFormat, {font: JSFont.systemFontOfSize(JSFont.Size.detail)});
+            attributedPrice.replaceFormat(priceString, {font: planView.priceLabel.font});
+            planView.priceLabel.attributedText = attributedPrice;
+            planView.periodLabel.text = billingPeriodString(plan.months);
+            if (plans.length > 1){
+                plan = plans[1];
+                priceString = this.priceFormatter.stringFromNumber(plan.price / plan.months);
+                planView.secondaryPriceLabel.text = String.initWithFormat(priceFormat, priceString);
+                planView.secondaryPeriodLabel.text = billingPeriodString(plan.months);
+            }else{
+                planView.secondaryPriceLabel.text = "";
+                planView.secondaryPeriodLabel.text = "";
+            }
+            this.plansView.addSubview(planView);
+        }
+        this.updateSelectedPlan();
+    },
+
+    updateSelectedPlan: function(){
+        var plans;
+        var plan;
+        var planView;
+        for (var i = 0, l = this.planGroups.length; i < l; ++i){
+            plans = this.planGroups[i];
+            planView = this.plansView.subviews[i];
+            planView.selected = false;
+            for (var j = 0, k = plans.length; j < k; ++j){
+                plan = plans[j];
+                if (plan.id == this.billing.planId){
+                    planView.selected = true;
+                }
+            }
+        }
+    },
+
+    contacts: null,
+
+    populateContactPopupMenu: function(){
+        this.contacts = [];
+        var member;
+        for (var i = 0, l = this.community.members.length; i < l; ++i){
+            member = this.community.members[i];
+            if (member.role == Member.Role.manager && member.state == Member.State.active){
+                this.contacts.push(member);
+                this.contactPopupButton.addItemWithTitle(member.fullName);
+                if (member.id == this.billing.contactMemberId){
+                    this.contactPopupButton.selectedIndex = this.contacts.length - 1;
+                }
+            }
+        }
+    },
+
     // Views
 
     errorView: JSOutlet(),
     scrollView: JSOutlet(),
+    plansView: JSOutlet(),
     trialStatusLabel: JSOutlet(),
     paymentErrorLabel: JSOutlet(),
     formView: JSOutlet(),
@@ -155,6 +281,9 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
 
         this.errorView.sizeToFitSize(maxContentSize);
         this.errorView.position = this.view.bounds.center;
+
+        this.plansView.frame = JSRect(origin, JSSize(maxContentSize.width, 140));
+        origin.y += this.plansView.bounds.size.height + 20;
 
         if (!this.trialStatusLabel.hidden){
             this.trialStatusLabel.sizeToFitSize(maxContentSize);
@@ -231,26 +360,51 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
 
     },
 
+    planSelected: function(sender){
+        var plans = this.planGroups[sender.index];
+        var alert = UIAlertController.initWithTitle(sender.nameLabel.text, JSBundle.mainBundle.localizedString("plans.changeConfirmation.title", "CommunityBillingSettingsViewController"));
+        var plan;
+        var action;
+        for (var i = 0, l = plans.length; i < l; ++i){
+            plan = plans[i];
+            action = this.createAlertActionForChangingToPlan(plan);
+            alert.addAction(action);
+        }
+        alert.addActionWithTitle(JSBundle.mainBundle.localizedString("plans.changeConfirmation.cancel.title", "CommunityBillingSettingsViewController"), UIAlertAction.Style.cancel);
+        alert.popupAdjacentToView(sender, UIPopupWindow.Placement.below);
+    },
+
+    createAlertActionForChangingToPlan: function(plan){
+        var format;
+        var title;
+        var priceString = this.priceFormatter.stringFromNumber(plan.price / plan.months);
+        if (plan.months === 1){
+            format = JSBundle.mainBundle.localizedString("plans.changeConfirmation.plan.monthly.format", "CommunityBillingSettingsViewController");
+            title = String.initWithFormat(format, priceString);
+        }else if (plan.months === 12){
+            format = JSBundle.mainBundle.localizedString("plans.changeConfirmation.plan.annually.format", "CommunityBillingSettingsViewController");
+            title = String.initWithFormat(format, priceString);
+        }else{
+            format = JSBundle.mainBundle.localizedString("plans.changeConfirmation.plan.months.format", "CommunityBillingSettingsViewController");
+            title = String.initWithFormat(format, priceString, plan.months);
+        }
+        var action = UIAlertAction.initWithTitle(title, UIAlertAction.Style.normal, function(){
+            this.changeToPlan(plan);
+        }, this);
+        return action;
+    },
+
+    changeToPlan: function(plan){
+        this.billing.planId = plan.id;
+        this.updateSelectedPlan();
+        this.billingSaveSynchronizer.sync();
+    },
+
+    priceFormatter: null,
+
     // MARK: - Saving Data
 
     billingSaveSynchronizer: null,
-
-    contacts: null,
-
-    populateContactPopupMenu: function(){
-        this.contacts = [];
-        var member;
-        for (var i = 0, l = this.community.members.length; i < l; ++i){
-            member = this.community.members[i];
-            if (member.role == Member.Role.manager && member.state == Member.State.active){
-                this.contacts.push(member);
-                this.contactPopupButton.addItemWithTitle(member.fullName);
-                if (member.id == this.billing.contactMemberId){
-                    this.contactPopupButton.selectedIndex = this.contacts.length - 1;
-                }
-            }
-        }
-    },
 
     saveBilling: function(syncContext){
         syncContext.started();
@@ -267,19 +421,132 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
 
 JSClass("CommunityBillingPlanView", UIControl, {
 
+    index: 0,
     nameLabel: null,
     priceLabel: null,
+    periodLabel: null,
+    secondaryPriceLabel: null,
+    secondaryPeriodLabel: null,
+    color: JSColor.initWithWhite(0.8),
+    selectedColor: JSColor.initWithRGBA(0, 129/255.0, 69/255.0),
 
-    priceFormatter: null,
+    commonUIControlInit: function(){
+        CommunityBillingPlanView.$super.commonUIControlInit.call(this);
+        this.hasOverState = true;
+        this.borderWidth = 1;
+        this.nameLabel = UILabel.init();
+        this.nameLabel.textInsets = JSInsets(4);
+        this.nameLabel.font = this.nameLabel.font.fontWithWeight(JSFont.Weight.regular).fontWithPointSize(JSFont.Size.detail * 1.2);
+        this.nameLabel.textAlignment = JSTextAlignment.center;
+        this.priceLabel = UILabel.init();
+        this.priceLabel.textInsets = JSInsets(4);
+        this.priceLabel.font = this.priceLabel.font.fontWithWeight(JSFont.Weight.bold).fontWithPointSize(JSFont.Size.heading);
+        this.priceLabel.textAlignment = JSTextAlignment.center;
+        this.periodLabel = UILabel.init();
+        this.periodLabel.textInsets = JSInsets(0, 4);
+        this.periodLabel.textAlignment = JSTextAlignment.center;
+        this.periodLabel.font = this.periodLabel.font.fontWithPointSize(JSFont.Size.detail);
+        this.periodLabel.maximumNumberOfLines = 2;
+        this.secondaryPriceLabel = UILabel.init();
+        this.secondaryPriceLabel.textInsets = JSInsets(4, 4, 0, 4);
+        this.secondaryPriceLabel.textAlignment = JSTextAlignment.center;
+        this.secondaryPriceLabel.font = this.periodLabel.font.fontWithPointSize(JSFont.Size.detail);
+        this.secondaryPriceLabel.textColor = JSColor.initWithWhite(0.4);
+        this.secondaryPeriodLabel = UILabel.init();
+        this.secondaryPeriodLabel.textInsets = JSInsets(0, 4, 4, 4);
+        this.secondaryPeriodLabel.textAlignment = JSTextAlignment.center;
+        this.secondaryPeriodLabel.font = this.secondaryPeriodLabel.font.fontWithPointSize(JSFont.Size.detail);
+        this.secondaryPeriodLabel.textColor = this.secondaryPriceLabel.textColor;
+        this.secondaryPeriodLabel.maximumNumberOfLines = 2;
 
-    initWithSpec: function(spec){
-        CommunityBillingPlanView.$super.initWithSpec.call(this, spec);
-        if (spec.containsKey("name")){
-            this.name = spec.valueForKey("name");
+        this.addSubview(this.nameLabel);
+        this.addSubview(this.priceLabel);
+        this.addSubview(this.periodLabel);
+        this.addSubview(this.secondaryPriceLabel);
+        this.addSubview(this.secondaryPeriodLabel);
+
+        this.update();
+    },
+
+    selected: JSDynamicProperty('_selected', false),
+
+    setSelected: function(selected){
+        if (selected != this._selected){
+            this._selected = selected;
+            this.update();
         }
-        if (spec.containsKey("price")){
-            this.price = spec.valueForKey("price");
+    },
+
+    update: function(){
+        this.transform = JSAffineTransform.Identity;
+        this.alpha = 1;
+        this.backgroundColor = JSColor.white;
+        if (this.selected){
+            this.borderColor = this.selectedColor;
+            this.nameLabel.backgroundColor = this.selectedColor;
+            this.nameLabel.textColor = JSColor.white;
+        }else{
+            this.borderColor = this.color;
+            this.nameLabel.backgroundColor = this.color;
+            this.nameLabel.textColor = JSColor.black;
         }
+        if (!this.enabled){
+            this.alpha = 0.3;
+        }else{
+            if (this.active){
+                this.backgroundColor = JSColor.initWithWhite(0.9);
+                this.transform = JSAffineTransform.Scaled(1.05, 1.05);
+            }else if (this.over){
+                this.transform = JSAffineTransform.Scaled(1.1, 1.1);
+            }
+        }
+    },
+
+    mouseDown: function(event){
+        if (!this.enabled){
+            CommunityBillingPlanView.$super.mouseDown.call(this, event);
+            return;
+        }
+        this.active = true;
+    },
+
+    mouseDragged: function(event){
+        var location = event.locationInView(this);
+        this.active = this.bounds.containsPoint(location);
+    },
+
+    mouseUp: function(event){
+        if (this.active){
+            this.sendActionsForEvents(UIControl.Event.primaryAction, event);
+            this.active = false;
+        }
+    },
+
+    layoutSubviews: function(){
+        var width = this.bounds.size.width;
+        var maxSize = JSSize(width, Number.MAX_VALUE);
+        var y = 0;
+        this.nameLabel.sizeToFitSize(maxSize);
+        var size = this.nameLabel.bounds.size;
+        this.nameLabel.frame = JSRect(0, y, width, size.height);
+        y += size.height;
+        this.priceLabel.sizeToFitSize(maxSize);
+        size = this.priceLabel.bounds.size;
+        this.priceLabel.frame = JSRect(0, y, width, size.height);
+        y += size.height;
+        this.periodLabel.sizeToFitSize(maxSize);
+        size = this.periodLabel.bounds.size;
+        this.periodLabel.frame = JSRect(0, y, width, size.height);
+
+        y = this.bounds.size.height;
+        this.secondaryPeriodLabel.sizeToFitSize(maxSize);
+        size = this.secondaryPeriodLabel.bounds.size;
+        y -= size.height;
+        this.secondaryPeriodLabel.frame = JSRect(0, y, width, size.height);
+        this.secondaryPriceLabel.sizeToFitSize(maxSize);
+        size = this.secondaryPriceLabel.bounds.size;
+        y -= size.height;
+        this.secondaryPriceLabel.frame = JSRect(0, y, width, size.height);
     },
 
 });

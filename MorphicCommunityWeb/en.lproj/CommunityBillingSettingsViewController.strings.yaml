@@ -6,7 +6,26 @@ en:
   card.format: "%1$s - %2$s"
   changeCard.title: Change
   contact.text: "Billing Contact:"
-  trial.days.format: "Your trial ends in %1$d days"
+  trial.days.format: Your trial ends in %1$d days
   trial.tomorrow.text: Your trial ends tomorrow!
   trial.today.text: Your trial ends today!
   paymentError.text: We could not process your most recent payment.  Please update your payment method.
+  plans:
+    period:
+      monthly: billed monthly
+      months.format: billed every %1$d months
+      annually: billed Annually
+    price.format: "%1$s/mo."
+    names:
+      members.format: "%1$d Members"
+      basic: Basic
+      midsize: Mid-size
+      large: Large
+      unlimited: Unlimited
+    changeConfirmation:
+      title: Confirm Plan Change
+      cancel.title: Cancel
+      plan:
+        monthly.format: "%1$s/month, billed monthly"
+        months.format: "%1$s/month, billed every %2$d months"
+        annually.format: "%1$s/month, billed annually"
