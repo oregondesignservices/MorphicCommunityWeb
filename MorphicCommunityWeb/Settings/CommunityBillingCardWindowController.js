@@ -54,6 +54,7 @@ JSClass("CommunityBillingCardWindowController", UIWindowController, {
 
     viewWillDisappear: function(animated){
         CommunityBillingCardWindowController.$super.viewWillDisappear.call(this, animated);
+        this.clearCardError();
     },
 
     viewDidDisappear: function(animated){

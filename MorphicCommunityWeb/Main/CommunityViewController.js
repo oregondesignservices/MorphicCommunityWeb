@@ -27,6 +27,7 @@
 // #import "MemberDetailViewController.js"
 // #import "Community.js"
 // #import "CommunitySettingsWindowController.js"
+// #import "PlanUpgradeViewController.js"
 'use strict';
 
 (function(){
@@ -437,7 +438,11 @@ JSClass("CommunityViewController", UIListViewController, {
         this.showBarDetail(bar);
     },
 
-    addMember: function(){
+    addMember: function(sender){
+        if (this.community.memberLimit > 0 && this.community.memberCount == this.community.memberLimit){
+            this.promptForUpgrade(sender);
+            return;
+        }
         var member = Member.init();
         member.role = Member.Role.member;
         member.state = Member.State.uninvited;
@@ -450,14 +455,42 @@ JSClass("CommunityViewController", UIListViewController, {
         this.showMemberDetail(member);
     },
 
+    upgradeViewController: null,
+
+    promptForUpgrade: function(sender){
+        if (this.upgradeViewController === null){
+            this.upgradeViewController = PlanUpgradeViewController.initWithSpecName("PlanUpgradeViewController");
+            this.upgradeViewController.delegate = this;
+            this.upgradeViewController.community = this.community;
+            this.upgradeViewController.service = this.service;
+        }
+        this.upgradeViewController.popupAdjacentToView(sender, UIPopupWindow.Placement.below);
+    },
+
+    planUpgradeViewDidDismiss: function(upgradeViewController){
+        if (upgradeViewController === this.upgradeViewController){
+            this.upgradeViewController.delegate = null;
+            this.upgradeViewController = null;
+        }
+    },
+
+    planUpgradeViewDidUpgrade: function(upgradeViewController){
+        this.addMember(this.addMemberButton);
+    },
+
+    planUpgradeViewShowBilling: function(upgradeViewController){
+        this.openSettings(this.navigationController.navigationBar.stylerProperties.rightBarItemViews[0], "billing");
+    },
+
     settingsWindowController: null,
 
-    openSettings: function(sender){
+    openSettings: function(sender, section){
         if (!this.settingsWindowController){
             this.settingsWindowController = CommunitySettingsWindowController.initWithSpecName("CommunitySettingsWindowController");
             this.settingsWindowController.service = this.service;
             this.settingsWindowController.community = this.community;
             this.settingsWindowController.delegate = this;
+            this.settingsWindowController.selectedSection = section || null;
             this.settingsWindowController.prepareWindowIfNeeded();
             var window = this.settingsWindowController.window;
             var sourceRect = JSRect(sender.convertRectToScreen(sender.bounds).center, JSSize(1, 1));
@@ -492,6 +525,9 @@ JSClass("CommunityViewController", UIListViewController, {
     },
 
     closeAllWinodows: function(){
+        if (this.upgradeViewController !== null){
+            this.upgradeViewController.dismiss();
+        }
         if (this.settingsWindowController !== null){
             this.settingsWindowController.close();
         }

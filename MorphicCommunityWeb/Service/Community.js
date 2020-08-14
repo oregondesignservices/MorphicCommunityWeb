@@ -129,6 +129,7 @@ JSClass("Community", JSObject, {
         copy.id = member.id;
         copy.firstName = member.firstName;
         copy.lastName = member.lastName;
+        this.memberCount++;
         this._addMember(copy);
     },
 
@@ -147,6 +148,7 @@ JSClass("Community", JSObject, {
         var index = this.memberSearcher.indexMatchingValue(member);
         if (index !== null){
             this.members.splice(index, 1);
+            this.memberCount--;
         }
     },
 

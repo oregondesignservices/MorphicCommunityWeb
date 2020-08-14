@@ -60,6 +60,9 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
     viewWillDisappear: function(animated){
         CommunityBillingSettingsViewController.$super.viewWillDisappear.call(this, animated);
         this.syncIndicator.removeFromSuperview();
+        if (this.cardWindowController !== null){
+            this.cardWindowController.close();
+        }
     },
 
     viewDidDisappear: function(animated){
