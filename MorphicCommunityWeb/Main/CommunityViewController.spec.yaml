@@ -12,10 +12,12 @@ CommunityViewController:
       - /ListView
       - /ActivityIndicator
       - /ErrorView
+      - /LockedView
   outlets:
     listView: /ListView
     activityIndicator: /ActivityIndicator
     errorView: /ErrorView
+    lockedView: /LockedView
     watermarkView: /WatermarkView
     addBarButton: /AddBarButton
     addMemberButton: /AddMemberButton
@@ -98,6 +100,31 @@ ErrorView:
       textColor:
         rgba: 255,255,255,0.5
       textAlignment: center
+
+LockedView:
+  class: UIStackView
+  viewSpacing: 5
+  hidden: true
+  subviews:
+    -
+      class: UILabel
+      lines: 0
+      text: .lockedView.label.text
+      textColor:
+        rgba: 255,255,255,0.5
+      textAlignment: center
+    -
+      class: StackedButton
+      title: .lockedView.billingButton.title
+      target: /CommunityViewController
+      action: showBilling
+      styler:
+        class: UIButtonCustomStyler
+        normalBackgroundColor:
+          rgba: 0,129,69
+        normalTitleColor: white
+        titleInsets: 3,7
+        cornerRadius: 2
 
 WatermarkView:
   class: UIImageView

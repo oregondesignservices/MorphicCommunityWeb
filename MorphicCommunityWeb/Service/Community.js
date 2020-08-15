@@ -34,6 +34,7 @@ JSClass("Community", JSObject, {
         this.defaultBarId = dictionary.default_bar_id;
         this.memberCount = dictionary.member_count;
         this.memberLimit = dictionary.member_limit;
+        this.locked = dictionary.is_locked;
         this.bars = [];
         this.members = [];
         this.barSearcher = JSBinarySearcher(this.bars, function(a, b){
@@ -59,6 +60,7 @@ JSClass("Community", JSObject, {
     bars: null,
     memberCount: 0,
     memberLimit: 0,
+    locked: false,
 
     memberForId: function(id){
         return this.memberSearcher.itemMatchingValue({id: id});

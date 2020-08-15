@@ -93,13 +93,19 @@ JSClass("CommunityViewController", UIListViewController, {
                     this.startListeningForCommunityNotifications();
                     this.navigationController.navigationBar.hidden = false;
                     this.hideActivityIndicator();
-                    this.listView.reloadData();
-                    if (this.bars.length > 0){
-                        this.listView.selectedIndexPath = JSIndexPath(0, 0);
-                        this.showBarDetail(this.bars[0]);
-                    }else if (this.members.length > 0){
-                        this.listView.selectedIndexPath = JSIndexPath(1, 0);
-                        this.showMemberDetail(this.members[0]);
+                    if (this.community.locked){
+                        this.bars = [];
+                        this.members = [];
+                        this.lockedView.hidden = false;
+                    }else{
+                        this.listView.reloadData();
+                        if (this.bars.length > 0){
+                            this.listView.selectedIndexPath = JSIndexPath(0, 0);
+                            this.showBarDetail(this.bars[0]);
+                        }else if (this.members.length > 0){
+                            this.listView.selectedIndexPath = JSIndexPath(1, 0);
+                            this.showMemberDetail(this.members[0]);
+                        }
                     }
                 }
             };
@@ -516,6 +522,10 @@ JSClass("CommunityViewController", UIListViewController, {
         this.settingsWindowController.makeKeyAndOrderFront();
     },
 
+    showBilling: function(sender){
+        this.openSettings(sender, "billing");
+    },
+
     windowControllerDidClose: function(windowController){
         if (windowController === this.settingsWindowController){
             this.settingsWindowController = null;
@@ -535,6 +545,7 @@ JSClass("CommunityViewController", UIListViewController, {
 
     // MARK: - Layout
 
+    lockedView: JSOutlet(),
     errorView: JSOutlet(),
     watermarkView: JSOutlet(),
 
@@ -543,9 +554,11 @@ JSClass("CommunityViewController", UIListViewController, {
         this.listView.frame = bounds;
         var maxSize = bounds.rectWithInsets(JSInsets(20)).size;
         this.errorView.sizeToFitSize(maxSize);
+        this.lockedView.sizeToFitSize(maxSize);
         var center = bounds.center;
         this.activityIndicator.position = center;
         this.errorView.position = center;
+        this.lockedView.position = center;
         this.watermarkView.bounds = JSRect(0, 0, bounds.size.width, bounds.size.width);
         this.watermarkView.position = JSPoint(bounds.center.x, bounds.size.height - 125 + bounds.size.width / 2.0); 
     }
@@ -569,6 +582,14 @@ JSClass("CommunityListHeaderView", UIListViewHeaderFooterView, {
         if (this._actionButton !== null){
             this._actionButton.position = JSPoint(this.bounds.size.width - 7 - this._actionButton.bounds.size.width / 2, this.bounds.center.y);
         }
+    }
+
+});
+
+JSClass("StackedButton", UIButton, {
+
+    sizeToFitSize: function(maxSize){
+        this.styler.sizeControlToFitSize(this, JSSize(maxSize.width, this.intrinsicSize.height));
     }
 
 });
