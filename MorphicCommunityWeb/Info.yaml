@@ -13,3 +13,4 @@ DockerOwner:                morphicworld
 UIApplicationEnvironment:
   - MORPHIC_SERVER_URL
   - STRIPE_PUBLIC_KEY
+  - PASSWORD_FRONT_END_URL
