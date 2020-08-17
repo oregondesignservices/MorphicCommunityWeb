@@ -191,6 +191,13 @@ Service.definePropertiesFromExtensions({
         request.object = {token: stripeCardToken};
         request.addBearerAuthorization(this.authToken);
         return this.sendRequest(request, completion, target);
-    }
+    },
 
+    cancelCommunityBilling: function(communityId, completion, target){
+        var url = this.baseURL.appendingPathComponents([this.version, "communities", communityId, "billing", "cancel"]);
+        var request = JSURLRequest.initWithURL(url);
+        request.method = JSURLRequest.Method.post;
+        request.addBearerAuthorization(this.authToken);
+        return this.sendRequest(request, completion, target);
+    }
 });

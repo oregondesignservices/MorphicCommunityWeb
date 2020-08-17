@@ -18,6 +18,9 @@ ViewController:
     cardValueView: /CardValueView
     cardValueLabel: /CardValueLabel
     cardValueButton: /CardValueButton
+    accountValueView: /AccountValueView
+    accountValueLabel: /AccountValueLabel
+    closeAccountButton: /CloseAccountButton
 
 SyncIndicator:
   class: SyncIndicator
@@ -85,6 +88,9 @@ FormView:
     -
       label: /ContactLabel
       view: /ContactPopupButton
+    -
+      label: /AccountLabel
+      view: /AccountValueView
 
 CardLabel:
   class: UILabel
@@ -122,3 +128,30 @@ ContactPopupButton:
   class: UIPopupButton
   target: /ViewController
   action: contactChanged
+
+AccountLabel:
+  class: UILabel
+  text: .account.text
+  textAlignment: right
+
+AccountValueView:
+  class: CommunityBillingAccountField
+  label: /AccountValueLabel
+  button: /CloseAccountButton
+
+AccountValueLabel:
+  class: UILabel
+  text: ""
+
+CloseAccountButton:
+  class: UIButton
+  styler:
+    class: UIButtonCustomStyler
+    normalBackgroundColor:
+      rgba: 0,129,69
+    normalTitleColor: white
+    titleInsets: 3,7
+    cornerRadius: 2
+  title: .account.closeButton.title
+  action: closeAccount
+  target: /ViewController

@@ -25,8 +25,21 @@ en:
       unlimited: Unlimited
     changeConfirmation:
       title: Confirm Plan Change
-      cancel.title: Cancel
+      cancel.title: Don't Change Plan
       plan:
         monthly.format: "%1$s/month, billed monthly"
         months.format: "%1$s/month, billed every %2$d months"
         annually.format: "%1$s/month, billed annually"
+  account.text: "Account:"
+  account.closeButton.title: Close Account
+  account.canceled.text: Canceled
+  account.closed.text: Closed
+  closeAccount:
+    title: Close Your Account
+    message: You and your members will have access until your current billing cycle ends
+    confirm.title: Close Account
+    cancel.title: Keep Account Open
+  closeError:
+    title: Unable to Close Account
+    message: Sorry, we were unable to close your account.  Please try again.
+    dismiss: OK

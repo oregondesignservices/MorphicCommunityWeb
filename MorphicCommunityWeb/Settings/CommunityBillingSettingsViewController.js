@@ -112,6 +112,7 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
         this.populatePlans();
         this.populateContactPopupMenu();
         this.updateCardField();
+        this.updateAccountField();
         if (this.billing.status == Billing.Status.paid){
             this.paymentErrorLabel.hidden = true;
             if (this.billing.trialEndDate.isPast()){
@@ -129,8 +130,8 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
                 }
             }
         }else{
+            this.paymentErrorLabel.hidden = this.billing.status != Billing.Status.pastDue;
             this.trialStatusLabel.hidden = true;
-            this.paymentErrorLabel.hidden = false;
         }
         this.scrollView.hidden = false;
         this.formView.setNeedsLayout();
@@ -147,6 +148,21 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
             this.cardValueButton.titleLabel.text = JSBundle.mainBundle.localizedString("addCard.title", "CommunityBillingSettingsViewController");
         }
         this.cardValueView.setNeedsLayout();
+        this.formView.setNeedsLayout();
+    },
+
+    updateAccountField: function(){
+        if (this.billing.status === Billing.Status.canceled){
+            this.accountValueLabel.text = JSBundle.mainBundle.localizedString("account.canceled.text", "CommunityBillingSettingsViewController");
+            this.closeAccountButton.hidden = true;
+        }else if (this.billing.status === Billing.Status.closed){
+            this.accountValueLabel.text = JSBundle.mainBundle.localizedString("account.closed.text", "CommunityBillingSettingsViewController");
+            this.closeAccountButton.hidden = true;
+        }else{
+            this.closeAccountButton.hidden = false;
+            this.accountValueLabel.text = "";
+        }
+        this.accountValueView.setNeedsLayout();
         this.formView.setNeedsLayout();
     },
 
@@ -284,6 +300,9 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
     cardValueView: JSOutlet(),
     cardValueLabel: JSOutlet(),
     cardValueButton: JSOutlet(),
+    accountValueView: JSOutlet(),
+    accountValueLabel: JSOutlet(),
+    closeAccountButton: JSOutlet(),
 
     viewDidLayoutSubviews: function(){
         this.scrollView.frame = this.view.bounds;
@@ -318,7 +337,7 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
         // this.creditCardField.frame = JSRect(insets.left, this.subscribeButton.frame.origin.y + this.subscribeButton.firstBaselineOffsetFromTop - this.creditCardField.firstBaselineOffsetFromTop, right - insets.left, this.creditCardField.intrinsicSize.height);
 
         scrollContentSize.height = origin.y + insets.bottom;
-        this.scrollView.scrollContentSize = scrollContentSize;
+        this.scrollView.contentSize = scrollContentSize;
     },
 
     contactChanged: function(){
@@ -386,6 +405,36 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
         this.updatePlanSelection();
         this.billingSaveSynchronizer.sync();
         this.community.memberLimit = plan.member_limit;
+    },
+
+    closeAccount: function(sender){
+        var title = JSBundle.mainBundle.localizedString("closeAccount.title", "CommunityBillingSettingsViewController");
+        var message = JSBundle.mainBundle.localizedString("closeAccount.message", "CommunityBillingSettingsViewController");
+        var alert = UIAlertController.initWithTitle(title, message);
+        alert.destructiveButtonStyler = UIButtonDefaultStyler.init();
+        alert.destructiveButtonStyler.font = alert.destructiveButtonStyler.font.fontWithPointSize(JSFont.Size.detail).fontWithWeight(JSFont.Weight.bold);
+        alert.destructiveButtonStyler.normalTitleColor = JSColor.initWithRGBA(129/255.0, 43/255.0, 0);
+        alert.destructiveButtonStyler.activeTitleColor = alert.destructiveButtonStyler.normalTitleColor.colorDarkenedByPercentage(0.2);
+        alert.addActionWithTitle(JSBundle.mainBundle.localizedString("closeAccount.confirm.title", "CommunityBillingSettingsViewController"), UIAlertAction.Style.destructive, function(){
+            this.service.cancelCommunityBilling(this.community.id, function(result){
+                if (result != Service.Result.success){
+                    this.showCloseError();
+                    return;
+                }
+                this.billing.status = Billing.Status.canceled;
+                this.updateAccountField();
+            }, this);
+        }, this);
+        alert.addActionWithTitle(JSBundle.mainBundle.localizedString("closeAccount.cancel.title", "CommunityBillingSettingsViewController"), UIAlertAction.Style.cancel);
+        alert.popupAdjacentToView(sender, UIPopupWindow.Placement.below);
+    },
+
+    showCloseError: function(){
+        var title = JSBundle.mainBundle.localizedString("closeError.title", "CommunityBillingSettingsViewController");
+        var message = JSBundle.mainBundle.localizedString("closeError.message", "CommunityBillingSettingsViewController");
+        var alert = UIAlertController.initWithTitle(title, message);
+        alert.addActionWithTitle(JSBundle.mainBundle.localizedString("closeError.dismiss", "CommunityBillingSettingsViewController"));
+        alert.popupCenteredInView(this.view.window);
     },
 
     priceFormatter: null,
