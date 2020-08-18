@@ -119,13 +119,13 @@ JSClass("CommunityBillingCardWindowController", UIWindowController, {
         this.cardField.createStripeToken(function(error, token){
             if (error !== null){
                 this.resetSaveActivity();
-                this.showCardError(JSBundle.mainBundle.localizedString("cardError.generic", "CommunityBillingCardWindowController"));
+                this.showCardError(this.localizedString("cardError.generic"));
                 return;
             }
             this.service.updateCommunityBillingCard(this.community.id, token.id, function(result, response){
                 if (result == Service.Result.badRequest){
                     this.resetSaveActivity();
-                    this.showCardError(JSBundle.mainBundle.localizedString("cardError.generic", "CommunityBillingCardWindowController"));
+                    this.showCardError(this.localizedString("cardError.generic"));
                     return;
                 }
                 if (result != Service.Result.success){
@@ -170,10 +170,10 @@ JSClass("CommunityBillingCardWindowController", UIWindowController, {
     },
 
     showGenericError: function(){
-        var title = JSBundle.mainBundle.localizedString("cardError.generic.title", "CommunityBillingCardWindowController");
-        var message = JSBundle.mainBundle.localizedString("cardError.generic.message", "CommunityBillingCardWindowController");
+        var title = this.localizedString("cardError.generic.title");
+        var message = this.localizedString("cardError.generic.message");
         var alert = UIAlertController.initWithTitle(title, message);
-        var dismissTitle = JSBundle.mainBundle.localizedString("cardError.generic.dismiss.title", "CommunityBillingCardWindowController");
+        var dismissTitle = this.localizedString("cardError.generic.dismiss.title");
         alert.addActionWithTitle(dismissTitle, UIAlertAction.Style.cancel);
         alert.popupCenteredInView(this.view.window);
     },

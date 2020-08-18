@@ -121,11 +121,11 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
                 this.trialStatusLabel.hidden = false;
                 var days = this.billing.daysUntilTrialEnd();
                 if (days === 0){
-                    this.trialStatusLabel.text = JSBundle.mainBundle.localizedString("trial.today.text", "CommunityBillingSettingsViewController");
+                    this.trialStatusLabel.text = this.localizedString("trial.today.text");
                 }else if (days === 1){
-                    this.trialStatusLabel.text = JSBundle.mainBundle.localizedString("trial.tomorrow.text", "CommunityBillingSettingsViewController");
+                    this.trialStatusLabel.text = this.localizedString("trial.tomorrow.text");
                 }else{
-                    var format = JSBundle.mainBundle.localizedString("trial.days.format", "CommunityBillingSettingsViewController");
+                    var format = this.localizedString("trial.days.format");
                     this.trialStatusLabel.text = String.initWithFormat(format, days);
                 }
             }
@@ -140,12 +140,12 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
 
     updateCardField: function(){
         if (this.billing.card !== null){
-            var format = JSBundle.mainBundle.localizedString("card.format", "CommunityBillingSettingsViewController");
+            var format = this.localizedString("card.format");
             this.cardValueLabel.text = String.initWithFormat(format, this.billing.card.brand, this.billing.card.last4);
-            this.cardValueButton.titleLabel.text = JSBundle.mainBundle.localizedString("changeCard.title", "CommunityBillingSettingsViewController");
+            this.cardValueButton.titleLabel.text = this.localizedString("changeCard.title");
         }else{
-            this.cardValueLabel.text = JSBundle.mainBundle.localizedString("noCard.text", "CommunityBillingSettingsViewController");
-            this.cardValueButton.titleLabel.text = JSBundle.mainBundle.localizedString("addCard.title", "CommunityBillingSettingsViewController");
+            this.cardValueLabel.text = this.localizedString("noCard.text");
+            this.cardValueButton.titleLabel.text = this.localizedString("addCard.title");
         }
         this.cardValueView.setNeedsLayout();
         this.formView.setNeedsLayout();
@@ -153,10 +153,10 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
 
     updateAccountField: function(){
         if (this.billing.status === Billing.Status.canceled){
-            this.accountValueLabel.text = JSBundle.mainBundle.localizedString("account.canceled.text", "CommunityBillingSettingsViewController");
+            this.accountValueLabel.text = this.localizedString("account.canceled.text");
             this.closeAccountButton.hidden = true;
         }else if (this.billing.status === Billing.Status.closed){
-            this.accountValueLabel.text = JSBundle.mainBundle.localizedString("account.closed.text", "CommunityBillingSettingsViewController");
+            this.accountValueLabel.text = this.localizedString("account.closed.text");
             this.closeAccountButton.hidden = true;
         }else{
             this.closeAccountButton.hidden = false;
@@ -204,21 +204,22 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
         var comparePlans = function(a, b){
             return a.price / a.months - b.price / b.months;
         };
-        var membersFormat = JSBundle.mainBundle.localizedString("plans.names.members.format", "CommunityBillingSettingsViewController");
-        var billingPeriodFormat = JSBundle.mainBundle.localizedString("plans.period.months.format", "CommunityBillingSettingsViewController");
+        var membersFormat = this.localizedString("plans.names.members.format");
+        var billingPeriodFormat = this.localizedString("plans.period.months.format");
+        var controller = this;
         var billingPeriodString = function(months){
             if (months === 1){
-                return JSBundle.mainBundle.localizedString("plans.period.monthly", "CommunityBillingSettingsViewController");
+                return controller.localizedString("plans.period.monthly");
             }
             if (months === 12){
-                return JSBundle.mainBundle.localizedString("plans.period.annually", "CommunityBillingSettingsViewController");
+                return controller.localizedString("plans.period.annually");
             }
             return String.initWithFormat(billingPeriodFormat, months);
         };
         var plans;
         var planView;
         var priceString;
-        var priceFormat = JSBundle.mainBundle.localizedString("plans.price.format", "CommunityBillingSettingsViewController");
+        var priceFormat = this.localizedString("plans.price.format");
         var attributedPrice;
         for (i = 0, l = this.planGroups.length; i < l; ++i){
             plans = this.planGroups[i];
@@ -228,7 +229,7 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
             planView.index = i;
             planView.addAction(this.planSelected, this);
             if (plan.member_limit === 0){
-                planView.nameLabel = JSBundle.mainBundle.localizedString("plans.names.unlimited", "CommunityBillingSettingsViewController");
+                planView.nameLabel = this.localizedString("plans.names.unlimited");
                 planView.enabled = true;
             }else{
                 planView.nameLabel.text = String.initWithFormat(membersFormat, plan.member_limit);
@@ -368,7 +369,7 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
 
     planSelected: function(sender){
         var plans = this.planGroups[sender.index];
-        var alert = UIAlertController.initWithTitle(sender.nameLabel.text, JSBundle.mainBundle.localizedString("plans.changeConfirmation.title", "CommunityBillingSettingsViewController"));
+        var alert = UIAlertController.initWithTitle(sender.nameLabel.text, this.localizedString("plans.changeConfirmation.title"));
         var plan;
         var action;
         for (var i = 0, l = plans.length; i < l; ++i){
@@ -376,7 +377,7 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
             action = this.createAlertActionForChangingToPlan(plan);
             alert.addAction(action);
         }
-        alert.addActionWithTitle(JSBundle.mainBundle.localizedString("plans.changeConfirmation.cancel.title", "CommunityBillingSettingsViewController"), UIAlertAction.Style.cancel);
+        alert.addActionWithTitle(this.localizedString("plans.changeConfirmation.cancel.title"), UIAlertAction.Style.cancel);
         alert.popupAdjacentToView(sender, UIPopupWindow.Placement.below);
     },
 
@@ -385,13 +386,13 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
         var title;
         var priceString = this.priceFormatter.stringFromNumber(plan.price / plan.months);
         if (plan.months === 1){
-            format = JSBundle.mainBundle.localizedString("plans.changeConfirmation.plan.monthly.format", "CommunityBillingSettingsViewController");
+            format = this.localizedString("plans.changeConfirmation.plan.monthly.format");
             title = String.initWithFormat(format, priceString);
         }else if (plan.months === 12){
-            format = JSBundle.mainBundle.localizedString("plans.changeConfirmation.plan.annually.format", "CommunityBillingSettingsViewController");
+            format = this.localizedString("plans.changeConfirmation.plan.annually.format");
             title = String.initWithFormat(format, priceString);
         }else{
-            format = JSBundle.mainBundle.localizedString("plans.changeConfirmation.plan.months.format", "CommunityBillingSettingsViewController");
+            format = this.localizedString("plans.changeConfirmation.plan.months.format");
             title = String.initWithFormat(format, priceString, plan.months);
         }
         var action = UIAlertAction.initWithTitle(title, UIAlertAction.Style.normal, function(){
@@ -408,14 +409,14 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
     },
 
     closeAccount: function(sender){
-        var title = JSBundle.mainBundle.localizedString("closeAccount.title", "CommunityBillingSettingsViewController");
-        var message = JSBundle.mainBundle.localizedString("closeAccount.message", "CommunityBillingSettingsViewController");
+        var title = this.localizedString("closeAccount.title");
+        var message = this.localizedString("closeAccount.message");
         var alert = UIAlertController.initWithTitle(title, message);
         alert.destructiveButtonStyler = UIButtonDefaultStyler.init();
         alert.destructiveButtonStyler.font = alert.destructiveButtonStyler.font.fontWithPointSize(JSFont.Size.detail).fontWithWeight(JSFont.Weight.bold);
         alert.destructiveButtonStyler.normalTitleColor = JSColor.initWithRGBA(129/255.0, 43/255.0, 0);
         alert.destructiveButtonStyler.activeTitleColor = alert.destructiveButtonStyler.normalTitleColor.colorDarkenedByPercentage(0.2);
-        alert.addActionWithTitle(JSBundle.mainBundle.localizedString("closeAccount.confirm.title", "CommunityBillingSettingsViewController"), UIAlertAction.Style.destructive, function(){
+        alert.addActionWithTitle(this.localizedString("closeAccount.confirm.title"), UIAlertAction.Style.destructive, function(){
             this.service.cancelCommunityBilling(this.community.id, function(result){
                 if (result != Service.Result.success){
                     this.showCloseError();
@@ -425,15 +426,13 @@ JSClass("CommunityBillingSettingsViewController", UIViewController, {
                 this.updateAccountField();
             }, this);
         }, this);
-        alert.addActionWithTitle(JSBundle.mainBundle.localizedString("closeAccount.cancel.title", "CommunityBillingSettingsViewController"), UIAlertAction.Style.cancel);
+        alert.addActionWithTitle(this.localizedString("closeAccount.cancel.title"), UIAlertAction.Style.cancel);
         alert.popupAdjacentToView(sender, UIPopupWindow.Placement.below);
     },
 
     showCloseError: function(){
-        var title = JSBundle.mainBundle.localizedString("closeError.title", "CommunityBillingSettingsViewController");
-        var message = JSBundle.mainBundle.localizedString("closeError.message", "CommunityBillingSettingsViewController");
-        var alert = UIAlertController.initWithTitle(title, message);
-        alert.addActionWithTitle(JSBundle.mainBundle.localizedString("closeError.dismiss", "CommunityBillingSettingsViewController"));
+        var alert = UIAlertController.initWithTitle(this.localizedString("closeError.title"), this.localizedString("closeError.message"));
+        alert.addActionWithTitle(this.localizedString("closeError.dismiss"));
         alert.popupCenteredInView(this.view.window);
     },
 

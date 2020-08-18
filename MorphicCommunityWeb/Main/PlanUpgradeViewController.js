@@ -48,7 +48,7 @@ JSClass("PlanUpgradeViewController", UIViewController, {
         this.priceFormatter.format = "¤#,##0.##";
         this.priceFormatter.multiplier = 0.01;
 
-        var messageFormat = JSBundle.mainBundle.localizedString("messageLabel.format", "PlanUpgradeViewController");
+        var messageFormat = this.localizedString("messageLabel.format");
         this.messageLabel.text = String.initWithFormat(messageFormat, this.community.memberLimit);
     },
 
@@ -119,14 +119,14 @@ JSClass("PlanUpgradeViewController", UIViewController, {
     
     update: function(){
         if (this.billing === null || this.plans === null){
-            this.planLabel.text = JSBundle.mainBundle.localizedString("plan.error", "PlanUpgradeViewController");
+            this.planLabel.text = this.localizedString("plan.error");
         }else{
             var currentPlan = this.findCurrentPlan();
             this.upgradedPlan = this.findUpgradedPlan(currentPlan);
             if (this.upgradedPlan === null){
-                this.planLabel.text = JSBundle.mainBundle.localizedString("plan.contactSales", "PlanUpgradeViewController");
+                this.planLabel.text = this.localizedString("plan.contactSales");
             }else{
-                var planFormat = JSBundle.mainBundle.localizedString("plan.format", "PlanUpgradeViewController");
+                var planFormat = this.localizedString("plan.format");
                 var priceString = this.priceFormatter.stringFromNumber(this.upgradedPlan.price / this.upgradedPlan.months);
                 this.planLabel.text = String.initWithFormat(planFormat, this.upgradedPlan.member_limit, priceString);
                 this.upgradeButton.enabled = true;
@@ -257,10 +257,8 @@ JSClass("PlanUpgradeViewController", UIViewController, {
     },
 
     showUpgradeError: function(){
-        var title = JSBundle.mainBundle.localizedString("upgradeError.title", "PlanUpgradeViewController");
-        var message = JSBundle.mainBundle.localizedString("upgradeError.message", "PlanUpgradeViewController");
-        var alert = UIAlertController.initWithTitle(title, message);
-        alert.addActionWithTitle(JSBundle.mainBundle.localizedString("upgradeError.dismiss.title", "PlanUpgradeViewController"), UIAlertAction.Style.cancel);
+        var alert = UIAlertController.initWithTitle(this.localizedString("upgradeError.title"), this.localizedString("upgradeError.message"));
+        alert.addActionWithTitle(this.localizedString("upgradeError.dismiss.title"), UIAlertAction.Style.cancel);
         alert.showCenteredInView(this.window);
     }
 

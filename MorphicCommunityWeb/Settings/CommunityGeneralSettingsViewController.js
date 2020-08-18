@@ -59,10 +59,10 @@ JSClass("CommunityGeneralSettingsViewController", UIViewController, {
 
     update: function(){
         if (this.community.memberLimit > 0){
-            var format = JSBundle.mainBundle.localizedString("fields.members.format", "CommunityGeneralSettingsViewController");
+            var format = this.localizedString("fields.members.format");
             this.membersValueLabel.text = String.initWithFormat(format, this.community.memberCount, this.community.memberLimit);
         }else{
-            this.membersValueLabel.text = JSBundle.mainBundle.localizedString("fields.members.unlimited", "CommunityGeneralSettingsViewController");
+            this.membersValueLabel.text = this.localizedString("fields.members.unlimited");
         }
     },
 
