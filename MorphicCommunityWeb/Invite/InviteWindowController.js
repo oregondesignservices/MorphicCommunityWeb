@@ -83,7 +83,7 @@ JSClass("InviteWindowController", UIWindowController, {
         this.service.sendCommunityInvitation(this.community.id, this.invitation.dictionaryRepresentation(), function(result, _, badRequest){
             if (result === Service.Result.badRequest){
                 if (badRequest.error === "malformed_email"){
-                    this.showErrorMessageForField(JSBundle.mainBundle.localizedString("errors.invalidEmail.message", "InviteWindowController"), this.toField);
+                    this.showErrorMessageForField(this.localizedString("errors.invalidEmail.message"), this.toField);
                     return;   
                 }
             }
@@ -97,10 +97,8 @@ JSClass("InviteWindowController", UIWindowController, {
     },
 
     showGeneralError: function(){
-        var title = JSBundle.mainBundle.localizedString("errors.general.title", "InviteWindowController");
-        var message = JSBundle.mainBundle.localizedString("errors.general.message", "InviteWindowController");
-        var alert = UIAlertController.initWithTitle(title, message);
-        alert.addActionWithTitle(JSBundle.mainBundle.localizedString("errors.dismiss", "InviteWindowController"), UIAlertAction.Style.cancel);
+        var alert = UIAlertController.initWithTitle(this.localizedString("errors.general.title"), this.localizedString("errors.general.message"));
+        alert.addActionWithTitle(this.localizedString("errors.dismiss"), UIAlertAction.Style.cancel);
         alert.popupCenteredInView(this.view, true);
     },
 
