@@ -188,10 +188,10 @@ JSClass("CommunityViewController", UIListViewController, {
     headerViewForListViewSection: function(listView, sectionIndex){
         var header = listView.dequeueReusableHeaderWithIdentifier("header", sectionIndex);
         if (sectionIndex === 0){
-            header.titleLabel.text = JSBundle.mainBundle.localizedString("header.bars", "CommunityViewController");
+            header.titleLabel.text = this.localizedString("header.bars");
             header.actionButton = this.addBarButton;
         }else{
-            header.titleLabel.text = JSBundle.mainBundle.localizedString("header.members", "CommunityViewController");
+            header.titleLabel.text = this.localizedString("header.members");
             header.actionButton = this.addMemberButton;
         }
         header.titleInsets.left = 34;

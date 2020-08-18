@@ -36,9 +36,9 @@ JSClass("CommunitySettingsWindowController", UIWindowController, {
     viewDidLoad: function(){
         CommunitySettingsWindowController.$super.viewDidLoad.call(this);
         this.categories = [
-            {title: JSBundle.mainBundle.localizedString("categories.general.title", "CommunitySettingsWindowController"), viewControllerSpec: "CommunityGeneralSettingsViewController"},
-            {title: JSBundle.mainBundle.localizedString("categories.permissions.title", "CommunitySettingsWindowController"), viewControllerSpec: "CommunityPermissionsSettingsViewController"},
-            {title: JSBundle.mainBundle.localizedString("categories.billing.title", "CommunitySettingsWindowController"), viewControllerSpec: "CommunityBillingSettingsViewController"}
+            {title: this.localizedString("categories.general.title"), viewControllerSpec: "CommunityGeneralSettingsViewController"},
+            {title: this.localizedString("categories.permissions.title"), viewControllerSpec: "CommunityPermissionsSettingsViewController"},
+            {title: this.localizedString("categories.billing.title"), viewControllerSpec: "CommunityBillingSettingsViewController"}
         ];
         this.communitySaveSynchronizer = JSSynchronizer.initWithAction(this.saveCommunity, this);
         this.communitySaveSynchronizer.pendingInterval = 0;

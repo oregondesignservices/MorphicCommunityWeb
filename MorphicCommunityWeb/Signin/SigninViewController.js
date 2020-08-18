@@ -22,6 +22,7 @@
 // * Consumer Electronics Association Foundation
 
 // #import UIKit
+// #import SecurityKit
 // #import "Service+Extensions.js"
 'use strict';
 
@@ -63,6 +64,7 @@ JSClass("SigninViewController", UIViewController, {
 
     viewDidAppear: function(animated){
         SigninViewController.$super.viewDidAppear.call(this, animated);
+        this.recallLogin();
     },
 
     viewWillDisappear: function(animated){
@@ -71,6 +73,34 @@ JSClass("SigninViewController", UIViewController, {
 
     viewDidDisappear: function(animated){
         SigninViewController.$super.viewDidDisappear.call(this, animated);
+    },
+
+    recallLogin: function(){
+        var loginKeychainId = this.service.defaults.valueForKey("loginKeychainId");
+        if (loginKeychainId !== null){
+            SECKeychain.device.get(loginKeychainId, function(login){
+                if (login !== null){
+                    this.usernameField.text = login.username;
+                    this.passwordField.text = login.password;
+                    this.updateValidation();
+                }
+            }, this);
+        }
+    },
+
+    saveLogin: function(username, password, completion, target){
+        var defaults = this.service.defaults;
+        var item = {id: defaults.valueForKey("loginKeychainId"), username: username, password: password};
+        if (item.id === null){
+            SECKeychain.device.add(item, function(id){
+                if (id !== null){
+                    defaults.setValueForKey(id, "loginKeychainId");
+                }
+            });
+        }else{
+            SECKeychain.device.update(item, function(id){
+            });
+        }
     },
 
     // MARK: - Signin Action
@@ -87,7 +117,9 @@ JSClass("SigninViewController", UIViewController, {
             return;
         }
         this.setFieldsEnabled(false);
-        this.service.authenticateWithUsername(this.usernameField.text, this.passwordField.text, function(result, auth){
+        var username = this.usernameField.text;
+        var password = this.passwordField.text;
+        this.service.authenticateWithUsername(username, password, function(result, auth){
             if (result !== Service.Result.success || auth === null){
                 this.setFieldsEnabled(true);
                 this.view.window.firstResponder = this.passwordField;
@@ -102,12 +134,16 @@ JSClass("SigninViewController", UIViewController, {
                 alert.popupCenteredInView(this.view, true);
                 return;
             }
+            this.saveLogin(username, password);
             this.delegate.signinViewControllerDidSignin(this, auth);
         }, this);
     },
 
     forgotPassword: function(){
-        // TODO:
+        var application = this.view.window.application;
+        var url = JSURL.initWithString(application.getenv("PASSWORD_FRONT_END_URL"));
+        url.appendPathComponents(["password", "reset"]);
+        application.openURL(url);
     },
 
     textFieldDidReceiveEnter: function(textField){

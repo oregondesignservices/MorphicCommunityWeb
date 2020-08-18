@@ -130,7 +130,7 @@ JSClass("BarDetailViewController", UIViewController, {
     },
 
     updateCaption: function(){
-        this.barEditor.captionLabel.text = String.initWithFormat(JSBundle.mainBundle.localizedString("preview.caption", "BarDetailViewController"), this.bar.name);
+        this.barEditor.captionLabel.text = String.initWithFormat(this.localizedString("preview.caption"), this.bar.name);
     },
 
     errorView: JSOutlet(),
@@ -220,16 +220,15 @@ JSClass("BarDetailViewController", UIViewController, {
     deleted: false,
 
     confirmDelete: function(sender){
-        var message = JSBundle.mainBundle.localizedString("deleteConfirmation.message", "BarDetailViewController");
-        var alert = UIAlertController.initWithTitle(null, message);
+        var alert = UIAlertController.initWithTitle(null, this.localizedString("deleteConfirmation.message"));
         alert.destructiveButtonStyler = UIButtonDefaultStyler.init();
         alert.destructiveButtonStyler.font = alert.destructiveButtonStyler.font.fontWithPointSize(JSFont.Size.detail).fontWithWeight(JSFont.Weight.bold);
         alert.destructiveButtonStyler.normalTitleColor = JSColor.initWithRGBA(129/255.0, 43/255.0, 0);
         alert.destructiveButtonStyler.activeTitleColor = alert.destructiveButtonStyler.normalTitleColor.colorDarkenedByPercentage(0.2);
-        alert.addActionWithTitle(JSBundle.mainBundle.localizedString("deleteConfirmation.delete", "BarDetailViewController"), UIAlertAction.Style.destructive, function(){
+        alert.addActionWithTitle(this.localizedString("deleteConfirmation.delete"), UIAlertAction.Style.destructive, function(){
             this.deleteBar();
         }, this);
-        alert.addActionWithTitle(JSBundle.mainBundle.localizedString("deleteConfirmation.cancel", "BarDetailViewController"), UIAlertAction.Style.cancel, function(){
+        alert.addActionWithTitle(this.localizedString("deleteConfirmation.cancel"), UIAlertAction.Style.cancel, function(){
         }, this);
         if (sender instanceof UIView){
             alert.popupAdjacentToView(sender, UIPopupWindow.Placement.below, true);
@@ -253,15 +252,15 @@ JSClass("BarDetailViewController", UIViewController, {
                 var title;
                 var message;
                 if (badRequest !== null && badRequest.error === "cannot_delete_used"){
-                    title = JSBundle.mainBundle.localizedString("deleteError.inUse.title", "BarDetailViewController");
-                    message = JSBundle.mainBundle.localizedString("deleteError.inUse.message", "BarDetailViewController");
+                    title = this.localizedString("deleteError.inUse.title");
+                    message = this.localizedString("deleteError.inUse.message");
                 }else{
-                    title = JSBundle.mainBundle.localizedString("deleteError.general.title", "BarDetailViewController");
-                    message = JSBundle.mainBundle.localizedString("deleteError.general.message", "BarDetailViewController");
+                    title = this.localizedString("deleteError.general.title");
+                    message = this.localizedString("deleteError.general.message");
                 }
                 
                 var alert = UIAlertController.initWithTitle(title, message);
-                alert.addActionWithTitle(JSBundle.mainBundle.localizedString("deleteError.dismiss", "BarDetailViewController"), UIAlertAction.Style.cancel, function(){
+                alert.addActionWithTitle(this.localizedString("deleteError.dismiss"), UIAlertAction.Style.cancel, function(){
                 }, this);
                 alert.popupCenteredInView(this.view, true);
                 return;
@@ -273,12 +272,11 @@ JSClass("BarDetailViewController", UIViewController, {
     },
 
     confirmMakeDefault: function(sender){
-        var message = JSBundle.mainBundle.localizedString("defaultConfirmation.message", "BarDetailViewController");
-        var alert = UIAlertController.initWithTitle(null, message);
-        alert.addActionWithTitle(JSBundle.mainBundle.localizedString("defaultConfirmation.delete", "BarDetailViewController"), UIAlertAction.Style.default, function(){
+        var alert = UIAlertController.initWithTitle(null, this.localizedString("defaultConfirmation.message"));
+        alert.addActionWithTitle(this.localizedString("defaultConfirmation.delete"), UIAlertAction.Style.default, function(){
             this.makeDefault();
         }, this);
-        alert.addActionWithTitle(JSBundle.mainBundle.localizedString("defaultConfirmation.cancel", "BarDetailViewController"), UIAlertAction.Style.cancel);
+        alert.addActionWithTitle(this.localizedString("defaultConfirmation.cancel"), UIAlertAction.Style.cancel);
         alert.defaultButtonStyler = UIButtonDefaultStyler.init();
         alert.defaultButtonStyler.font = alert.defaultButtonStyler.font.fontWithPointSize(JSFont.Size.detail).fontWithWeight(JSFont.Weight.bold);
         alert.defaultButtonStyler.normalTitleColor = JSColor.initWithRGBA(0, 41/255.0, 87/255.0);
@@ -295,10 +293,8 @@ JSClass("BarDetailViewController", UIViewController, {
         community.default_bar_id = this.bar.id;
         this.service.saveCommunity(community, function(result, response){
             if (result !== Service.Result.success){
-                var title = JSBundle.mainBundle.localizedString("defaultError.general.title", "BarDetailViewController");
-                var message = JSBundle.mainBundle.localizedString("defaultError.general.message", "BarDetailViewController");
-                var alert = UIAlertController.initWithTitle(title, message);
-                alert.addActionWithTitle(JSBundle.mainBundle.localizedString("defaultError.dismiss", "BarDetailViewController"), UIAlertAction.Style.cancel);
+                var alert = UIAlertController.initWithTitle(this.localizedString("defaultError.general.title"), this.localizedString("defaultError.general.message"));
+                alert.addActionWithTitle(this.localizedString("defaultError.dismiss"), UIAlertAction.Style.cancel);
                 alert.popupCenteredInView(this.view, true);
                 return;
             }

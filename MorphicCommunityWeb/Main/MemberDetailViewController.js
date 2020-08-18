@@ -189,7 +189,7 @@ JSClass("MemberDetailViewController", UIViewController, {
     },
 
     updateBarLabel: function(){
-        var format = JSBundle.mainBundle.localizedString("barLabel.textFormat", "MemberDetailViewController");
+        var format = this.localizedString("barLabel.textFormat");
         this.barLabel.text = String.initWithFormat(format, this.member.firstName || this.member.lastName || this.member.placeholderName);
     },
 
@@ -220,13 +220,13 @@ JSClass("MemberDetailViewController", UIViewController, {
             return a.name.localeCompare(b.name);
         });
         this.barPopupButton.removeAllItems();
-        var defaultFormat = JSBundle.mainBundle.localizedString("barPopupButton.defaultFormat", "MemberDetailViewController");
+        var defaultFormat = this.localizedString("barPopupButton.defaultFormat");
         this.barPopupButton.addItemWithTitle(String.initWithFormat(defaultFormat, defaultBar.name), "__default__");
         for (i = 0, l = bars.length; i < l; ++i){
             bar = bars[i];
             this.barPopupButton.addItemWithTitle(bar.name, bar.id);
         }
-        this.barPopupButton.addItemWithTitle(JSBundle.mainBundle.localizedString("barPopupButton.custom", "MemberDetailViewController"), "__custom__");
+        this.barPopupButton.addItemWithTitle(this.localizedString("barPopupButton.custom"), "__custom__");
         this.barPopupButton.selectedTag = selectedTag;
     },
 
@@ -237,7 +237,7 @@ JSClass("MemberDetailViewController", UIViewController, {
                 break;
             case Member.State.invited:
                 this.sendInvitationButton.hidden = false;
-                this.sendInvitationButton.titleLabel.text = JSBundle.mainBundle.localizedString("resendInviteButton.title", "MemberDetailViewController");
+                this.sendInvitationButton.titleLabel.text = this.localizedString("resendInviteButton.title");
                 break;
             case Member.State.active:
                 this.sendInvitationButton.hidden = true;
@@ -247,9 +247,9 @@ JSClass("MemberDetailViewController", UIViewController, {
 
     updateCaption: function(){
         if (this.member.firstName){
-            this.barEditor.captionLabel.text = String.initWithFormat(JSBundle.mainBundle.localizedString("preview.caption", "MemberDetailViewController"), this.member.firstName);
+            this.barEditor.captionLabel.text = String.initWithFormat(this.localizedString("preview.caption"), this.member.firstName);
         }else{
-            this.barEditor.captionLabel.text = JSBundle.mainBundle.localizedString("preview.unnamedCaption", "MemberDetailViewController");
+            this.barEditor.captionLabel.text = this.localizedString("preview.unnamedCaption");
         }
     },
 
@@ -410,16 +410,15 @@ JSClass("MemberDetailViewController", UIViewController, {
     deleted: false,
 
     confirmDelete: function(sender){
-        var message = JSBundle.mainBundle.localizedString("deleteConfirmation.message", "MemberDetailViewController");
-        var alert = UIAlertController.initWithTitle(null, message);
+        var alert = UIAlertController.initWithTitle(null, this.localizedString("deleteConfirmation.message"));
         alert.destructiveButtonStyler = UIButtonDefaultStyler.init();
         alert.destructiveButtonStyler.font = alert.destructiveButtonStyler.font.fontWithPointSize(JSFont.Size.detail).fontWithWeight(JSFont.Weight.bold);
         alert.destructiveButtonStyler.normalTitleColor = JSColor.initWithRGBA(129/255.0, 43/255.0, 0);
         alert.destructiveButtonStyler.activeTitleColor = alert.destructiveButtonStyler.normalTitleColor.colorDarkenedByPercentage(0.2);
-        alert.addActionWithTitle(JSBundle.mainBundle.localizedString("deleteConfirmation.delete", "MemberDetailViewController"), UIAlertAction.Style.destructive, function(){
+        alert.addActionWithTitle(this.localizedString("deleteConfirmation.delete"), UIAlertAction.Style.destructive, function(){
             this.deleteMember();
         }, this);
-        alert.addActionWithTitle(JSBundle.mainBundle.localizedString("deleteConfirmation.cancel", "MemberDetailViewController"), UIAlertAction.Style.cancel, function(){
+        alert.addActionWithTitle(this.localizedString("deleteConfirmation.cancel"), UIAlertAction.Style.cancel, function(){
         }, this);
         if (sender instanceof UIView){
             alert.popupAdjacentToView(sender, UIPopupWindow.Placement.below, true);
@@ -443,15 +442,15 @@ JSClass("MemberDetailViewController", UIViewController, {
                 var title;
                 var message;
                 if (badRequest !== null && badRequest.error === "cannot_delete_self"){
-                    title = JSBundle.mainBundle.localizedString("deleteError.self.title", "MemberDetailViewController");
-                    message = JSBundle.mainBundle.localizedString("deleteError.self.message", "MemberDetailViewController");
+                    title = this.localizedString("deleteError.self.title");
+                    message = this.localizedString("deleteError.self.message");
                 }else{
-                    title = JSBundle.mainBundle.localizedString("deleteError.general.title", "MemberDetailViewController");
-                    message = JSBundle.mainBundle.localizedString("deleteError.general.message", "MemberDetailViewController");
+                    title = this.localizedString("deleteError.general.title");
+                    message = this.localizedString("deleteError.general.message");
                 }
                 
                 var alert = UIAlertController.initWithTitle(title, message);
-                alert.addActionWithTitle(JSBundle.mainBundle.localizedString("deleteError.dismiss", "MemberDetailViewController"), UIAlertAction.Style.cancel, function(){
+                alert.addActionWithTitle(this.localizedString("deleteError.dismiss"), UIAlertAction.Style.cancel, function(){
                 }, this);
                 alert.popupCenteredInView(this.view, true);
                 return;

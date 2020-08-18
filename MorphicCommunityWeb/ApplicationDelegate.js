@@ -175,6 +175,7 @@ JSClass("ApplicationDelegate", JSObject, {
     registerDefaults: function(){
         this.defaults = JSUserDefaults.shared;
         this.defaults.registerDefaults({
+            loginKeychainId: null,
             selectedCommunityId: null,
         });
     },
