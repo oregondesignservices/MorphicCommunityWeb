@@ -30,6 +30,7 @@
 // #import "Theme.js"
 // #import "StripeElementControl.js"
 // #import "AuthenticationWindowController.js"
+// #import "AboutWindowController.js"
 'use strict';
 
 (function(){
@@ -72,6 +73,10 @@ JSClass("ApplicationDelegate", JSObject, {
         }else{
             item.keyEquivalent = "y";
         }
+        menu.addItem(item);
+        item = UIMenuItem.initWithTitle("About Morphic Community", "showAbout");
+        item.keyEquivalent = "a";
+        item.keyModifiers = UIEvent.Modifier.shift;
         menu.addItem(item);
         return menu;
     },
@@ -164,6 +169,8 @@ JSClass("ApplicationDelegate", JSObject, {
             this.authCompletion = null;
             this.authWindowController = null;
             completion(false);
+        }else if (windowController === this.aboutWindowController){
+            this.aboutWindowController = null;
         }
     },
 
@@ -276,7 +283,19 @@ JSClass("ApplicationDelegate", JSObject, {
         }catch (e){
             logger.info("Cannot delete from sessionStorage: %{error}", e);
         }
-    }
+    },
+
+    // MARK: - About Window
+
+    aboutWindowController: null,
+
+    showAbout: function(){
+        if (this.aboutWindowController === null){
+            this.aboutWindowController = AboutWindowController.initWithSpecName("AboutWindowController");
+            this.aboutWindowController.delegate = this;
+        }
+        this.aboutWindowController.makeKeyAndOrderFront();
+    },
 
 });
 
