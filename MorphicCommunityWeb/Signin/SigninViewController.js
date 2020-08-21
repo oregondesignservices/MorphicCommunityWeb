@@ -75,6 +75,8 @@ JSClass("SigninViewController", UIViewController, {
         SigninViewController.$super.viewDidDisappear.call(this, animated);
     },
 
+    // MARK: - Saved Login
+
     recallLogin: function(){
         var loginKeychainId = this.service.defaults.valueForKey("loginKeychainId");
         if (loginKeychainId !== null){
