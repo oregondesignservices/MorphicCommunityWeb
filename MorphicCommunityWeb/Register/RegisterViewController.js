@@ -117,7 +117,7 @@ JSClass("RegisterViewController", UIViewController, {
         }else{
             this.service.registerWithUsername(username, password, this.firstNameField.text, this.lastNameField.text, function(result, auth, badRequest){
                 if (result === Service.Result.success){
-                    this.service.signin(auth);
+                    this.service.signin(username, auth);
                     this.createCommunity();
                     this.saveLogin(username, password);
                     return;

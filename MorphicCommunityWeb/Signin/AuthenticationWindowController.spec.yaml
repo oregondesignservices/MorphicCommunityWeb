@@ -1,0 +1,89 @@
+File's Owner: /WindowController
+
+WindowController:
+  class: AuthenticationWindowController
+  window:
+    class: UIWindow
+    frame: 0,0,380,0
+    title: .window.title
+    backgroundColor: white
+    heightTracksContent: true
+    isUserMovable: false
+    allowsClose: true
+    firstResponder: /PasswordField
+    contentView:
+      subviews:
+        - /LogoImageView
+        - /SigninForm
+
+  outlets:
+    logoImageView: /LogoImageView
+    form: /SigninForm
+    usernameValueLabel: /UsernameValueLabel
+    passwordField: /PasswordField
+    signinButton: /SigninButton
+    forgotPasswordButton: /ForgotPasswordButton
+
+SigninForm:
+  class: FormView
+  labelSpacing: 7
+  fieldSpacing: 7
+  fields:
+    -
+      label: /UsernameLabel
+      view: /UsernameValueLabel
+    -
+      label: /PasswordLabel
+      view: /PasswordField
+    -
+      view: /SigninButton
+      extraSpacing:
+        top: 13
+    -
+      view: /ForgotPasswordButton
+
+LogoImageView:
+  class: UIImageView
+  image: Logo
+  frame: 0,0,54,54
+
+UsernameLabel:
+  class: UILabel
+  text: .usernameLabel.text
+
+UsernameValueLabel:
+  class: UILabel
+  textInsets: 3,0
+
+PasswordLabel:
+  class: UILabel
+  text: .passwordLabel.text
+
+PasswordField:
+  class: UITextField
+  secureEntry: true
+  delegate: /WindowController
+
+SigninButton:
+  class: UIButton
+  title: .signinButton.title
+  styler:
+    class: UIButtonCustomStyler
+    normalBackgroundColor:
+      rgba: 0,129,69
+    normalTitleColor: white
+    titleInsets: 3,10
+    cornerRadius: 2
+  target: /WindowController
+  action: signin
+  enabled: false
+
+ForgotPasswordButton:
+  class: UIButton
+  title: .forgotPasswordButton.title
+  styler: custom
+  cursor: pointingHand
+  font:
+    size: detail
+  target: /WindowController
+  action: forgotPassword
