@@ -216,4 +216,15 @@ JSClass("ApplicationDelegate", JSObject, {
 
 });
 
+var orginalUIActivityIndicatorViewInitWithSpec = UIActivityIndicatorView.prototype.initWithSpec;
+
+UIActivityIndicatorView.definePropertiesFromExtensions({
+    initWithSpec: function(spec){
+        orginalUIActivityIndicatorViewInitWithSpec.call(this, spec);
+        if (spec.containsKey("speed")){
+            this._speed = spec.valueForKey("speed");
+        }
+    }
+});
+
 })();

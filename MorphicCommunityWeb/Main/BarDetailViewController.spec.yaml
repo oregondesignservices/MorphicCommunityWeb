@@ -21,7 +21,8 @@ BarDetailViewController:
 ActivityIndicator:
   frame: 0,0,20,20
   class: UIActivityIndicatorView
-  style: dark
+  spriteImage: MorphicActivityIndicatorSpriteDark
+  speed: 2.25
   hidesWhenStopped: true
 
 SyncIndicator:

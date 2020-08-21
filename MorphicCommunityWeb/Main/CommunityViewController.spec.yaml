@@ -81,7 +81,8 @@ AddMemberButton:
 
 ActivityIndicator:
   class: UIActivityIndicatorView
-  style: light
+  spriteImage: MorphicActivityIndicatorSpriteLight
+  speed: 2.25
   frame: 0,0,20,20
   hidden: true
   hidesWhenStopped: true
