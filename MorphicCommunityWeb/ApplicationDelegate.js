@@ -116,6 +116,7 @@ JSClass("ApplicationDelegate", JSObject, {
                 if (login !== null && login.username === username){
                     this.service.authenticateWithUsername(username, login.password, function(result, auth){
                         if (result === Service.Result.success){
+                            this.service.signin(username, auth);
                             completion(true);
                         }else{
                             this.promptForReauthentication(username, completion);
