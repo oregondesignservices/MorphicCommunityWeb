@@ -54,8 +54,8 @@ JSClass("SigninScene", UIScene, {
         this.signinViewController.service = service;
     },
 
-    signinViewControllerDidSignin: function(vc, auth){
-        this.delegate.signinSceneDidComplete(this, auth);
+    signinViewControllerDidSignin: function(vc, username, auth){
+        this.delegate.signinSceneDidComplete(this, username, auth);
     }
 
 });
