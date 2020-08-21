@@ -28,6 +28,12 @@
 
 var logger = JSLog("morphic", "service");
 
+JSProtocol("ServiceDelegate", JSProtocol, {
+
+    serviceRequiresAuthentication: function(service, username, completion){}
+
+});
+
 JSClass("Service", JSObject, {
 
     initWithBaseURL: function(baseURL, urlSession){
@@ -42,11 +48,13 @@ JSClass("Service", JSObject, {
 
     authToken: null,
     user: null,
+    username: null,
     version: "v1",
 
-    signin: function(auth){
+    signin: function(username, auth){
         this.authToken = auth.token;
         this.user = auth.user;
+        this.username = username;
         this.notificationCenter.post(Service.Notification.userDidSignin, this);
     },
 
@@ -88,6 +96,9 @@ JSClass("Service", JSObject, {
         return this.sendRequest(request, completion, target);
     },
 
+    waitingForAuthentication: false,
+    unauthorizedRequestQueue: null,
+
     sendRequest: function(request, completion, target){
         var task = this.urlSession.dataTaskWithRequest(request, function(error){
             if (error !== null){
@@ -99,6 +110,29 @@ JSClass("Service", JSObject, {
             if (task.response !== null){
                 if (task.response.statusClass != JSURLResponse.StatusClass.success){
                     if (task.response.statusCode === JSURLResponse.StatusCode.unauthorized){
+                        if (this.delegate && this.delegate.serviceRequiresAuthentication){
+                            if (this.unauthorizedRequestQueue === null){
+                                this.unauthorizedRequestQueue = [];
+                            }
+                            this.unauthorizedRequestQueue.push({
+                                request: request,
+                                completion: completion,
+                                target: target
+                            });
+                            if (!this.waitingForAuthentication){
+                                this.waitingForAuthentication = true;
+                                var service = this;
+                                this.delegate.serviceRequiresAuthentication(this, this.username, function(success){
+                                    service.waitingForAuthentication = false;
+                                    if (success){
+                                        service.retryUnauthorizedRequestQueue();
+                                    }else{
+                                        service.failUnauthorizedRequestQueue();
+                                    }
+                                });
+                            }
+                            return;
+                        }
                         result = Service.Result.needsAuthentiation;
                     }else if (task.response.statusCode === JSURLResponse.StatusCode.internalServerError){
                         result = Service.Result.serverError;
@@ -114,10 +148,31 @@ JSClass("Service", JSObject, {
                 }
             }
             completion.call(target, result, object, badRequest);
-        });
+        }, this);
         task.resume();
         return task;
-    }
+    },
+
+    retryUnauthorizedRequestQueue: function(){
+        var item;
+        var queue = this.unauthorizedRequestQueue;
+        this.unauthorizedRequestQueue = null;
+        for (var i = 0, l = queue.length; i < l; ++i){
+            item = queue[i];
+            item.request.headerMap.set("Authorization", "Bearer " + this.authToken);
+            this.sendRequest(item.request, item.completion, item.target);
+        }
+    },
+
+    failUnauthorizedRequestQueue: function(){
+        var item;
+        var queue = this.unauthorizedRequestQueue;
+        this.unauthorizedRequestQueue = null;
+        for (var i = 0, l = queue.length; i < l; ++i){
+            item = queue[i];
+            item.completion.call(item.target, Service.Result.needsAuthentiation, null, null);
+        }
+    },
 
 
 });

@@ -1,5 +1,5 @@
 en:
-  window.title: Signin to Morphic Community
+  window.title: Re-enter your Morphic Password
   usernameLabel.text: Email Address
   passwordLabel.text: Password
   signinButton.title: Signin

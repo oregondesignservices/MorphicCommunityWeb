@@ -22,6 +22,7 @@
 // * Consumer Electronics Association Foundation
 
 // #import UIKit
+// #import SecurityKit
 // #import "SigninScene.js"
 // #import "RegisterScene.js"
 // #import "MainScene.js"
@@ -29,6 +30,8 @@
 // #import "Theme.js"
 // #import "StripeElementControl.js"
 // #import "TimeZones.js"
+// #import "AuthenticationWindowController.js"
+// #import "AboutWindowController.js"
 'use strict';
 
 (function(){
@@ -45,6 +48,7 @@ JSClass("ApplicationDelegate", JSObject, {
         this.baseURL = application.baseURL;
         this.registerDefaults();
         this.service = Service.initWithBaseURL(JSURL.initWithString(application.getenv('MORPHIC_SERVER_URL')));
+        this.service.delegate = this;
         this.service.notificationCenter = JSNotificationCenter.shared;
         this.service.defaults = this.defaults;
         this.service.notificationCenter.addObserver(Service.Notification.userDidSignin, this.service, this.userDidSignin, this);
@@ -71,6 +75,10 @@ JSClass("ApplicationDelegate", JSObject, {
             item.keyEquivalent = "y";
         }
         menu.addItem(item);
+        item = UIMenuItem.initWithTitle("About Morphic Community", "showAbout");
+        item.keyEquivalent = "a";
+        item.keyModifiers = UIEvent.Modifier.shift;
+        menu.addItem(item);
         return menu;
     },
 
@@ -88,6 +96,7 @@ JSClass("ApplicationDelegate", JSObject, {
 
     recallUser: function(){
         this.service.authToken = this.getSessionValue("authToken");
+        this.service.username = this.getSessionValue("username");
         var userJSON = this.getSessionValue("user");
         if (userJSON !== null){
             this.service.user = JSON.parse(userJSON);
@@ -96,12 +105,74 @@ JSClass("ApplicationDelegate", JSObject, {
 
     rememberUser: function(){
         this.setSessionValue("authToken", this.service.authToken);
+        this.setSessionValue("username", this.service.username);
         this.setSessionValue("user", JSON.stringify(this.service.user));
     },
 
     forgetUser: function(){
         this.deleteSessionValue("authToken");
+        this.deleteSessionValue("username");
         this.deleteSessionValue("user");
+    },
+
+    serviceRequiresAuthentication: function(service, username, completion){
+        var loginKeychainId = this.service.defaults.valueForKey("loginKeychainId");
+        if (loginKeychainId !== null){
+            SECKeychain.device.get(loginKeychainId, function(login){
+                if (login !== null && login.username === username){
+                    this.service.authenticateWithUsername(username, login.password, function(result, auth){
+                        if (result === Service.Result.success){
+                            this.service.signin(username, auth);
+                            completion(true);
+                        }else{
+                            this.promptForReauthentication(username, completion);
+                        }
+                    }, this);
+                }else{
+                    this.promptForReauthentication(username, completion);
+                }
+            }, this);
+        }else{
+            this.promptForReauthentication(username, completion);
+        }
+    },
+
+    authWindowController: null,
+    authCompletion: null,
+
+    promptForReauthentication: function(username, completion){
+        if (username === null){
+            completion(false);
+            return;
+        }
+        this.authWindowController = AuthenticationWindowController.initWithSpecName("AuthenticationWindowController");
+        this.authWindowController.delegate = this;
+        this.authWindowController.authenticationDelegate = this;
+        this.authWindowController.username = username;
+        this.authWindowController.service = this.service;
+        UIApplication.shared.mainWindow.modal = this.authWindowController.window;
+        this.authCompletion = completion;
+        this.authWindowController.makeKeyAndOrderFront();
+    },
+
+    authenticationWindowControllerDidSignin: function(controller, username, auth){
+        var completion = this.authCompletion;
+        this.authCompletion = null;
+        this.authWindowController = null;
+        controller.close();
+        this.service.signin(username, auth);
+        completion(true);
+    },
+
+    windowControllerDidClose: function(windowController){
+        if (windowController === this.authWindowController){
+            var completion = this.authCompletion;
+            this.authCompletion = null;
+            this.authWindowController = null;
+            completion(false);
+        }else if (windowController === this.aboutWindowController){
+            this.aboutWindowController = null;
+        }
     },
 
     // MARK: - Scene Selection
@@ -127,8 +198,8 @@ JSClass("ApplicationDelegate", JSObject, {
         signinScene.show();
     },
 
-    signinSceneDidComplete: function(signinScene, auth){
-        this.service.signin(auth);
+    signinSceneDidComplete: function(signinScene, username, auth){
+        this.service.signin(username, auth);
         signinScene.close();
         this.showMain();
     },
@@ -213,8 +284,31 @@ JSClass("ApplicationDelegate", JSObject, {
         }catch (e){
             logger.info("Cannot delete from sessionStorage: %{error}", e);
         }
-    }
+    },
 
+    // MARK: - About Window
+
+    aboutWindowController: null,
+
+    showAbout: function(){
+        if (this.aboutWindowController === null){
+            this.aboutWindowController = AboutWindowController.initWithSpecName("AboutWindowController");
+            this.aboutWindowController.delegate = this;
+        }
+        this.aboutWindowController.makeKeyAndOrderFront();
+    },
+
+});
+
+var orginalUIActivityIndicatorViewInitWithSpec = UIActivityIndicatorView.prototype.initWithSpec;
+
+UIActivityIndicatorView.definePropertiesFromExtensions({
+    initWithSpec: function(spec){
+        orginalUIActivityIndicatorViewInitWithSpec.call(this, spec);
+        if (spec.containsKey("speed")){
+            this._speed = spec.valueForKey("speed");
+        }
+    }
 });
 
 })();

@@ -22,6 +22,7 @@
 // * Consumer Electronics Association Foundation
 
 // #import UIKit
+// #import SecurityKit
 // #import "Service+Extensions.js"
 'use strict';
 
@@ -71,6 +72,23 @@ JSClass("RegisterViewController", UIViewController, {
         RegisterViewController.$super.viewDidDisappear.call(this, animated);
     },
 
+    // MARK: - Saved Login
+
+    saveLogin: function(username, password, completion, target){
+        var defaults = this.service.defaults;
+        var item = {id: defaults.valueForKey("loginKeychainId"), username: username, password: password};
+        if (item.id === null){
+            SECKeychain.device.add(item, function(id){
+                if (id !== null){
+                    defaults.setValueForKey(id, "loginKeychainId");
+                }
+            });
+        }else{
+            SECKeychain.device.update(item, function(id){
+            });
+        }
+    },
+
     // MARK: - Registration
 
     logoImageView: JSOutlet(),
@@ -91,14 +109,17 @@ JSClass("RegisterViewController", UIViewController, {
             this.showErrorMessageForField(JSBundle.mainBundle.localizedString("errors.passwordMismatch.message", "RegisterScene"), this.confirmPasswordField);
             return;
         }
+        var username = this.emailField.text;
+        var password = this.passwordField.text;
         this.setFieldsEnabled(false);
         if (this.service.authToken !== null){
             this.createCommunity();
         }else{
-            this.service.registerWithUsername(this.emailField.text, this.passwordField.text, this.firstNameField.text, this.lastNameField.text, function(result, auth, badRequest){
+            this.service.registerWithUsername(username, password, this.firstNameField.text, this.lastNameField.text, function(result, auth, badRequest){
                 if (result === Service.Result.success){
-                    this.service.signin(auth);
+                    this.service.signin(username, auth);
                     this.createCommunity();
+                    this.saveLogin(username, password);
                     return;
                 }
                 this.setFieldsEnabled(true);

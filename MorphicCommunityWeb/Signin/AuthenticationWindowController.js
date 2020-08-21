@@ -26,24 +26,18 @@
 // #import "Service+Extensions.js"
 'use strict';
 
-JSProtocol("SigninViewControllerDelegate", JSProtocol, {
+JSProtocol("AuthenticationWindowControllerDelegate", JSProtocol, {
 
-    signinViewControllerDidSignin: function(viewController, username, auth){ }
+    authenticationWindowControllerDidSignin: function(controller, username, auth){ }
 
 });
 
-JSClass("SigninViewController", UIViewController, {
-
-    initWithSpec: function(spec){
-        SigninViewController.$super.initWithSpec.call(this, spec);
-        if (spec.containsKey("delegate")){
-            this.delegate = spec.valueForKey("delegate");
-        }
-    },
+JSClass("AuthenticationWindowController", UIWindowController, {
 
     service: null,
+    username: null,
 
-    delegate: null,
+    authenticationDelegate: null,
 
     // MARK: - View Lifecycle
 
@@ -52,42 +46,25 @@ JSClass("SigninViewController", UIViewController, {
     },
 
     viewDidLoad: function(){
-        SigninViewController.$super.viewDidLoad.call(this);
-        this.forgotPasswordButton.cursor = UICursor.pointingHand;
+        AuthenticationWindowController.$super.viewDidLoad.call(this);
         this.forgotPasswordButton.titleLabel.textColor = JSColor.initWithWhite(0.4);
-        this.signinButton.enabled = false;
+        this.usernameValueLabel.text = this.username;
     },
 
     viewWillAppear: function(animated){
-        SigninViewController.$super.viewWillAppear.call(this, animated);
+        AuthenticationWindowController.$super.viewWillAppear.call(this, animated);
     },
 
     viewDidAppear: function(animated){
-        SigninViewController.$super.viewDidAppear.call(this, animated);
-        this.recallLogin();
+        AuthenticationWindowController.$super.viewDidAppear.call(this, animated);
     },
 
     viewWillDisappear: function(animated){
-        SigninViewController.$super.viewWillDisappear.call(this, animated);
+        AuthenticationWindowController.$super.viewWillDisappear.call(this, animated);
     },
 
     viewDidDisappear: function(animated){
-        SigninViewController.$super.viewDidDisappear.call(this, animated);
-    },
-
-    // MARK: - Saved Login
-
-    recallLogin: function(){
-        var loginKeychainId = this.service.defaults.valueForKey("loginKeychainId");
-        if (loginKeychainId !== null){
-            SECKeychain.device.get(loginKeychainId, function(login){
-                if (login !== null){
-                    this.usernameField.text = login.username;
-                    this.passwordField.text = login.password;
-                    this.updateValidation();
-                }
-            }, this);
-        }
+        AuthenticationWindowController.$super.viewDidDisappear.call(this, animated);
     },
 
     saveLogin: function(username, password, completion, target){
@@ -109,7 +86,7 @@ JSClass("SigninViewController", UIViewController, {
 
     logoImageView: JSOutlet(),
     form: JSOutlet(),
-    usernameField: JSOutlet(),
+    usernameValueLabel: JSOutlet(),
     passwordField: JSOutlet(),
     signinButton: JSOutlet(),
     forgotPasswordButton: JSOutlet(),
@@ -119,9 +96,8 @@ JSClass("SigninViewController", UIViewController, {
             return;
         }
         this.setFieldsEnabled(false);
-        var username = this.usernameField.text;
         var password = this.passwordField.text;
-        this.service.authenticateWithUsername(username, password, function(result, auth){
+        this.service.authenticateWithUsername(this.username, password, function(result, auth){
             if (result !== Service.Result.success || auth === null){
                 this.setFieldsEnabled(true);
                 this.view.window.firstResponder = this.passwordField;
@@ -136,8 +112,8 @@ JSClass("SigninViewController", UIViewController, {
                 alert.popupCenteredInView(this.view, true);
                 return;
             }
-            this.saveLogin(username, password);
-            this.delegate.signinViewControllerDidSignin(this, username, auth);
+            this.saveLogin(this.username, password);
+            this.authenticationDelegate.authenticationWindowControllerDidSignin(this, this.username, auth);
         }, this);
     },
 
@@ -161,11 +137,10 @@ JSClass("SigninViewController", UIViewController, {
     // MARK: - Validation
 
     updateValidation: function(){
-        this.signinButton.enabled = this.usernameField.text.length > 0 && this.passwordField.text.length > 0;
+        this.signinButton.enabled = this.passwordField.text.length > 0;
     },
 
     setFieldsEnabled: function(enabled){
-        this.usernameField.enabled = enabled;
         this.passwordField.enabled = enabled;
         this.signinButton.enabled = enabled;
         this.forgotPasswordButton.enabled = enabled;
