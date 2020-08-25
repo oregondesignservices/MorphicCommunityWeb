@@ -1,6 +1,6 @@
 JSBundleType:               html
 JSBundleIdentifier:         org.raisingthefloor.MorphicCommunityWeb
-JSBundleVersion:            1.0.0
+JSBundleVersion:            2020.34.0
 JSCopyright:                Copyright 2020 Raising the Floor - International
 UIApplicationDelegate:      ApplicationDelegate
 UIApplicationTitle:         .applicationTitle
