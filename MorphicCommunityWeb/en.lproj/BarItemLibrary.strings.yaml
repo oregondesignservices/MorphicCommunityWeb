@@ -15,8 +15,7 @@ en:
     gmail:
       title: Gmail
       description: A button that opens Gmail in a web browser
-      suggestedLabel: Email
-        paste commands
+      suggestedLabel: Gmail
     gcalendar:
       title: Google Calendar
       description: A button that opens Google Calendar in a web browser
