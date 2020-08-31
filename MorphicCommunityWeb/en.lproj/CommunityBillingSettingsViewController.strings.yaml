@@ -1,3 +1,45 @@
 en:
-  fields:
-    name.label: Community Name
+  syncError.tooltip: Sorry, we couldn't save your latest changes.  Click to retry.
+  error.text: Sorry, we couldn't load your billing information.  Please try again.
+  card.text: "Payment Method:"
+  noCard.text: No card on file
+  addCard.title: Add a Card
+  card.format: "%1$s - %2$s"
+  changeCard.title: Change
+  contact.text: "Billing Contact:"
+  trial.days.format: Your trial ends in %1$d days
+  trial.tomorrow.text: Your trial ends tomorrow!
+  trial.today.text: Your trial ends today!
+  paymentError.text: We could not process your most recent payment.  Please update your payment method.
+  plans:
+    period:
+      monthly: billed monthly
+      months.format: billed every %1$d months
+      annually: billed Annually
+    price.format: "%1$s/mo."
+    names:
+      members.format: "%1$d Members"
+      basic: Basic
+      midsize: Mid-size
+      large: Large
+      unlimited: Unlimited
+    changeConfirmation:
+      title: Confirm Plan Change
+      cancel.title: Don't Change Plan
+      plan:
+        monthly.format: "%1$s/month, billed monthly"
+        months.format: "%1$s/month, billed every %2$d months"
+        annually.format: "%1$s/month, billed annually"
+  account.text: "Account:"
+  account.closeButton.title: Close Account
+  account.canceled.text: Canceled
+  account.closed.text: Closed
+  closeAccount:
+    title: Close Your Account
+    message: You and your members will have access until your current billing cycle ends
+    confirm.title: Close Account
+    cancel.title: Keep Account Open
+  closeError:
+    title: Unable to Close Account
+    message: Sorry, we were unable to close your account.  Please try again.
+    dismiss: OK

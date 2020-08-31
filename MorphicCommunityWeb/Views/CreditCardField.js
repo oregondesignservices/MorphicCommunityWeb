@@ -168,8 +168,33 @@ JSClass("CreditCardField", StripeElementControl, {
             return;
         }
         this.updateErrorMessage(null);
-        if (event.complete){
+        this.updateValid(event.complete);
+    },
+
+    valid: JSReadOnlyProperty('_valid', false),
+
+    updateValid: function(valid){
+        if (valid != this._valid){
+            this._valid = valid;
             this.sendActionsForEvents(UIControl.Event.primaryAction | UIControl.Event.valueChanged);
+        }
+    },
+
+    focusOnReady: false,
+
+    receiveKeyInputWhenReady: function(){
+        if (!this.stripeReady){
+            this.focusOnReady = true;
+        }else{
+            this.stripeElement.focus();
+        }
+    },
+
+    stripeElementReady: function(){
+        CreditCardField.$super.stripeElementReady.call(this);
+        if (this.focusOnReady){
+            this.focusOnReady = false;
+            JSTimer.scheduledTimerWithInterval(JSTimeInterval.seconds(0.1), this.stripeElement.focus, this.stripeElement);
         }
     },
 
@@ -187,6 +212,7 @@ JSClass("CreditCardField", StripeElementControl, {
 
     updateErrorMessage: function(errorMessage){
         if (errorMessage !== this.errorMessage){
+            this.errorMessage = errorMessage;
             this.didChangeValueForBinding("errorMessage");
         }
     },
@@ -203,12 +229,8 @@ JSClass("CreditCardField", StripeElementControl, {
         if (!completion){
             completion = Promise.completion();
         }
-        StripeElementLayer.stripe.createToken(this.stripeElement).then(function(result){
-            if (result.error){
-                completion.call(target, null);
-                return;
-            }
-            completion.call(target, result.token);
+        this.stripe.createToken(this.stripeElement).then(function(result){
+            completion.call(target, result.error || null, result.token || null);
         });
         return completion.promise;
     },

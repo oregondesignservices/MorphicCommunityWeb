@@ -12,6 +12,7 @@ JSClass("StripeElementControl", UIControl, {
 
     layerDidCreateElement: function(layer){
         this.importStripe(layer.element.ownerDocument, function(){
+            this.stripe = stripe;
             this.stripeElement = stripe.elements(this.stripeElementsOptions).create(this.stripeElementType, this.stripeElementOptions);
             this.stripeElement.mount(layer.element);
             this.stripeElementReadyHandler = this.stripeElementReady.bind(this);
@@ -102,6 +103,13 @@ JSClass("StripeElementControl", UIControl, {
     },
 
     teardown: function(){
+    },
+
+    update: function(){
+        StripeElementControl.$super.update.call(this);
+        if (this.stripeElement !== null){
+            this.stripeElement.update({disabled: !this.enabled});
+        }
     }
     
 

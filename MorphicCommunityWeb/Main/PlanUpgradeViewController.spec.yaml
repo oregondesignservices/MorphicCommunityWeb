@@ -1,0 +1,67 @@
+File's Owner: /ViewController
+
+ViewController:
+  class: PlanUpgradeViewController
+  view:
+    subviews:
+      - /TitleLabel
+      - /MessageLabel
+      - /PlanLabel
+      - /ActivityIndicator
+      - /BillingButton
+      - /UpgradeButton
+  outlets:
+    titleLabel: /TitleLabel
+    messageLabel: /MessageLabel
+    planLabel: /PlanLabel
+    billingButton: /BillingButton
+    upgradeButton: /UpgradeButton
+    activityIndicator: /ActivityIndicator
+
+TitleLabel:
+  class: UILabel
+  text: .titleLabel.text
+  font:
+    weight: semibold
+  textAlignment: center
+  textInsets: 0,0,10,0
+
+MessageLabel:
+  class: UILabel
+  lines: 0
+  font:
+    size: detail
+  textAlignment: center
+  textInsets: 0,0,10,0
+
+PlanLabel:
+  class: UILabel
+  text: ""
+  lines: 2
+  font:
+    size: detail
+  textAlignment: center
+  textInsets: 0,0,10,0
+
+BillingButton:
+  class: UIButton
+  title: .billingButton.title
+  target: /ViewController
+  action: showBilling
+  font:
+    size: detail
+
+UpgradeButton:
+  class: UIButton
+  title: .upgradeButton.title
+  target: /ViewController
+  action: upgrade
+  enabled: false
+  font:
+    size: detail
+    weight: semibold
+
+ActivityIndicator:
+  class: UIActivityIndicatorView
+  style: dark
+  hidesWhenStopped: true

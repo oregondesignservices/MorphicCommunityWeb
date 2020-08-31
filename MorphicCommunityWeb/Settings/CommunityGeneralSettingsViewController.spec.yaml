@@ -9,6 +9,7 @@ ViewController:
     scrollView: /ScrollView
     form: /Form
     nameField: /NameField
+    membersValueLabel: /MembersValueLabel
 
 ScrollView:
   class: UIScrollView
@@ -18,14 +19,19 @@ ScrollView:
 Form:
   class: FormView
   labelSpacing: 10
+  fieldSpacing: 10
   fields:
     -
       label: /NameLabel
       view: /NameField
+    -
+      label: /MembersLabel
+      view: /MembersValueLabel
 
 NameLabel:
   class: UILabel
   text: .fields.name.label
+  textAlignment: right
 
 NameField:
   class: UITextField
@@ -33,3 +39,12 @@ NameField:
     text: {to: /ViewController, value: community.name}
   target: /ViewController
   action: nameChanged
+
+MembersLabel:
+  class: UILabel
+  text: .fields.members.label
+  textAlignment: right
+
+MembersValueLabel:
+  class: UILabel
+  text: ""

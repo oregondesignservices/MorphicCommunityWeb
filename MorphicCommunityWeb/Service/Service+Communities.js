@@ -150,7 +150,6 @@ Service.definePropertiesFromExtensions({
         request.object = invite;
         request.addBearerAuthorization(this.authToken);
         return this.sendRequest(request, completion, target);
-
     },
 
     createSkypeMeeting: function(communityId, title, completion, target){
@@ -160,6 +159,45 @@ Service.definePropertiesFromExtensions({
         request.object = {"Title": title};
         request.addBearerAuthorization(this.authToken);
         return this.sendRequest(request, completion, target);
-    }
+    },
 
+    loadCommunityPlans: function(completion, target){
+        var url = this.baseURL.appendingPathComponents([this.version, "plans", "community"]);
+        var request = JSURLRequest.initWithURL(url);
+        request.addBearerAuthorization(this.authToken);
+        return this.sendRequest(request, completion, target);
+    },
+
+    loadCommunityBilling: function(communityId, completion, target){
+        var url = this.baseURL.appendingPathComponents([this.version, "communities", communityId, "billing"]);
+        var request = JSURLRequest.initWithURL(url);
+        request.addBearerAuthorization(this.authToken);
+        return this.sendRequest(request, completion, target);
+    },
+
+    saveCommunityBilling: function(communityId, billing, completion, target){
+        var url = this.baseURL.appendingPathComponents([this.version, "communities", communityId, "billing"]);
+        var request = JSURLRequest.initWithURL(url);
+        request.method = JSURLRequest.Method.put;
+        request.object = billing;
+        request.addBearerAuthorization(this.authToken);
+        return this.sendRequest(request, completion, target);
+    },
+
+    updateCommunityBillingCard: function(communityId, stripeCardToken, completion, target){
+        var url = this.baseURL.appendingPathComponents([this.version, "communities", communityId, "billing", "card"]);
+        var request = JSURLRequest.initWithURL(url);
+        request.method = JSURLRequest.Method.post;
+        request.object = {token: stripeCardToken};
+        request.addBearerAuthorization(this.authToken);
+        return this.sendRequest(request, completion, target);
+    },
+
+    cancelCommunityBilling: function(communityId, completion, target){
+        var url = this.baseURL.appendingPathComponents([this.version, "communities", communityId, "billing", "cancel"]);
+        var request = JSURLRequest.initWithURL(url);
+        request.method = JSURLRequest.Method.post;
+        request.addBearerAuthorization(this.authToken);
+        return this.sendRequest(request, completion, target);
+    }
 });

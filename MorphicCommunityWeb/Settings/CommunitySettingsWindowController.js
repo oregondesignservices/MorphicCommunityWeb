@@ -29,6 +29,7 @@ JSClass("CommunitySettingsWindowController", UIWindowController, {
 
     community: null,
     service: null,
+    selectedSection: null,
 
     // MARK: - View Lifecycle
 
@@ -41,8 +42,12 @@ JSClass("CommunitySettingsWindowController", UIWindowController, {
         ];
         this.communitySaveSynchronizer = JSSynchronizer.initWithAction(this.saveCommunity, this);
         this.communitySaveSynchronizer.pendingInterval = 0;
-        this.showDetailsForCategory(this.categories[0]);
-        this.categoriesListView.selectedIndexPath = JSIndexPath(0, 0);
+        var selectedIndex = 0;
+        if (this.selectedSection == "billing"){
+            selectedIndex = 2;
+        }
+        this.showDetailsForCategory(this.categories[selectedIndex]);
+        this.categoriesListView.selectedIndexPath = JSIndexPath(0, selectedIndex);
         this.categoriesListView.reloadData();
     },
 

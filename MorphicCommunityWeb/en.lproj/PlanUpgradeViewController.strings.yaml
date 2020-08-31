@@ -1,0 +1,12 @@
+en:
+  titleLabel.text: Upgrade Your Plan
+  messageLabel.format: You've added all %1$d members allowed on your current plan.
+  plan.error: Unable to load plans.  Go to billing or try again.
+  plan.contactSales: Please contact sales for further options.
+  plan.format: The next available plan allows for %1$d members and costs %2$s per month.
+  upgradeButton.title: Upgrade
+  billingButton.title: Go to Billing
+  upgradeError:
+    title: Unable to Upgrade
+    message: Sorry, we could not complete your plan upgrade.  Please try again.
+    dismiss.title: OK

@@ -27,6 +27,7 @@
 // #import "MemberDetailViewController.js"
 // #import "Community.js"
 // #import "CommunitySettingsWindowController.js"
+// #import "PlanUpgradeViewController.js"
 'use strict';
 
 (function(){
@@ -92,13 +93,19 @@ JSClass("CommunityViewController", UIListViewController, {
                     this.startListeningForCommunityNotifications();
                     this.navigationController.navigationBar.hidden = false;
                     this.hideActivityIndicator();
-                    this.listView.reloadData();
-                    if (this.bars.length > 0){
-                        this.listView.selectedIndexPath = JSIndexPath(0, 0);
-                        this.showBarDetail(this.bars[0]);
-                    }else if (this.members.length > 0){
-                        this.listView.selectedIndexPath = JSIndexPath(1, 0);
-                        this.showMemberDetail(this.members[0]);
+                    if (this.community.locked){
+                        this.bars = [];
+                        this.members = [];
+                        this.lockedView.hidden = false;
+                    }else{
+                        this.listView.reloadData();
+                        if (this.bars.length > 0){
+                            this.listView.selectedIndexPath = JSIndexPath(0, 0);
+                            this.showBarDetail(this.bars[0]);
+                        }else if (this.members.length > 0){
+                            this.listView.selectedIndexPath = JSIndexPath(1, 0);
+                            this.showMemberDetail(this.members[0]);
+                        }
                     }
                 }
             };
@@ -437,7 +444,11 @@ JSClass("CommunityViewController", UIListViewController, {
         this.showBarDetail(bar);
     },
 
-    addMember: function(){
+    addMember: function(sender){
+        if (this.community.memberLimit > 0 && this.community.memberCount == this.community.memberLimit){
+            this.promptForUpgrade(sender);
+            return;
+        }
         var member = Member.init();
         member.role = Member.Role.member;
         member.state = Member.State.uninvited;
@@ -450,14 +461,42 @@ JSClass("CommunityViewController", UIListViewController, {
         this.showMemberDetail(member);
     },
 
+    upgradeViewController: null,
+
+    promptForUpgrade: function(sender){
+        if (this.upgradeViewController === null){
+            this.upgradeViewController = PlanUpgradeViewController.initWithSpecName("PlanUpgradeViewController");
+            this.upgradeViewController.delegate = this;
+            this.upgradeViewController.community = this.community;
+            this.upgradeViewController.service = this.service;
+        }
+        this.upgradeViewController.popupAdjacentToView(sender, UIPopupWindow.Placement.below);
+    },
+
+    planUpgradeViewDidDismiss: function(upgradeViewController){
+        if (upgradeViewController === this.upgradeViewController){
+            this.upgradeViewController.delegate = null;
+            this.upgradeViewController = null;
+        }
+    },
+
+    planUpgradeViewDidUpgrade: function(upgradeViewController){
+        this.addMember(this.addMemberButton);
+    },
+
+    planUpgradeViewShowBilling: function(upgradeViewController){
+        this.openSettings(this.navigationController.navigationBar.stylerProperties.rightBarItemViews[0], "billing");
+    },
+
     settingsWindowController: null,
 
-    openSettings: function(sender){
+    openSettings: function(sender, section){
         if (!this.settingsWindowController){
             this.settingsWindowController = CommunitySettingsWindowController.initWithSpecName("CommunitySettingsWindowController");
             this.settingsWindowController.service = this.service;
             this.settingsWindowController.community = this.community;
             this.settingsWindowController.delegate = this;
+            this.settingsWindowController.selectedSection = section || null;
             this.settingsWindowController.prepareWindowIfNeeded();
             var window = this.settingsWindowController.window;
             var sourceRect = JSRect(sender.convertRectToScreen(sender.bounds).center, JSSize(1, 1));
@@ -483,6 +522,10 @@ JSClass("CommunityViewController", UIListViewController, {
         this.settingsWindowController.makeKeyAndOrderFront();
     },
 
+    showBilling: function(sender){
+        this.openSettings(sender, "billing");
+    },
+
     windowControllerDidClose: function(windowController){
         if (windowController === this.settingsWindowController){
             this.settingsWindowController = null;
@@ -492,6 +535,9 @@ JSClass("CommunityViewController", UIListViewController, {
     },
 
     closeAllWinodows: function(){
+        if (this.upgradeViewController !== null){
+            this.upgradeViewController.dismiss();
+        }
         if (this.settingsWindowController !== null){
             this.settingsWindowController.close();
         }
@@ -499,6 +545,7 @@ JSClass("CommunityViewController", UIListViewController, {
 
     // MARK: - Layout
 
+    lockedView: JSOutlet(),
     errorView: JSOutlet(),
     watermarkView: JSOutlet(),
 
@@ -507,9 +554,11 @@ JSClass("CommunityViewController", UIListViewController, {
         this.listView.frame = bounds;
         var maxSize = bounds.rectWithInsets(JSInsets(20)).size;
         this.errorView.sizeToFitSize(maxSize);
+        this.lockedView.sizeToFitSize(maxSize);
         var center = bounds.center;
         this.activityIndicator.position = center;
         this.errorView.position = center;
+        this.lockedView.position = center;
         this.watermarkView.bounds = JSRect(0, 0, bounds.size.width, bounds.size.width);
         this.watermarkView.position = JSPoint(bounds.center.x, bounds.size.height - 125 + bounds.size.width / 2.0); 
     }
@@ -533,6 +582,14 @@ JSClass("CommunityListHeaderView", UIListViewHeaderFooterView, {
         if (this._actionButton !== null){
             this._actionButton.position = JSPoint(this.bounds.size.width - 7 - this._actionButton.bounds.size.width / 2, this.bounds.center.y);
         }
+    }
+
+});
+
+JSClass("StackedButton", UIButton, {
+
+    sizeToFitSize: function(maxSize){
+        this.styler.sizeControlToFitSize(this, JSSize(maxSize.width, this.intrinsicSize.height));
     }
 
 });

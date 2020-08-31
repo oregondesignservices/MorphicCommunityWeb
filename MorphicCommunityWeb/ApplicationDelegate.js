@@ -29,6 +29,7 @@
 // #import "Service+Extensions.js"
 // #import "Theme.js"
 // #import "StripeElementControl.js"
+// #import "TimeZones.js"
 // #import "AuthenticationWindowController.js"
 // #import "AboutWindowController.js"
 'use strict';

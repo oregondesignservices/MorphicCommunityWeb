@@ -4,7 +4,7 @@ WindowController:
   class: CommunitySettingsWindowController
   window:
     title: .window.title
-    frame: 0,0,500,300
+    frame: 0,0,550,330
     backgroundColor: white
     firstResponder: /ListView
     subviews:

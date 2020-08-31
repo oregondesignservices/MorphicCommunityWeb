@@ -35,6 +35,7 @@ JSClass("CommunityGeneralSettingsViewController", UIViewController, {
 
     viewDidLoad: function(){
         CommunityGeneralSettingsViewController.$super.viewDidLoad.call(this);
+        this.update();
     },
 
     viewWillAppear: function(animated){
@@ -56,6 +57,15 @@ JSClass("CommunityGeneralSettingsViewController", UIViewController, {
         CommunityGeneralSettingsViewController.$super.viewDidDisappear.call(this, animated);
     },
 
+    update: function(){
+        if (this.community.memberLimit > 0){
+            var format = this.localizedString("fields.members.format");
+            this.membersValueLabel.text = String.initWithFormat(format, this.community.memberCount, this.community.memberLimit);
+        }else{
+            this.membersValueLabel.text = this.localizedString("fields.members.unlimited");
+        }
+    },
+
     // MARK: - Saving
 
     changed: false,
@@ -65,6 +75,7 @@ JSClass("CommunityGeneralSettingsViewController", UIViewController, {
     scrollView: JSOutlet(),
     form: JSOutlet(),
     nameField: JSOutlet(),
+    membersValueLabel: JSOutlet(),
 
     nameChanged: function(){
         this.communitySaveSynchronizer.sync();

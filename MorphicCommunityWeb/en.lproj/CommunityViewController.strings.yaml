@@ -1,6 +1,9 @@
 en:
   errorView:
     label.text: Unable to load community
+  lockedView:
+    label.text: This community is locked until payment resumes
+    billingButton.title: Show Billing
   header:
     bars: Bars
     members: Members
