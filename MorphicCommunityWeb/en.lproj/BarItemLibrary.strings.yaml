@@ -5,9 +5,9 @@ en:
       description: A button that opens the specified website
       suggestedLabel: Web Page
     skypeMeetingLink:
-      title: Skype Call
+      title: Video Conference
       description: A button that opens and joins a configured Skype conference call
-      suggestedLabel: Video Call
+      suggestedLabel: Video Conference
     nativeEmail:
       title: Email
       description: A button that opens the computer's default email application
