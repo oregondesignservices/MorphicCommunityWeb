@@ -96,6 +96,14 @@ JSClass("Service", JSObject, {
         return this.sendRequest(request, completion, target);
     },
 
+    resendVerificationEmail: function(completion, target){
+        var url = this.baseURL.appendingPathComponents([this.version, "users", this.user.id, "resend_verification"]);
+        var request = JSURLRequest.initWithURL(url);
+        request.method = JSURLRequest.Method.post;
+        request.addBearerAuthorization(this.authToken);
+        return this.sendRequest(request, completion, target);
+    },
+
     waitingForAuthentication: false,
     unauthorizedRequestQueue: null,
 

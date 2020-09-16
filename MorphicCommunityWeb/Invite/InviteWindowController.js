@@ -86,6 +86,10 @@ JSClass("InviteWindowController", UIWindowController, {
                     this.showErrorMessageForField(this.localizedString("errors.invalidEmail.message"), this.toField);
                     return;   
                 }
+                if (badRequest.error === "email_verification_required"){
+                    this.showVerificationError();
+                    return;
+                }
             }
             if (result !== Service.Result.success){
                 this.showGeneralError();
@@ -96,9 +100,29 @@ JSClass("InviteWindowController", UIWindowController, {
         }, this);
     },
 
+    showVerificationError: function(){
+        var alert = UIAlertController.initWithTitle(this.localizedString("errors.verificationRequired.title"), this.localizedString("errors.verificationRequired.message"));
+        alert.addActionWithTitle(this.localizedString("errors.verificationRequired.resend"), UIAlertAction.Style.default, function(){
+            this.service.resendVerificationEmail(function(result){
+                if (result !== Service.Result.success){
+                    this.showVerificationResendError();
+                    return;
+                }
+            }, this);
+        }, this);
+        alert.addActionWithTitle(this.localizedString("errors.verificationRequired.dismiss"), UIAlertAction.Style.cancel);
+        alert.popupCenteredInView(this.view, true);
+    },
+
+    showVerificationResendError: function(){
+        var alert = UIAlertController.initWithTitle(this.localizedString("errors.verificationResend.title"), this.localizedString("errors.verificationResend.message"));
+        alert.addActionWithTitle(this.localizedString("errors.verificationResend.dismiss"), UIAlertAction.Style.cancel);
+        alert.popupCenteredInView(this.view, true);
+    },
+
     showGeneralError: function(){
         var alert = UIAlertController.initWithTitle(this.localizedString("errors.general.title"), this.localizedString("errors.general.message"));
-        alert.addActionWithTitle(this.localizedString("errors.dismiss"), UIAlertAction.Style.cancel);
+        alert.addActionWithTitle(this.localizedString("errors.general.dismiss"), UIAlertAction.Style.cancel);
         alert.popupCenteredInView(this.view, true);
     },
 
