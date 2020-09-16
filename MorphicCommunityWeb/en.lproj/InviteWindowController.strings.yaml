@@ -11,6 +11,21 @@ en:
     tooltip: Send the invitation
   errors:
     invalidEmail.message: This email address is not valid
-    general.title: Unable to Send Invite
-    general.message: Sorry, we were unable to send the invite.  Please try again.
-    general.dismiss: OK
+    general:
+      title: Unable to Send Invite
+      message: Sorry, we were unable to send the invite.  Please try again.
+      dismiss: Close
+    verificationResend:
+      title: Unable to re-send Verification
+      message: Sorry, we were unable send you a new verification email.  Please try again.
+      dismiss: Close
+    verificationRequired:
+      title: Verification Required
+      message: You must verify your email address before you can send an invite.
+
+        Check your email for the verification message that was sent when you
+        created your account.  If needed, request a new verification email.
+      resend: Request Verification Email
+      dismiss: Close
+
+
